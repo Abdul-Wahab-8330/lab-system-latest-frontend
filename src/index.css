@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+button {
+    cursor: pointer;
+}
+
+
+@keyframes breathing-animation {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Apply the animation to the button-animation class */
+.button-animation {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #05ca47;
+    border: yellow 2px solid;
+    border-radius: 10px;
+    /* Fully rounded corners */
+    cursor: pointer;
+    /* box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); */
+    transition: background-color 0.3s ease, transform 0.3s ease;
+
+    /* Apply the animation properties */
+    animation-name: breathing-animation;
+    animation-duration: 2s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+}
+
+.button-animation:hover {
+    background-color: #04b33e;
+    transform: scale(1.02);
+    /* Slight scale on hover for a better user experience */
+}
+
+.edited-field {
+  border-color: #f59e0b !important; /* amber */
+  background-color: #fff7ed; /* light amber background */
+}

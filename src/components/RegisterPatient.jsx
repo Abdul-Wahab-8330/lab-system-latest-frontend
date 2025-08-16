@@ -2,12 +2,11 @@
 import React, { useEffect, useState, useContext, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
 import { PatientsContext } from "@/context/PatientsContext";
 import ConfirmDialog from "./ConfirmDialog";
-import { Trash2, Search, User } from "lucide-react";
+import { Trash2, Search, User, UserPlus, FileText, CreditCard, TestTube, CheckCircle } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -16,22 +15,23 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { AuthContext } from "@/context/AuthProvider";
+import { Separator } from "./ui/separator";
 
 export default function RegisterPatient() {
     const { createPatient, setPatients, patients, fetchPatients } = useContext(PatientsContext);
     const { user } = useContext(AuthContext);
+    const [isFocused, setIsFocused] = useState(false);
 
-    const [open, setOpen] = useState(false);
     const [doctors, setDoctors] = useState([]);
     const [tests, setTests] = useState([]);
-    
+
     // Patient search functionality
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
     const searchTimeoutRef = useRef(null);
-    
+
     const [form, setForm] = useState({
         name: "",
         age: "",
@@ -98,7 +98,7 @@ export default function RegisterPatient() {
             phone: patient.phone || "",
             referencedBy: patient.referencedBy || "Self"
         }));
-        
+
         setSearchQuery(patient.name || "");
         setShowSearchResults(false);
         setSearchResults([]);
@@ -179,12 +179,12 @@ export default function RegisterPatient() {
             const newPatient = await createPatient(payload);
 
             // Reset form
-            setForm({ 
-                name: "", 
-                age: "", 
-                gender: "Male", 
-                phone: "", 
-                referencedBy: "Self", 
+            setForm({
+                name: "",
+                age: "",
+                gender: "Male",
+                phone: "",
+                referencedBy: "Self",
                 paymentStatus: 'Not Paid',
                 resultStatus: 'Pending',
                 paymentStatusUpdatedBy: user?.name || "System",
@@ -194,7 +194,6 @@ export default function RegisterPatient() {
             setSearchQuery("");
             setSearchResults([]);
             setShowSearchResults(false);
-            setOpen(false);
             await fetchPatients();
             console.log("Patient created:", newPatient);
         } catch (err) {
@@ -204,44 +203,64 @@ export default function RegisterPatient() {
     };
 
     return (
-        <div className="p-4">
-            <Card className="bg-white shadow-lg rounded-xl border border-gray-200">
-                <CardHeader>
-                    <CardTitle className="text-lg font-semibold">Register Patient</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Dialog open={open} onOpenChange={setOpen}>
-                        <DialogTrigger asChild>
-                            <Button className="bg-purple-700 text-white">New Patient</Button>
-                        </DialogTrigger>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+            <div className=" m-2">
+                {/* Header Section */}
+                {/* <div className="text-center mb-8">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg mb-4">
+                        <UserPlus className="h-8 w-8 text-white" />
+                    </div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Patient Registration</h1>
+                    <p className="text-gray-600">Complete patient information and select required tests</p>
+                </div> */}
 
-                        <DialogContent className="bg-white border-none overflow-auto h-[95vh]">
-                            <DialogHeader>
-                                <DialogTitle>Patient Registration</DialogTitle>
-                            </DialogHeader>
-
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Card className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden">
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-5">
+                        <h2 className="text-2xl font-semibold text-white flex items-center">
+                            <FileText className="h-7 w-7 mr-2" />
+                            Registration Form
+                        </h2>
+                    </div>
+                    
+                    <CardContent className="p-8">
+                        <form onSubmit={handleSubmit} className="space-y-10">
+                            {/* Patient Information Section */}
+                            <div className="space-y-6">
+                                <div className="flex items-center mb-6">
+                                    <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg mr-3">
+                                        <User className="h-5 w-5 text-blue-600" />
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-gray-800">Patient Information</h3>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* Enhanced Name Input with Search */}
                                     <div className="relative">
+                                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                            Patient Name <span className="text-red-500">*</span>
+                                        </label>
                                         <div className="relative">
                                             <Input
-                                                placeholder="Patient Name (type to search existing)"
+                                                placeholder="Enter patient name or search existing"
                                                 value={form.name}
                                                 onChange={handleNameInputChange}
+                                                onFocus={() => setIsFocused(true)}
+                                                onBlur={() => {
+                                                    setTimeout(() => setIsFocused(false), 200);
+                                                }}
                                                 required
-                                                className="pr-20"
+                                                className="pr-12 h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                             />
-                                            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
+                                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex gap-2">
                                                 {isSearching && (
-                                                    <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-purple-600 rounded-full" />
+                                                    <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-blue-600 rounded-full" />
                                                 )}
                                                 {searchQuery && (
                                                     <Button
                                                         type="button"
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="h-6 w-6 p-0 hover:bg-gray-100"
+                                                        className="h-6 w-6 p-0 hover:bg-gray-100 rounded-full"
                                                         onClick={clearSearch}
                                                     >
                                                         ×
@@ -252,21 +271,23 @@ export default function RegisterPatient() {
                                         </div>
 
                                         {/* Search Results Dropdown */}
-                                        {showSearchResults && searchResults.length > 0 && (
-                                            <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto mt-1">
-                                                <div className="p-2 text-xs text-gray-500 border-b bg-gray-50">
+                                        {isFocused && showSearchResults && searchResults.length > 0 && (
+                                            <div className="absolute top-full left-0 right-0 z-50 bg-white border-2 border-gray-100 rounded-xl shadow-2xl max-h-48 overflow-y-auto mt-2">
+                                                <div className="p-3 text-xs font-medium text-gray-500 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
                                                     Found {searchResults.length} existing patient(s)
                                                 </div>
                                                 {searchResults.map((patient) => (
                                                     <div
                                                         key={patient._id}
-                                                        className="p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0 transition-colors"
+                                                        className="p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 cursor-pointer border-b last:border-b-0 transition-all duration-200"
                                                         onClick={() => handlePatientSelect(patient)}
                                                     >
-                                                        <div className="flex items-center gap-2">
-                                                            <User className="h-4 w-4 text-gray-400" />
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                                                <User className="h-4 w-4 text-blue-600" />
+                                                            </div>
                                                             <div>
-                                                                <div className="font-medium text-gray-900">{patient.name}</div>
+                                                                <div className="font-semibold text-gray-900">{patient.name}</div>
                                                                 <div className="text-sm text-gray-500">
                                                                     Age: {patient.age} • Phone: {patient.phone} • Gender: {patient.gender}
                                                                 </div>
@@ -277,142 +298,251 @@ export default function RegisterPatient() {
                                             </div>
                                         )}
 
-                                        {showSearchResults && searchResults.length === 0 && searchQuery.trim().length >= 2 && !isSearching && (
-                                            <div className="absolute top-full left-0 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg mt-1">
-                                                <div className="p-3 text-sm text-gray-500 text-center">
+                                        {isFocused && showSearchResults && searchResults.length === 0 && searchQuery.trim().length >= 2 && !isSearching && (
+                                            <div className="absolute top-full left-0 right-0 z-50 bg-white border-2 border-gray-100 rounded-xl shadow-2xl mt-2">
+                                                <div className="p-4 text-sm text-gray-500 text-center">
                                                     No existing patients found for "{searchQuery}"
                                                 </div>
                                             </div>
                                         )}
                                     </div>
 
-                                    <Input
-                                        placeholder="Age"
-                                        type="number"
-                                        value={form.age}
-                                        onChange={(e) => setForm({ ...form, age: e.target.value })}
-                                        required
-                                    />
-                                    
-                                    <Select
-                                        value={form.gender}
-                                        onValueChange={(value) => setForm({ ...form, gender: value })}
-                                    >
-                                        <SelectTrigger className="w-full border p-2 rounded">
-                                            <SelectValue placeholder="Select Gender" />
-                                        </SelectTrigger>
-                                        <SelectContent className='bg-white'>
-                                            <SelectItem className='hover:bg-gray-100 rounded-sm' value="Male">Male</SelectItem>
-                                            <SelectItem className='hover:bg-gray-100 rounded-sm' value="Female">Female</SelectItem>
-                                            <SelectItem className='hover:bg-gray-100 rounded-sm' value="Other">Other</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    
-                                    <Input
-                                        placeholder="Phone"
-                                        value={form.phone}
-                                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                                        required
-                                    />
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                            Age <span className="text-red-500">*</span>
+                                        </label>
+                                        <Input
+                                            placeholder="Enter age"
+                                            type="number"
+                                            value={form.age}
+                                            onChange={(e) => setForm({ ...form, age: e.target.value })}
+                                            required
+                                            className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                            Gender <span className="text-red-500">*</span>
+                                        </label>
+                                        <Select
+                                            value={form.gender}
+                                            onValueChange={(value) => setForm({ ...form, gender: value })}
+                                        >
+                                            <SelectTrigger className="h-12 w-full border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
+                                                <SelectValue placeholder="Select Gender" />
+                                            </SelectTrigger>
+                                            <SelectContent className='bg-white border-0 shadow-xl rounded-xl'>
+                                                <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value="Male">Male</SelectItem>
+                                                <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value="Female">Female</SelectItem>
+                                                <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value="Other">Other</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                            Phone Number <span className="text-red-500">*</span>
+                                        </label>
+                                        <Input
+                                            placeholder="Enter phone number"
+                                            value={form.phone}
+                                            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                                            required
+                                            className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                        />
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <label className="block mb-1">Referenced By</label>
-                                    <Select
-                                        value={form.referencedBy}
-                                        onValueChange={(value) => setForm({ ...form, referencedBy: value })}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Self" />
-                                        </SelectTrigger>
-                                        <SelectContent className='bg-white'>
-                                            <SelectItem className='hover:bg-gray-100 rounded-sm' value='Self'>Self</SelectItem>
-                                            {doctors?.map((d) => (
-                                                <SelectItem className='hover:bg-gray-100 rounded-sm' key={d._id} value={d.name}>
-                                                    {d.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-3">Referenced By</label>
+                                        <Select
+                                            value={form.referencedBy}
+                                            onValueChange={(value) => setForm({ ...form, referencedBy: value })}
+                                        >
+                                            <SelectTrigger className="h-12 w-full border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
+                                                <SelectValue placeholder="Self" />
+                                            </SelectTrigger>
+                                            <SelectContent className='bg-white border-0 shadow-xl rounded-xl'>
+                                                <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value='Self'>Self</SelectItem>
+                                                {doctors?.map((d) => (
+                                                    <SelectItem className='hover:bg-blue-50 rounded-lg m-1' key={d._id} value={d.name}>
+                                                        {d.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                            <CreditCard className="inline h-4 w-4 mr-1" />
+                                            Payment Status
+                                        </label>
+                                        <Select
+                                            value={form.paymentStatus}
+                                            onValueChange={(value) => setForm({ ...form, paymentStatus: value })}
+                                        >
+                                            <SelectTrigger className="h-12 w-full border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
+                                                <SelectValue placeholder="Payment Status" />
+                                            </SelectTrigger>
+                                            <SelectContent className='bg-white border-0 shadow-xl rounded-xl'>
+                                                <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value="Not Paid">Not Paid</SelectItem>
+                                                <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value="Paid">Paid</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+
+                            {/* Test Selection Section */}
+                            <div className="space-y-6">
+                                <div className="flex items-center mb-6">
+                                    <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg mr-3">
+                                        <TestTube className="h-5 w-5 text-green-600" />
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-gray-800">Test Selection</h3>
                                 </div>
                                 
-                                <div>
-                                    <label className="block mb-1">Payment Status</label>
-                                    <Select
-                                        value={form.paymentStatus}
-                                        onValueChange={(value) => setForm({ ...form, paymentStatus: value })}
-                                    >
-                                        <SelectTrigger className="w-full border p-2 rounded">
-                                            <SelectValue placeholder="Payment Status" />
-                                        </SelectTrigger>
-                                        <SelectContent className='bg-white'>
-                                            <SelectItem className='hover:bg-gray-100 rounded-sm' value="Not Paid">Not Paid</SelectItem>
-                                            <SelectItem className='hover:bg-gray-100 rounded-sm' value="Paid">Paid</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div>
-                                    <h4 className="font-medium text-gray-700">Select Tests</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-auto p-2 rounded-xl bg-fuchsia-50 shadow-fuchsia-50 border border-gray-50">
-                                        {tests.map(test => {
-                                            const checked = !!selectedTests.find(t => String(t.testId) === String(test._id));
-                                            return (
-                                                <label key={test._id} className={`flex items-center justify-between p-2 rounded border border-gray-300 ${checked ? "bg-gray-100" : "bg-white"}`}>
-                                                    <div className="">
-                                                        <div className="font-medium">{test.testName}</div>
-                                                        <div className="text-sm text-muted-foreground">Price: {test.testPrice}</div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-6 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100">
+                                    {tests.map(test => {
+                                        const checked = !!selectedTests.find(t => String(t.testId) === String(test._id));
+                                        return (
+                                            <label key={test._id} className={`group flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${checked ? "bg-white border-green-400 shadow-lg transform scale-[1.02]" : "bg-white/80 border-gray-200 hover:bg-white hover:border-green-300 hover:shadow-md"}`}>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-semibold text-gray-900 truncate mb-1">{test.testName}</div>
+                                                    <div className="text-sm text-green-600 font-medium">Rs.{test.testPrice}</div>
+                                                </div>
+                                                <div className="relative ml-3">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={checked} 
+                                                        onChange={() => handleToggleTest(test)}
+                                                        className="sr-only"
+                                                    />
+                                                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${checked ? 'bg-green-500 border-green-500' : 'border-gray-300 group-hover:border-green-400'}`}>
+                                                        {checked && <CheckCircle className="w-3 h-3 text-white" />}
                                                     </div>
-                                                    <input type="checkbox" checked={checked} onChange={() => handleToggleTest(test)} />
-                                                </label>
-                                            );
-                                        })}
-                                    </div>
+                                                </div>
+                                            </label>
+                                        );
+                                    })}
                                 </div>
+                            </div>
 
-                                <div>
-                                    <h4 className="font-semibold text-gray-700">Selected Tests</h4>
-                                    <div className="overflow-auto max-h-40 border border-gray-300 rounded">
-                                        <table className="min-w-full">
-                                            <thead className="bg-gray-100 border-none text-left">
-                                                <tr>
-                                                    <th className="px-2 py-1">Test</th>
-                                                    <th className="px-2 py-1">Price</th>
-                                                    <th className="px-2 py-1">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {selectedTests.map(s => (
-                                                    <tr key={s.testId} className="border-t">
-                                                        <td className="px-2 py-1">{s.testName}</td>
-                                                        <td className="px-2 py-1">{s.price}</td>
-                                                        <td className="px-2 py-1">
-                                                            <ConfirmDialog
-                                                                title="Remove Test?"
-                                                                description={`Remove "${s.testName}" from temporary selection?`}
-                                                                confirmText="Remove"
-                                                                cancelText="Cancel"
-                                                                onConfirm={() => handleDeleteRow(s.testId)}
-                                                                trigger={<Button size="sm" className="text-red-700"><Trash2 /> Delete</Button>}
-                                                            />
-                                                        </td>
+                            {/* Selected Tests Section */}
+                            {selectedTests.length > 0 && (
+                                <>
+                                    <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center">
+                                                <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg mr-3">
+                                                    <FileText className="h-5 w-5 text-indigo-600" />
+                                                </div>
+                                                <h3 className="text-xl font-semibold text-gray-800">Selected Tests</h3>
+                                            </div>
+                                            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-2 rounded-xl shadow-lg">
+                                                <span className="text-sm font-medium">Total Tests: </span>
+                                                <span className="text-lg font-bold">{selectedTests.length}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="overflow-hidden rounded-2xl border-2 border-gray-200 shadow-lg bg-white">
+                                            <table className="min-w-full">
+                                                <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                                                    <tr>
+                                                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Test Name</th>
+                                                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Price</th>
+                                                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Action</th>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-100">
+                                                    {selectedTests.map((s, index) => (
+                                                        <tr key={s.testId} className={`hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ${index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'}`}>
+                                                            <td className="px-6 py-4 text-sm font-semibold text-gray-900">{s.testName}</td>
+                                                            <td className="px-6 py-4 text-sm font-bold text-green-600">Rs.{s.price}</td>
+                                                            <td className="px-6 py-4 text-sm">
+                                                                <ConfirmDialog
+                                                                    title="Remove Test?"
+                                                                    description={`Remove "${s.testName}" from selection?`}
+                                                                    confirmText="Remove"
+                                                                    cancelText="Cancel"
+                                                                    onConfirm={() => handleDeleteRow(s.testId)}
+                                                                    trigger={
+                                                                        <Button 
+                                                                            type="button"
+                                                                            size="sm" 
+                                                                            variant="outline" 
+                                                                            className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-400 rounded-lg transition-all duration-200"
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4 mr-1" />
+                                                                            Remove
+                                                                        </Button>
+                                                                    }
+                                                                />
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        
+                                        <div className="flex justify-end">
+                                            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-2xl shadow-xl">
+                                                <div className="text-center">
+                                                    <div className="text-sm font-medium opacity-90">Grand Total</div>
+                                                    <div className="text-2xl font-bold">Rs.{total.toLocaleString()}</div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="mt-2 text-right font-semibold">Total: {total}</div>
-                                </div>
+                                </>
+                            )}
 
-                                <div className="flex gap-2 justify-end">
-                                    <Button variant="outline" onClick={() => { setOpen(false); }}>Cancel</Button>
-                                    <Button type="submit" className="bg-green-700 text-white">Save Patient</Button>
-                                </div>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
-                </CardContent>
-            </Card>
+                            <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+
+                            {/* Form Actions */}
+                            <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6">
+                                <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    className="w-full sm:w-auto h-12 px-8 border-2 border-gray-300 hover:border-gray-400 rounded-xl font-semibold transition-all duration-200"
+                                    onClick={() => {
+                                        setForm({
+                                            name: "",
+                                            age: "",
+                                            gender: "Male",
+                                            phone: "",
+                                            referencedBy: "Self",
+                                            paymentStatus: 'Not Paid',
+                                            resultStatus: 'Pending',
+                                            paymentStatusUpdatedBy: user?.name || "System",
+                                            patientRegisteredBy: user?.name || "System",
+                                        });
+                                        setSelectedTests([]);
+                                        setSearchQuery("");
+                                        setSearchResults([]);
+                                        setShowSearchResults(false);
+                                    }}
+                                >
+                                    Reset Form
+                                </Button>
+                                <Button 
+                                    type="submit" 
+                                    className="w-full sm:w-auto h-12 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                >
+                                    <UserPlus className="h-5 w-5 mr-2" />
+                                    Register Patient
+                                </Button>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }

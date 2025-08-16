@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* body {
+  font-family: 'Roboto', sans-serif;
+} */
+
+
 button {
     cursor: pointer;
 }

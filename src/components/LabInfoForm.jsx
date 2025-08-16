@@ -38,28 +38,7 @@ export default function LabInfoForm() {
     };
 
     return (
-        // <div>
-        //   <Dialog open={open} onOpenChange={setOpen}>
-        //     <DialogTrigger asChild>
-        //       <Button>Edit Lab Info</Button>
-        //     </DialogTrigger>
-        //     <DialogContent>
-        //       <DialogHeader>
-        //         <DialogTitle>Lab Information</DialogTitle>
-        //       </DialogHeader>
-        //       <form onSubmit={handleSubmit} className="space-y-4">
-        //         <Input name="labName" value={labInfo.labName} onChange={handleChange} placeholder="Lab Name" required />
-        //         <Input name="phoneNumber" value={labInfo.phoneNumber} onChange={handleChange} placeholder="Phone Number" required />
-        //         <Input name="email" type="email" value={labInfo.email} onChange={handleChange} placeholder="Email" required />
-        //         <Input name="address" value={labInfo.address} onChange={handleChange} placeholder="Address" />
-        //         <Input name="logoUrl" value={labInfo.logoUrl} onChange={handleChange} placeholder="Logo URL" />
-        //         <Input name="website" value={labInfo.website} onChange={handleChange} placeholder="Website" />
-        //         <Input name="additionalInfo" value={labInfo.additionalInfo} onChange={handleChange} placeholder="Additional Info" />
-        //         <Button type="submit">Save</Button>
-        //       </form>
-        //     </DialogContent>
-        //   </Dialog>
-        // </div>
+        
         <div className="p-6">
             <Card className="bg-white shadow-xl rounded-3xl border border-gray-200">
                 <CardHeader>

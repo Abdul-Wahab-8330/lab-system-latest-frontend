@@ -2,7 +2,6 @@ import { Navigate, useLocation } from "react-router-dom";
 
 const CheckAuth = ({ children, isAuthenticated, user }) => {
   const location = useLocation();
-
   const path = location.pathname;
 
   // 1. If not logged in, allow only auth pages
@@ -16,7 +15,7 @@ const CheckAuth = ({ children, isAuthenticated, user }) => {
 
   // 2. If authenticated and on auth routes, redirect to role-based home
   if (isAuthenticated && path.startsWith("/auth")) {
-    const redirectPath = user?.role === "admin" ? "/admin/dashboard" : "/user/home";
+    const redirectPath = user?.role === "admin" ? "/admin/dashboard" : "/user/dashboard"; // Changed from /user/home
     return <Navigate to={redirectPath} replace />;
   }
 
@@ -25,9 +24,12 @@ const CheckAuth = ({ children, isAuthenticated, user }) => {
     return <Navigate to="/unauth-page" replace />;
   }
 
+  // // 4. Role-based access control for users (optional - if you want to restrict user routes)
+  // if (path.startsWith("/user") && user?.role !== "user") {
+  //   return <Navigate to="/unauth-page" replace />;
+  // }
 
-
-  // 4. If everything is fine, render the route's children
+  // 5. If everything is fine, render the route's children
   return children;
 };
 

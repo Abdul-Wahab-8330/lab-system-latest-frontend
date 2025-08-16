@@ -1,3 +1,4 @@
+import { UserAvatar } from '@/components/UserAvatar';
 import { AuthContext } from '@/context/AuthProvider';
 import { LogOut } from 'lucide-react'
 import { useContext } from 'react';
@@ -24,18 +25,21 @@ const UserLayout = () => {
                         <strong>XSystems</strong>
                     </div>
                 </div>
-                <button
+                <UserAvatar/>
+                {/* <button
                     className="hover:scale-105 transition-transform"
                     title="Logout"
                 >
                     <LogOut onClick={handleLogout} className="text-purple-800 hover:text-red-400 border-2 border-purple-400 p-2 h-9 w-9 rounded-full" />
-                </button>
+                </button> */}
             </div>
 
             <div className=' bg-background '>
                 <Outlet />
             </div>
+
         </div>
+        
     )
 }
 

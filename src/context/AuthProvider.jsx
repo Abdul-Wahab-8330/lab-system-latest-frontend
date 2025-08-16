@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { createContext, useState, useEffect } from 'react';
+import loader from '../assets/loading.gif'
+
 
 export const AuthContext = createContext();
 
@@ -7,22 +9,28 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true); // prevent blank screen on first render
 
 
     useEffect(() => {
-        const storedUser = sessionStorage.getItem('user');
-        const storedToken = sessionStorage.getItem('token');
+        try {
+            const storedUser = sessionStorage.getItem("user");
+            const token = sessionStorage.getItem("token");
 
-        if (storedToken && storedUser) {
-            try {
-                const parsedUser = JSON.parse(storedUser);
-                setUser(parsedUser);
+            if (storedUser && token) {
+                // ✅ Safe parse
+                setUser(JSON.parse(storedUser));
                 setIsAuthenticated(true);
-            } catch (error) {
-                console.error("Failed to parse user data from sessionStorage:", error);
+            } else {
                 setUser(null);
                 setIsAuthenticated(false);
             }
+        } catch (error) {
+            console.error("AuthContext error:", error);
+            setUser(null);
+            setIsAuthenticated(false);
+        } finally {
+            setLoading(false); // ✅ always run
         }
     }, []);
 
@@ -48,7 +56,17 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const handleLogout = ()=>{
+        sessionStorage.removeItem('token')
+        sessionStorage.removeItem('user')
+        setIsAuthenticated(false)
+        setUser({})
+        console.log('logged out successfully')
+    }
 
+    if (loading) {
+        return <div className='flex h-screen justify-center items-center text-gray-600 text-2xl'><img className='w-9 mr-4 ' src={loader} alt="" /> Loading</div>; // ✅ avoids blank login page
+    }
 
 
     return (
@@ -59,7 +77,8 @@ export const AuthProvider = ({ children }) => {
             setIsAuthenticated,
             users,
             fetchUsers,
-            deleteUser
+            deleteUser,
+            handleLogout
         }}>
             {children}
         </AuthContext.Provider>

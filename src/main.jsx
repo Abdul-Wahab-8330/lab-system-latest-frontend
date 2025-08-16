@@ -6,20 +6,23 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from './context/AuthProvider';
 import { TestProvider } from './context/TestContext';
 import { PatientsProvider } from './context/PatientsContext';
+import { AddedPatientsProvider } from './context/AddedPatientsContext';
 import { LabInfoProvider } from './context/LabnfoContext';
 
 
 
 createRoot(document.getElementById('root')).render(
   <AuthProvider>
-    <LabInfoProvider>
-    <PatientsProvider>
-      <TestProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </TestProvider>
-    </PatientsProvider>
-    </LabInfoProvider>
+    <AddedPatientsProvider>
+      <LabInfoProvider>
+        <PatientsProvider>
+          <TestProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </TestProvider>
+        </PatientsProvider>
+      </LabInfoProvider>
+    </AddedPatientsProvider>
   </AuthProvider>
 )

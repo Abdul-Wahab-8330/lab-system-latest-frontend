@@ -8,55 +8,82 @@ import AdminDashboard from "./pages/Admin-view/AdminDashboard";
 import NotFound from "./pages/not-found/NotFound";
 import UnauthPage from "./pages/unauth-page/UnauthPage";
 import { Toaster } from "react-hot-toast";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import CheckAuth from "./Authentication/CheckAuth";
 import { AuthContext } from "./context/AuthProvider";
-
-
+import UserDashboardLayout from "./components/UserDashboardLayout";
+import UserDashboard from "./components/UserDashboard";
+import RegisterPatient from "./components/RegisterPatient";
+import PatientsList from "./components/PatientsList";
+import PaymentComponent from "./components/PaymentComponent";
+import ResultAddingComponent from "./components/ResultAddingComponent";
+import ResultPrintComponent from "./components/ResultPrintComponent";
+import PatientCharts from "./components/PatientCharts";
+import AllPatientsComponent from "./components/AllPatientsComponent";
 
 function App() {
+  const { isAuthenticated, user } = useContext(AuthContext);
 
-  const {isAuthenticated, user} = useContext(AuthContext)
-
-  
   return (
     <>
       <Routes>
+        {/* Default route */}
+        <Route path="/" element={<Navigate to="/auth/login" replace />} />
 
-
-        <Route path='/' element={<Navigate to="/auth/login" replace />} />
-
-        <Route path="/auth" element={
-          <CheckAuth isAuthenticated={isAuthenticated} user={user}>
-            <AuthLayout />
-          </CheckAuth>
-        }>
+        {/* Auth Routes */}
+        <Route
+          path="/auth"
+          element={
+            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+              <AuthLayout />
+            </CheckAuth>
+          }
+        >
           <Route path="login" element={<Login />} />
         </Route>
 
-        <Route path='/admin' element={
-          <CheckAuth isAuthenticated={isAuthenticated} user={user}>
-            <AdminLayout />
-          </CheckAuth>
-        }>
-          <Route path='dashboard' element={<AdminDashboard />} />
-        </Route >
+        {/* Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+              <UserDashboardLayout />
+            </CheckAuth>
+          }
+        >
+          <Route path="dashboard" element={<UserDashboard />} />
+          <Route path="home" element={<AdminDashboard />} />
+        </Route>
 
-        <Route path='/user' element={
-          <CheckAuth isAuthenticated={isAuthenticated} user={user}>
-            <UserLayout />
-          </CheckAuth>
-        }>
-          <Route path='home' element={<UserHome />} />
-        </Route >
+        {/* User Routes */}
+        <Route
+          path="/user"
+          element={
+            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+              <UserDashboardLayout />
+            </CheckAuth>
+          }
+        >
+          <Route path="dashboard" element={<UserDashboard />} />
+          <Route path="register-patient" element={<RegisterPatient />} />
+          <Route path="patients" element={<PatientsList />} />
+          <Route path="all-patients" element={<AllPatientsComponent />} />
+          <Route path="payments" element={<PaymentComponent />} />
+          <Route path="results" element={<ResultAddingComponent />} />
+          <Route path="result-print" element={<ResultPrintComponent />} />
+          <Route path="patient-analytics" element={<PatientCharts />} />
+        </Route>
 
-        <Route path='*' element={<NotFound />} />
-        <Route path='/unauth-page' element={<UnauthPage />} />
-
-
+        {/* Other Routes */}
+        <Route path="/unauth-page" element={<UnauthPage />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
 
-        <Toaster position="top-right" reverseOrder={false} />
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{ duration: 5000 }}
+      />
     </>
   );
 }

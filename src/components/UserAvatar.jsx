@@ -41,7 +41,7 @@ export function UserAvatar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="cursor-pointer w-56 bg-gray-50 border border-gray-300 shadow-lg">
                 <DropdownMenuLabel className='flex gap-2 text-gray-600'>
-                    <User size={16}/> Logged in as <span className="font-semibold">{user.name}</span>
+                    <User size={16}/> Logged in as <span className="font-semibold text-xs ">{user.name}</span>
                 </DropdownMenuLabel>
                 <Separator/>
                 <DropdownMenuSeparator />

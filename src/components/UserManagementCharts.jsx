@@ -317,7 +317,7 @@ const UserManagementCharts = () => {
                 {stats.map((stat, index) => {
                     const Icon = stat.icon;
                     return (
-                        <div key={index} className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 border border-gray-100-gray-300-none">
+                        <div key={index} className="bg-white p-6 rounded-lg shadow-sm  border-gray-100 border border-gray-100-gray-300-none">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm text-gray-600">{stat.title}</p>
@@ -341,7 +341,7 @@ const UserManagementCharts = () => {
             {/* Charts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* User Registration Trends */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 border border-gray-100-gray-300-none">
+                <div className="bg-white p-6 rounded-lg shadow-sm  border-gray-100 border border-gray-100-gray-300-none">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <TrendingUp className="h-5 w-5" />
                         User Registration Trends
@@ -369,7 +369,7 @@ const UserManagementCharts = () => {
                 </div>
 
                 {/* Role Distribution */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 border border-gray-100-gray-300-none">
+                <div className="bg-white p-6 rounded-lg shadow-sm  border-gray-100 border border-gray-100-gray-300-none">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Shield className="h-5 w-5" />
                         Role Distribution
@@ -401,7 +401,7 @@ const UserManagementCharts = () => {
                 </div>
 
                 {/* User Activity - Patient Registrations */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 border border-gray-100-gray-300-none">
+                <div className="bg-white p-6 rounded-lg shadow-sm  border-gray-100 border border-gray-100-gray-300-none">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Activity className="h-5 w-5" />
                         Patient Registrations by User
@@ -429,7 +429,7 @@ const UserManagementCharts = () => {
                 </div>
 
                 {/* Payment Processing by User */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 border border-gray-100-gray-300-none">
+                <div className="bg-white p-6 rounded-lg shadow-sm  border-gray-100 border border-gray-100-gray-300-none">
                     <h3 className="text-lg font-semibold mb-4">Payment Processing Activity</h3>
                     <ChartWrapper
                         hasData={paymentActivityData.some(d => d.user !== 'No Data' && d.payments > 0)}
@@ -454,7 +454,7 @@ const UserManagementCharts = () => {
                 </div>
 
                 {/* Result Processing by User */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 border border-gray-100-gray-300-none">
+                <div className="bg-white p-6 rounded-lg shadow-sm  border-gray-100 border border-gray-100-gray-300-none">
                     <h3 className="text-lg font-semibold mb-4">Result Processing Activity</h3>
                     <ChartWrapper
                         hasData={resultActivityData.some(d => d.user !== 'No Data' && d.results > 0)}
@@ -479,7 +479,7 @@ const UserManagementCharts = () => {
                 </div>
 
                 {/* User Status Distribution */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 border border-gray-100-gray-300-none">
+                <div className="bg-white p-6 rounded-lg shadow-sm  border-gray-100 border border-gray-100-gray-300-none">
                     <h3 className="text-lg font-semibold mb-4">User Activity Status</h3>
                     <ChartWrapper
                         hasData={userStatusData.some(d => d.value > 0)}

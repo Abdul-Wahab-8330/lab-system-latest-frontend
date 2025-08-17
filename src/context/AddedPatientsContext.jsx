@@ -10,7 +10,7 @@ export function AddedPatientsProvider({ children }) {
   const fetchAddedPatients = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/results/added");
+      const res = await axios.get("https://labsync-lab-reporting-system-backend.onrender.com/api/results/added");
       setAddedPatients(res.data || []);
     } catch (err) {
       console.error("fetchPatients err:", err);

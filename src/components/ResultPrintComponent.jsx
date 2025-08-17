@@ -77,7 +77,7 @@ export default function ResultPrintComponent() {
     const handleDeleteResubmit = async (patientId) => {
         try {
             setLoading(true);
-            await axios.patch(`http://localhost:5000/api/results/${patientId}/reset`);
+            await axios.patch(`https://labsync-lab-reporting-system-backend.onrender.com/api/results/${patientId}/reset`);
 
             // Update the context by removing the patient
             setAddedPatients(addedPatients.filter((patient) => patient._id !== patientId));
@@ -103,7 +103,7 @@ export default function ResultPrintComponent() {
 
     async function loadLabInfo() {
         try {
-            const res = await axios.get("http://localhost:5000/api/lab-info");
+            const res = await axios.get("https://labsync-lab-reporting-system-backend.onrender.com/api/lab-info");
             const info = Array.isArray(res.data) ? res.data[0] || null : res.data;
             setLabInfo(info || null);
         } catch (err) {
@@ -114,7 +114,7 @@ export default function ResultPrintComponent() {
     async function openPrintPreview(patient) {
         try {
             const res = await axios.get(
-                `http://localhost:5000/api/results/${patient._id}/tests`
+                `https://labsync-lab-reporting-system-backend.onrender.com/api/results/${patient._id}/tests`
             );
             setPrintPatient(res.data);
             await loadLabInfo();
@@ -127,7 +127,7 @@ export default function ResultPrintComponent() {
     async function openPatientDetails(patient) {
         try {
             const res = await axios.get(
-                `http://localhost:5000/api/results/${patient._id}/tests`
+                `https://labsync-lab-reporting-system-backend.onrender.com/api/results/${patient._id}/tests`
             );
             setSelectedPatient(res.data);
             setDetailsOpen(true);

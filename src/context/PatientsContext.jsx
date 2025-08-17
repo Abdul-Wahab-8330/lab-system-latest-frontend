@@ -10,7 +10,7 @@ export function PatientsProvider({ children }) {
   const fetchPatients = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/patients");
+      const res = await axios.get("https://labsync-lab-reporting-system-backend.onrender.com/api/patients");
       setPatients(res.data || []);
     } catch (err) {
       console.error("fetchPatients err:", err);
@@ -22,7 +22,7 @@ export function PatientsProvider({ children }) {
   const addPatientLocal = (patient) => setPatients(prev => [patient, ...prev]);
 
   const createPatient = async (payload) => {
-    const res = await axios.post("http://localhost:5000/api/patients", payload);
+    const res = await axios.post("https://labsync-lab-reporting-system-backend.onrender.com/api/patients", payload);
     if (res.status === 201 || res.status === 200) {
       addPatientLocal(res.data);
       return res.data;

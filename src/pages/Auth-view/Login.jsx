@@ -128,7 +128,7 @@ function Login() {
     setError('');
 
     try {
-      const res = await axios.post('http://localhost:5000/api/users/login', {
+      const res = await axios.post('https://labsync-lab-reporting-system-backend.onrender.com/api/users/login', {
         userName,
         password
       });
@@ -264,7 +264,7 @@ function Login() {
         <div className="mt-8 text-center relative z-10">
           <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
             <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
-            <span>Secure • Encrypted • HIPAA Compliant</span>
+            <span>Secure • Encrypted</span>
             <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
           </div>
         </div>

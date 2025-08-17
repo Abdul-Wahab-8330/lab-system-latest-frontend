@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
 
     const fetchUsers = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/users/all');
+            const res = await axios.get('https://labsync-lab-reporting-system-backend.onrender.com/api/users/all');
             setUsers(res.data.users || []);
         } catch (error) {
             console.error('Error fetching users:', error);
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     const deleteUser = async (id) => {
         try {
             const token = sessionStorage.getItem('token');
-            await axios.delete(`http://localhost:5000/api/users/delete/${id}`, {
+            await axios.delete(`https://labsync-lab-reporting-system-backend.onrender.com/api/users/delete/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUsers((prev) => prev.filter((u) => u._id !== id));

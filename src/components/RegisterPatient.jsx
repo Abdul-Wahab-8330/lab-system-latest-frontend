@@ -81,7 +81,7 @@ export default function RegisterPatient() {
 
     const searchPatients = async (query) => {
         try {
-            const response = await axios.get(`http://localhost:5000/api/patients/search?q=${encodeURIComponent(query)}`);
+            const response = await axios.get(`https://labsync-lab-reporting-system-backend.onrender.com/api/patients/search?q=${encodeURIComponent(query)}`);
             setSearchResults(response.data || []);
             setShowSearchResults(true);
             setIsSearching(false);
@@ -123,7 +123,7 @@ export default function RegisterPatient() {
 
     const fetchDoctors = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/doctors");
+            const res = await axios.get("https://labsync-lab-reporting-system-backend.onrender.com/api/doctors");
             setDoctors(res.data || []);
         } catch (err) {
             console.error(err);
@@ -134,7 +134,7 @@ export default function RegisterPatient() {
         try {
             setIsLoadingTests(true);
             setTestsError(null);
-            const res = await axios.get("http://localhost:5000/api/tests/all");
+            const res = await axios.get("https://labsync-lab-reporting-system-backend.onrender.com/api/tests/all");
             console.log('Full API response:', res.data);
 
             // Handle different possible response structures

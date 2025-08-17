@@ -549,7 +549,7 @@ export default function PatientsList() {
 
     const handleDeletePatient = async (patiendId) => {
         try {
-            const res = await axios.delete(`http://localhost:5000/api/patients/delete/${patiendId}`)
+            const res = await axios.delete(`https://labsync-lab-reporting-system-backend.onrender.com/api/patients/delete/${patiendId}`)
             if (res.data.success) {
                 console.log('patient deleted')
                 fetchPatients()

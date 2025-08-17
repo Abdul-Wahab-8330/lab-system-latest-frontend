@@ -165,7 +165,7 @@ const AddDoctorDialog = ({ onDoctorAdded }) => {
 
     setAdding(true);
     try {
-      const response = await axios.post("http://localhost:5000/api/doctors", { name });
+      const response = await axios.post("https://labsync-lab-reporting-system-backend.onrender.com/api/doctors", { name });
       onDoctorAdded(response.data);
       setName("");
       setOpen(false);
@@ -277,7 +277,7 @@ export default function DoctorCard() {
   const fetchDoctors = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/doctors");
+      const res = await fetch("https://labsync-lab-reporting-system-backend.onrender.com/api/doctors");
       const data = await res.json();
       setDoctors(data);
     } catch (error) {
@@ -290,7 +290,7 @@ export default function DoctorCard() {
   const handleDelete = async (id) => {
     setDeleting(id);
     try {
-      await axios.delete(`http://localhost:5000/api/doctors/${id}`);
+      await axios.delete(`https://labsync-lab-reporting-system-backend.onrender.com/api/doctors/${id}`);
       setDoctors(doctors.filter((doc) => doc._id !== id));
       toast.success('Deleted Successfully!')
     } catch (error) {

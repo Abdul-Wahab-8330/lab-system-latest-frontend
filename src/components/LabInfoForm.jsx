@@ -41,7 +41,7 @@ export default function LabInfoForm() {
         const fetchLabInfo = async () => {
             setLoading(true);
             try {
-                const res = await axios.get("http://localhost:5000/api/lab-info");
+                const res = await axios.get("https://labsync-lab-reporting-system-backend.onrender.com/api/lab-info");
                 if (res.data) {
                     setLabInfo(res.data);
                     console.log(res.data);
@@ -63,7 +63,7 @@ export default function LabInfoForm() {
         e.preventDefault();
         setSaving(true);
         try {
-            await axios.post("http://localhost:5000/api/lab-info", labInfo);
+            await axios.post("https://labsync-lab-reporting-system-backend.onrender.com/api/lab-info", labInfo);
             setOpen(false);
             toast.success('Edited Successfully!')
         } catch (error) {

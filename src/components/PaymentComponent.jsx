@@ -320,7 +320,7 @@ export default function PaymentComponent() {
     const handlePaymentUpdate = async (id) => {
         try {
             const res = await axios.patch(
-                `http://localhost:5000/api/patients/${id}/payment`,
+                `https://labsync-lab-reporting-system-backend.onrender.com/api/patients/${id}/payment`,
                 {
                     paymentStatus: "Paid",
                     paymentStatusUpdatedBy: user.name

@@ -20,6 +20,15 @@ import ResultAddingComponent from "./components/ResultAddingComponent";
 import ResultPrintComponent from "./components/ResultPrintComponent";
 import PatientCharts from "./components/PatientCharts";
 import AllPatientsComponent from "./components/AllPatientsComponent";
+import CreateTestForm from "./pages/Admin-view/CreateTestForm";
+import TestList from "./components/TestList";
+import CreateUserForm from "./pages/Admin-view/CreateUserForm";
+import UserList from "./components/UserList";
+import DoctorCard from "./components/DoctorCard";
+import LabInfoForm from "./components/LabInfoForm";
+import FinanceCharts from "./components/FinanceCharts";
+import TestsCharts from "./components/TestsCharts";
+import UserManagementCharts from "./components/UserManagementCharts";
 
 function App() {
   const { isAuthenticated, user } = useContext(AuthContext);
@@ -52,7 +61,15 @@ function App() {
           }
         >
           <Route path="dashboard" element={<UserDashboard />} />
-          <Route path="home" element={<AdminDashboard />} />
+          <Route path="create-test" element={<CreateTestForm />} />
+          <Route path="all-tests" element={<TestList />} />
+          <Route path="create-user" element={<CreateUserForm />} />
+          <Route path="all-users" element={<UserList />} />
+          <Route path="add-reference" element={<DoctorCard />} />
+          <Route path="edit-labinfo" element={<LabInfoForm />} />
+          <Route path="finance-analytics" element={<FinanceCharts />} />
+          <Route path="user-analytics" element={<UserManagementCharts />} />
+          <Route path="test-analytics" element={<TestsCharts />} />
         </Route>
 
         {/* User Routes */}

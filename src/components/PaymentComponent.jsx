@@ -278,6 +278,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function PaymentComponent() {
     const { patients, fetchPatients } = useContext(PatientsContext);
@@ -327,11 +328,12 @@ export default function PaymentComponent() {
             );
 
             if (res.status === 200) {
+                toast.success('Payment Status Updated!')
                 fetchPatients();
             }
         } catch (error) {
             console.error(error);
-            alert("Error updating payment status");
+            toast.error("Error updating payment status");
         }
     };
 
@@ -410,9 +412,9 @@ export default function PaymentComponent() {
                 </div>
 
                 {/* Main Content Card */}
-                <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden">
+                <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden p-0">
                     {/* Enhanced Header */}
-                    <CardHeader className="bg-gradient-to-r from-green-700 to-emerald-600 py-2 text-white">
+                    <CardHeader className="bg-gradient-to-r from-green-700 to-emerald-600 py-3 text-white">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl">
@@ -660,7 +662,7 @@ export default function PaymentComponent() {
                                                                         <Eye className="h-4 w-4 text-blue-600" />
                                                                     </Button>
                                                                 </DialogTrigger>
-                                                                <DialogContent className="max-w-2xl h-[95vh] overflow-auto bg-white rounded-2xl border-0 shadow-2xl">
+                                                                <DialogContent className="max-w-2xl max-h-[95vh] overflow-auto bg-white rounded-2xl border-0 shadow-2xl">
                                                                     <DialogHeader className="pb-4">
                                                                         <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
                                                                             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">

@@ -45,10 +45,7 @@ export function UserAvatar() {
                 </DropdownMenuLabel>
                 <Separator/>
                 <DropdownMenuSeparator />
-                {user?.role=='admin' ? 
-                <DropdownMenuItem className='hover:bg-gray-100 text-gray-600 cursor-pointer' onClick={() => console.log("Customize clicked")}>
-                   <Settings/> Admin Settings
-                </DropdownMenuItem > : ''}
+                
                 <DropdownMenuItem className='hover:bg-red-500 hover:text-white cursor-pointer text-red-500' onClick={handleLogout}>
                     <LogOut/> Logout
                 </DropdownMenuItem>

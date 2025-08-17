@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import toast from "react-hot-toast";
 
 export default function AllPatientsComponent() {
     const [detailsOpen, setDetailsOpen] = useState(false);
@@ -106,10 +107,11 @@ export default function AllPatientsComponent() {
                 setDeleteOpen(false);
                 setPatientToDelete(null);
                 fetchPatients(); // Refresh the patients list
+                toast.success('Deleted Successfully')
             }
         } catch (error) {
             console.log(error);
-            alert("Failed to delete patient. Please try again.");
+            toast.error("Failed to delete patient. Please try again.");
         }
     };
 
@@ -136,9 +138,9 @@ export default function AllPatientsComponent() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-100 p-2">
             <div className="max-w-7xl mx-auto">
-                <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden">
+                <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden p-0">
                     {/* Enhanced Header */}
-                    <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-2">
+                    <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl">
@@ -342,7 +344,7 @@ export default function AllPatientsComponent() {
 
                 {/* Patient Details Dialog */}
                 <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-                    <DialogContent className="max-w-2xl h-[95vh] overflow-auto bg-white rounded-2xl border-0 shadow-2xl">
+                    <DialogContent className="max-w-2xl max-h-[95vh] overflow-auto bg-white rounded-2xl border-0 shadow-2xl">
                         <DialogHeader className="pb-4">
                             <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
                                 <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">

@@ -16,11 +16,15 @@ import {
 } from "@/components/ui/select";
 import { AuthContext } from "@/context/AuthProvider";
 import { Separator } from "./ui/separator";
+import toast from "react-hot-toast";
 
 export default function RegisterPatient() {
     const { createPatient, setPatients, patients, fetchPatients } = useContext(PatientsContext);
     const { user } = useContext(AuthContext);
     const [isFocused, setIsFocused] = useState(false);
+    const [isLoadingTests, setIsLoadingTests] = useState(true);
+    const [testsError, setTestsError] = useState(null);
+    const [loading, SetLoading] = useState(false)
 
     const [doctors, setDoctors] = useState([]);
     const [tests, setTests] = useState([]);
@@ -128,13 +132,34 @@ export default function RegisterPatient() {
 
     const fetchTests = async () => {
         try {
+            setIsLoadingTests(true);
+            setTestsError(null);
             const res = await axios.get("http://localhost:5000/api/tests/all");
-            console.log('tests', res.data);
-            setTests(res.data.tests || []);
+            console.log('Full API response:', res.data);
+
+            // Handle different possible response structures
+            let testsData = [];
+            if (res.data.tests) {
+                testsData = res.data.tests;
+            } else if (Array.isArray(res.data)) {
+                testsData = res.data;
+            } else if (res.data.data) {
+                testsData = res.data.data;
+            }
+
+            console.log('Extracted tests:', testsData);
+            setTests(testsData || []);
         } catch (err) {
-            console.error(err);
+            console.error('Error fetching tests:', err);
+            setTestsError('Failed to load tests. Please refresh the page.');
+            setTests([]);
+        } finally {
+            setIsLoadingTests(false);
         }
     };
+
+
+
 
     const handleToggleTest = (test) => {
         const exists = selectedTests.find(t => String(t.testId) === String(test._id));
@@ -153,6 +178,7 @@ export default function RegisterPatient() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        SetLoading(true)
         if (!form.name || !form.age || !form.gender || !form.phone) {
             alert("Please fill required fields");
             return;
@@ -196,9 +222,13 @@ export default function RegisterPatient() {
             setShowSearchResults(false);
             await fetchPatients();
             console.log("Patient created:", newPatient);
+            toast.success('Registered Successfully!')
+            
         } catch (err) {
             console.error("submit err:", err);
-            alert("Failed to create patient");
+            toast.error("Failed to create patient");
+        }finally{
+            SetLoading(false)
         }
     };
 
@@ -206,22 +236,24 @@ export default function RegisterPatient() {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
             <div className=" m-2">
                 {/* Header Section */}
-                {/* <div className="text-center mb-8">
+                <div className="text-center mt-4">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg mb-4">
                         <UserPlus className="h-8 w-8 text-white" />
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Patient Registration</h1>
                     <p className="text-gray-600">Complete patient information and select required tests</p>
-                </div> */}
+                </div>
 
-                <Card className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-5">
+                <Card className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl p-0 border-0 overflow-hidden">
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-500 px-8 py-5">
                         <h2 className="text-2xl font-semibold text-white flex items-center">
-                            <FileText className="h-7 w-7 mr-2" />
-                            Registration Form
+                            <div className="px-3 py-3 flex justify-center items-center rounded-xl mr-2 bg-blue-500">
+                                <FileText className="h-6 w-6" />
+                            </div>
+                            Patient Registration
                         </h2>
                     </div>
-                    
+
                     <CardContent className="p-8">
                         <form onSubmit={handleSubmit} className="space-y-10">
                             {/* Patient Information Section */}
@@ -232,7 +264,7 @@ export default function RegisterPatient() {
                                     </div>
                                     <h3 className="text-xl font-semibold text-gray-800">Patient Information</h3>
                                 </div>
-                                
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* Enhanced Name Input with Search */}
                                     <div className="relative">
@@ -399,14 +431,14 @@ export default function RegisterPatient() {
                             <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
 
                             {/* Test Selection Section */}
-                            <div className="space-y-6">
+                            {/* <div className="space-y-6">
                                 <div className="flex items-center mb-6">
                                     <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg mr-3">
                                         <TestTube className="h-5 w-5 text-green-600" />
                                     </div>
                                     <h3 className="text-xl font-semibold text-gray-800">Test Selection</h3>
                                 </div>
-                                
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-6 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100">
                                     {tests.map(test => {
                                         const checked = !!selectedTests.find(t => String(t.testId) === String(test._id));
@@ -417,9 +449,9 @@ export default function RegisterPatient() {
                                                     <div className="text-sm text-green-600 font-medium">Rs.{test.testPrice}</div>
                                                 </div>
                                                 <div className="relative ml-3">
-                                                    <input 
-                                                        type="checkbox" 
-                                                        checked={checked} 
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={checked}
                                                         onChange={() => handleToggleTest(test)}
                                                         className="sr-only"
                                                     />
@@ -431,7 +463,91 @@ export default function RegisterPatient() {
                                         );
                                     })}
                                 </div>
+                            </div> */}
+
+
+
+
+                            {/* Test Selection Section */}
+                            <div className="space-y-6">
+                                <div className="flex items-center mb-6">
+                                    <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg mr-3">
+                                        <TestTube className="h-5 w-5 text-green-600" />
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-gray-800">Test Selection</h3>
+                                    {isLoadingTests && (
+                                        <div className="ml-3 flex items-center text-sm text-gray-500">
+                                            <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-600 rounded-full mr-2"></div>
+                                            Loading tests...
+                                        </div>
+                                    )}
+                                </div>
+
+                                {testsError ? (
+                                    <div className="p-6 rounded-2xl bg-red-50 border-2 border-red-200 text-center">
+                                        <div className="text-red-600 font-semibold mb-2">Error Loading Tests</div>
+                                        <div className="text-red-500 text-sm mb-4">{testsError}</div>
+                                        <Button
+                                            type="button"
+                                            onClick={fetchTests}
+                                            variant="outline"
+                                            className="border-red-300 text-red-600 hover:bg-red-50"
+                                        >
+                                            Retry Loading Tests
+                                        </Button>
+                                    </div>
+                                ) : isLoadingTests ? (
+                                    <div className="p-12 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100 text-center">
+                                        <div className="animate-spin h-8 w-8 border-3 border-gray-300 border-t-green-600 rounded-full mx-auto mb-4"></div>
+                                        <div className="text-gray-600 font-medium">Loading available tests...</div>
+                                        <div className="text-gray-500 text-sm mt-2">Please wait while we fetch the test catalog</div>
+                                    </div>
+                                ) : tests.length === 0 ? (
+                                    <div className="p-12 rounded-2xl bg-gradient-to-br from-gray-50 via-slate-50 to-gray-50 border-2 border-gray-200 text-center">
+                                        <TestTube className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                        <div className="text-gray-600 font-medium mb-2">No Tests Available</div>
+                                        <div className="text-gray-500 text-sm mb-4">No tests found in the system</div>
+                                        <Button
+                                            type="button"
+                                            onClick={fetchTests}
+                                            variant="outline"
+                                            className="border-gray-300"
+                                        >
+                                            Refresh Tests
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-6 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100">
+                                        {tests.map(test => {
+                                            const checked = !!selectedTests.find(t => String(t.testId) === String(test._id));
+                                            return (
+                                                <label key={test._id} className={`group flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${checked ? "bg-white border-green-400 shadow-lg transform scale-[1.02]" : "bg-white/80 border-gray-200 hover:bg-white hover:border-green-300 hover:shadow-md"}`}>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="font-semibold text-gray-900 truncate mb-1">{test.testName}</div>
+                                                        <div className="text-sm text-green-600 font-medium">Rs.{test.testPrice}</div>
+                                                    </div>
+                                                    <div className="relative ml-3">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={checked}
+                                                            onChange={() => handleToggleTest(test)}
+                                                            className="sr-only"
+                                                        />
+                                                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${checked ? 'bg-green-500 border-green-500' : 'border-gray-300 group-hover:border-green-400'}`}>
+                                                            {checked && <CheckCircle className="w-3 h-3 text-white" />}
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
+
+
+
+
+
 
                             {/* Selected Tests Section */}
                             {selectedTests.length > 0 && (
@@ -450,7 +566,7 @@ export default function RegisterPatient() {
                                                 <span className="text-lg font-bold">{selectedTests.length}</span>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="overflow-hidden rounded-2xl border-2 border-gray-200 shadow-lg bg-white">
                                             <table className="min-w-full">
                                                 <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
@@ -473,10 +589,10 @@ export default function RegisterPatient() {
                                                                     cancelText="Cancel"
                                                                     onConfirm={() => handleDeleteRow(s.testId)}
                                                                     trigger={
-                                                                        <Button 
+                                                                        <Button
                                                                             type="button"
-                                                                            size="sm" 
-                                                                            variant="outline" 
+                                                                            size="sm"
+                                                                            variant="outline"
                                                                             className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-400 rounded-lg transition-all duration-200"
                                                                         >
                                                                             <Trash2 className="h-4 w-4 mr-1" />
@@ -490,7 +606,7 @@ export default function RegisterPatient() {
                                                 </tbody>
                                             </table>
                                         </div>
-                                        
+
                                         <div className="flex justify-end">
                                             <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-2xl shadow-xl">
                                                 <div className="text-center">
@@ -507,9 +623,9 @@ export default function RegisterPatient() {
 
                             {/* Form Actions */}
                             <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6">
-                                <Button 
-                                    type="button" 
-                                    variant="outline" 
+                                <Button
+                                    type="button"
+                                    variant="outline"
                                     className="w-full sm:w-auto h-12 px-8 border-2 border-gray-300 hover:border-gray-400 rounded-xl font-semibold transition-all duration-200"
                                     onClick={() => {
                                         setForm({
@@ -531,12 +647,12 @@ export default function RegisterPatient() {
                                 >
                                     Reset Form
                                 </Button>
-                                <Button 
-                                    type="submit" 
+                                <Button disabled={loading}
+                                    type="submit"
                                     className="w-full sm:w-auto h-12 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                                 >
                                     <UserPlus className="h-5 w-5 mr-2" />
-                                    Register Patient
+                                    { loading ? 'Registering...' : 'Register Patient'}
                                 </Button>
                             </div>
                         </form>

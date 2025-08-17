@@ -461,7 +461,8 @@ import {
     Calendar,
     TestTube,
     FileText,
-    Eye
+    Eye,
+    Crown
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Button } from "./ui/button";
@@ -470,6 +471,7 @@ import { AuthContext } from "@/context/AuthProvider";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function PatientsList() {
     const { patients, fetchPatients } = useContext(PatientsContext);
@@ -551,26 +553,28 @@ export default function PatientsList() {
             if (res.data.success) {
                 console.log('patient deleted')
                 fetchPatients()
+                toast.success('Deleted Successfully!')
             }
         } catch (error) {
             console.log(error)
+            toast.error('Failed to delete!')
         }
     }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 m-2">
             <div className="max-w-7xl mx-auto">
-                <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden">
+                <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden p-0">
                     {/* Enhanced Header */}
-                    <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2">
+                    <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl">
                                     <Users className="h-6 w-6 text-white" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl font-bold">Patient Management</CardTitle>
-                                    <p className="text-blue-100 mt-1">Manage and track patient records</p>
+                                    <CardTitle className="text-2xl font-bold">Registration Reports</CardTitle>
+                                    <p className="text-blue-100 mt-1">Manage registered Patients & Print Reports</p>
                                 </div>
                             </div>
                             
@@ -582,7 +586,7 @@ export default function PatientsList() {
                                         onClick={exportToCSV}
                                     >
                                         <Download className="h-4 w-4 mr-2" />
-                                        Export CSV
+                                        Export CSV <Crown className='text-amber-300'  size={17}/>
                                         <Badge className="ml-2 bg-white/20 text-white border-0">
                                             {filteredPatients?.length}
                                         </Badge>
@@ -680,7 +684,6 @@ export default function PatientsList() {
                                             </TableHead>
                                             <TableHead className="font-bold text-gray-800">Details</TableHead>
                                             <TableHead className="font-bold text-gray-800">Print</TableHead>
-                                            <TableHead className="font-bold text-gray-800">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -742,7 +745,7 @@ export default function PatientsList() {
                                                                     <Eye className="h-4 w-4 text-blue-600" />
                                                                 </Button>
                                                             </DialogTrigger>
-                                                            <DialogContent className="max-w-2xl h-[95vh] overflow-auto bg-white rounded-2xl border-0 shadow-2xl">
+                                                            <DialogContent className="max-w-2xl max-h-[95vh] overflow-auto bg-white rounded-2xl border-0 shadow-2xl">
                                                                 <DialogHeader className="pb-4">
                                                                     <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
                                                                         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
@@ -920,42 +923,7 @@ export default function PatientsList() {
                                                         </Button>
                                                     </TableCell>
 
-                                                    {/* Enhanced Delete Button */}
-                                                    <TableCell>
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
-                                                                <Button 
-                                                                    variant="ghost" 
-                                                                    size="sm" 
-                                                                    className='bg-red-50 hover:bg-red-100 border border-red-200 hover:border-red-300 rounded-lg transition-all duration-200'
-                                                                >
-                                                                    <Trash2 className="h-4 w-4 text-red-600" />
-                                                                </Button>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent className='bg-white rounded-2xl border-0 shadow-2xl'>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle className="text-xl font-bold text-gray-900 flex items-center">
-                                                                        <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-                                                                            <Trash2 className="h-4 w-4 text-red-600" />
-                                                                        </div>
-                                                                        Delete Patient Record?
-                                                                    </AlertDialogTitle>
-                                                                    <AlertDialogDescription className="text-gray-600 mt-2">
-                                                                        This action cannot be undone. This will permanently delete the patient's record and all associated data.
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter className="gap-3">
-                                                                    <AlertDialogCancel className="rounded-lg">Cancel</AlertDialogCancel>
-                                                                    <AlertDialogAction
-                                                                        className="bg-red-500 hover:bg-red-600 text-white rounded-lg"
-                                                                        onClick={() => handleDeletePatient(patient._id)}
-                                                                    >
-                                                                        Yes, Delete
-                                                                    </AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                    </TableCell>
+                                                    
                                                 </TableRow>
                                             ))
                                         ) : (

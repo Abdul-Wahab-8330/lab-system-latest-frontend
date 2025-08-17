@@ -3,8 +3,26 @@ import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-import { DollarSign, TrendingUp, Calendar, TestTube } from 'lucide-react';
+import { DollarSign, TrendingUp, Calendar, TestTube, Loader2 } from 'lucide-react';
 import { PatientsContext } from "@/context/PatientsContext";
+
+const ChartLoader = ({ height = 300 }) => (
+  <div className="flex items-center justify-center" style={{ height }}>
+    <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+  </div>
+);
+
+const StatLoader = () => (
+  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+    <div className="flex items-center justify-between">
+      <div className="space-y-2">
+        <div className="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
+        <div className="h-8 bg-gray-200 rounded animate-pulse w-32"></div>
+      </div>
+      <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+    </div>
+  </div>
+);
 
 const FinanceCharts = () => {
   const [timeFilter, setTimeFilter] = useState('7days');
@@ -156,57 +174,60 @@ const FinanceCharts = () => {
   const totalRevenue = financeData.testRevenue.reduce((sum, test) => sum + test.revenue, 0);
   const totalTests = financeData.testRevenue.reduce((sum, test) => sum + test.count, 0);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-lg text-gray-600">Loading finance data...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
         <h1 className="text-3xl font-bold text-gray-900 py-4 sm:mb-0">Finance Analytics</h1>
       {/* Header Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">Rs.{totalRevenue.toLocaleString()}</p>
+        {loading ? (
+          <>
+            <StatLoader />
+            <StatLoader />
+            <StatLoader />
+            <StatLoader />
+          </>
+        ) : (
+          <>
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+                  <p className="text-2xl font-bold text-gray-900">Rs.{totalRevenue.toLocaleString()}</p>
+                </div>
+                <DollarSign className="h-8 w-8 text-green-600" />
+              </div>
             </div>
-            <DollarSign className="h-8 w-8 text-green-600" />
-          </div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Paid Tests</p>
-              <p className="text-2xl font-bold text-gray-900">{totalTests}</p>
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Paid Tests</p>
+                  <p className="text-2xl font-bold text-gray-900">{totalTests}</p>
+                </div>
+                <TestTube className="h-8 w-8 text-blue-600" />
+              </div>
             </div>
-            <TestTube className="h-8 w-8 text-blue-600" />
-          </div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Avg Test Price</p>
-              <p className="text-2xl font-bold text-gray-900">Rs.{totalTests > 0 ? Math.round(totalRevenue/totalTests) : 0}</p>
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Avg Test Price</p>
+                  <p className="text-2xl font-bold text-gray-900">Rs.{totalTests > 0 ? Math.round(totalRevenue/totalTests) : 0}</p>
+                </div>
+                <TrendingUp className="h-8 w-8 text-purple-600" />
+              </div>
             </div>
-            <TrendingUp className="h-8 w-8 text-purple-600" />
-          </div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Payment Rate</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {financeData.paymentStatus[0]?.value || 0}%
-              </p>
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Payment Rate</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {financeData.paymentStatus[0]?.value || 0}%
+                  </p>
+                </div>
+                <Calendar className="h-8 w-8 text-orange-600" />
+              </div>
             </div>
-            <Calendar className="h-8 w-8 text-orange-600" />
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       {/* Time Filter */}
@@ -229,102 +250,17 @@ const FinanceCharts = () => {
 
         {/* Daily Revenue Trend */}
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Daily Revenue Trend</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={getFilteredData()}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis 
-              dataKey="day" 
-              tick={{ fontSize: 12 }}
-              stroke="#666"
-            />
-            <YAxis 
-              tick={{ fontSize: 12 }}
-              stroke="#666"
-              tickFormatter={(value) => `Rs.${value/1000}k`}
-            />
-            <Tooltip 
-              formatter={(value) => [`Rs.${value.toLocaleString()}`, 'Revenue']}
-              labelStyle={{ color: '#333' }}
-              contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
-            />
-            <Area 
-              type="monotone" 
-              dataKey="revenue" 
-              stroke="#3b82f6" 
-              fill="#dbeafe" 
-              strokeWidth={2}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Test Revenue Distribution */}
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue by Test Type</h3>
+        {loading ? (
+          <ChartLoader />
+        ) : (
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={financeData.testRevenue}>
+            <AreaChart data={getFilteredData()}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
-                dataKey="testName" 
-                tick={{ fontSize: 10 }}
-                stroke="#666"
-                angle={-45}
-                textAnchor="end"
-                height={100}
-              />
-              <YAxis 
+                dataKey="day" 
                 tick={{ fontSize: 12 }}
                 stroke="#666"
-                tickFormatter={(value) => `Rs.${value/1000}k`}
               />
-              <Tooltip 
-                formatter={(value, name) => [
-                  name === 'revenue' ? `Rs.${value.toLocaleString()}` : value,
-                  name === 'revenue' ? 'Revenue' : 'Count'
-                ]}
-                contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
-              />
-              <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Payment Status Distribution */}
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Status</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={financeData?.paymentStatus}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ status, value }) => `${status}: ${value}%`}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {financeData.paymentStatus.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip 
-                formatter={(value, name, props) => [`${value}%`, `Rs.${props.payload.amount?.toLocaleString()}`]}
-                contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Monthly Revenue Trend */}
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Revenue Trend</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={financeData.monthlyTrends}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#666" />
               <YAxis 
                 tick={{ fontSize: 12 }}
                 stroke="#666"
@@ -332,39 +268,157 @@ const FinanceCharts = () => {
               />
               <Tooltip 
                 formatter={(value) => [`Rs.${value.toLocaleString()}`, 'Revenue']}
+                labelStyle={{ color: '#333' }}
                 contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
               />
-              <Line 
+              <Area 
                 type="monotone" 
                 dataKey="revenue" 
-                stroke="#8b5cf6" 
-                strokeWidth={3}
-                dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                stroke="#3b82f6" 
+                fill="#dbeafe" 
+                strokeWidth={2}
               />
-            </LineChart>
+            </AreaChart>
           </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Test Revenue Distribution */}
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue by Test Type</h3>
+          {loading ? (
+            <ChartLoader />
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={financeData.testRevenue}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="testName" 
+                  tick={{ fontSize: 10 }}
+                  stroke="#666"
+                  angle={-45}
+                  textAnchor="end"
+                  height={100}
+                />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  stroke="#666"
+                  tickFormatter={(value) => `Rs.${value/1000}k`}
+                />
+                <Tooltip 
+                  formatter={(value, name) => [
+                    name === 'revenue' ? `Rs.${value.toLocaleString()}` : value,
+                    name === 'revenue' ? 'Revenue' : 'Count'
+                  ]}
+                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
+                />
+                <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Payment Status Distribution */}
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Status</h3>
+          {loading ? (
+            <ChartLoader />
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={financeData?.paymentStatus}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ status, value }) => `${status}: ${value}%`}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {financeData.paymentStatus.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value, name, props) => [`${value}%`, `Rs.${props.payload.amount?.toLocaleString()}`]}
+                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Monthly Revenue Trend */}
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Revenue Trend</h3>
+          {loading ? (
+            <ChartLoader />
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={financeData.monthlyTrends}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#666" />
+                <YAxis 
+                  tick={{ fontSize: 12 }}
+                  stroke="#666"
+                  tickFormatter={(value) => `Rs.${value/1000}k`}
+                />
+                <Tooltip 
+                  formatter={(value) => [`Rs.${value.toLocaleString()}`, 'Revenue']}
+                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc' }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="#8b5cf6" 
+                  strokeWidth={3}
+                  dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* Test Performance Matrix */}
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Test Performance</h3>
-          <div className="space-y-3 max-h-80 overflow-y-auto">
-            {financeData.testRevenue.map((test, index) => (
-              <div key={test.testName} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="w-4 h-4 rounded"
-                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                  />
-                  <span className="font-medium text-gray-900 text-sm">{test.testName}</span>
+          {loading ? (
+            <div className="space-y-3">
+              {[...Array(6)].map((_, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-32"></div>
+                  </div>
+                  <div className="text-right space-y-1">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-24"></div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-gray-900">Rs.{test.revenue.toLocaleString()}</div>
-                  <div className="text-xs text-gray-500">{test.count} tests • Rs.{test.avgPrice} avg</div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {financeData.testRevenue.map((test, index) => (
+                <div key={test.testName} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-4 h-4 rounded"
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="font-medium text-gray-900 text-sm">{test.testName}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-semibold text-gray-900">Rs.{test.revenue.toLocaleString()}</div>
+                    <div className="text-xs text-gray-500">{test.count} tests • Rs.{test.avgPrice} avg</div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

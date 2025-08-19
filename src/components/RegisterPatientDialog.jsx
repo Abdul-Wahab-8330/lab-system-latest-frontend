@@ -79,7 +79,7 @@ export default function RegisterPatient() {
 
     const searchPatients = async (query) => {
         try {
-            const response = await axios.get(`https://labsync-lab-reporting-system-backend.onrender.com/api/patients/search?q=${encodeURIComponent(query)}`);
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/patients/search?q=${encodeURIComponent(query)}`);
             setSearchResults(response.data || []);
             setShowSearchResults(true);
             setIsSearching(false);
@@ -121,7 +121,7 @@ export default function RegisterPatient() {
 
     const fetchDoctors = async () => {
         try {
-            const res = await axios.get("https://labsync-lab-reporting-system-backend.onrender.com/api/doctors");
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/doctors`);
             setDoctors(res.data || []);
         } catch (err) {
             console.error(err);
@@ -130,7 +130,7 @@ export default function RegisterPatient() {
 
     const fetchTests = async () => {
         try {
-            const res = await axios.get("https://labsync-lab-reporting-system-backend.onrender.com/api/tests/all");
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tests/all`);
             console.log('tests', res.data);
             setTests(res.data.tests || []);
         } catch (err) {

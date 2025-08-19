@@ -54,7 +54,7 @@ const CreateTestForm = () => {
             };
 
             console.log('payload', payload)
-            const res = await axios.post("https://labsync-lab-reporting-system-backend.onrender.com/api/tests/create-test", payload);
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/tests/create-test`, payload);
             if (res.data.success) {
                 toast.success("Test Created Successfully!");
                 fetchTests()

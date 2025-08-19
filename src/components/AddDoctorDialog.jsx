@@ -12,7 +12,7 @@ export default function AddDoctorDialog({ onDoctorAdded }) {
     const handleAdd = async (e) => {
         e.preventDefault()
         if (!name.trim()) return;
-        const res = await axios.post("https://labsync-lab-reporting-system-backend.onrender.com/api/doctors", { name });
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/doctors`, { name });
         if (res.status === 201 || res.status === 200) {
             const newDoctor = res.data;
             onDoctorAdded(newDoctor);

@@ -40,11 +40,12 @@ export function UserAvatar() {
                 </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="cursor-pointer w-56 bg-gray-50 border border-gray-300 shadow-lg">
-                <DropdownMenuLabel className='flex gap-2 text-gray-600'>
-                    <User size={16}/> Logged in as <span className="font-semibold text-xs ">{user.name}</span>
+                <DropdownMenuLabel className='flex gap-2 text-gray-600 flex-wrap'>
+                    <User size={16}/> Logged in as <span className="font-semibold text-sm px-3">{user.name}</span>
                 </DropdownMenuLabel>
                 <Separator/>
                 <DropdownMenuSeparator />
+                <Separator className='bg-gray-300 my-1'/>
                 
                 <DropdownMenuItem className='hover:bg-red-500 hover:text-white cursor-pointer text-red-500' onClick={handleLogout}>
                     <LogOut/> Logout

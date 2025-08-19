@@ -29,9 +29,19 @@ import LabInfoForm from "./components/LabInfoForm";
 import FinanceCharts from "./components/FinanceCharts";
 import TestsCharts from "./components/TestsCharts";
 import UserManagementCharts from "./components/UserManagementCharts";
+import AccessDenied from './components/AccesssDenied'
+
+const UserManagementRoute = ({ children, user }) => {
+    if (user?.userName !== 'abdulwahab123') {
+      return <AccessDenied/>;
+    }
+    return children;
+  };
+
 
 function App() {
   const { isAuthenticated, user } = useContext(AuthContext);
+
 
   return (
     <>
@@ -63,8 +73,23 @@ function App() {
           <Route path="dashboard" element={<UserDashboard />} />
           <Route path="create-test" element={<CreateTestForm />} />
           <Route path="all-tests" element={<TestList />} />
-          <Route path="create-user" element={<CreateUserForm />} />
-          <Route path="all-users" element={<UserList />} />
+
+
+          <Route path="create-user" element={
+              <UserManagementRoute user={user}>
+                <CreateUserForm />
+              </UserManagementRoute>
+            }
+          />
+          <Route path="all-users" element={
+              <UserManagementRoute user={user}>
+                <UserList />
+              </UserManagementRoute>
+            }
+          />
+
+
+
           <Route path="add-reference" element={<DoctorCard />} />
           <Route path="edit-labinfo" element={<LabInfoForm />} />
           <Route path="finance-analytics" element={<FinanceCharts />} />

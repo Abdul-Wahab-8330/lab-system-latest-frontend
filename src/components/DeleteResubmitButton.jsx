@@ -20,7 +20,7 @@ export default function DeleteResubmitButton({ patientId,setAddedPatients, refre
   const handleDeleteResubmit = async () => {
     try {
       setLoading(true);
-      await axios.patch(`https://labsync-lab-reporting-system-backend.onrender.com/api/results/${patientId}/reset`);
+      await axios.patch(`${import.meta.env.VITE_API_URL}/api/results/${patientId}/reset`);
       refreshData();
       loadPatients()
       // setAddedPatients(addedPatients.filter((elem)=>{elem._id !== patientId}))

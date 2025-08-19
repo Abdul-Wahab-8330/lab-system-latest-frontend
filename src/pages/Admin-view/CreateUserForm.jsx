@@ -194,7 +194,7 @@ function CreateUserForm() {
 
     try {
       const response = await axios.post(
-        "https://labsync-lab-reporting-system-backend.onrender.com/api/users/register",
+        `${import.meta.env.VITE_API_URL}/api/users/register`,
         {
           name,
           userName,

@@ -128,7 +128,7 @@ function Login() {
     setError('');
 
     try {
-      const res = await axios.post('https://labsync-lab-reporting-system-backend.onrender.com/api/users/login', {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/users/login`, {
         userName,
         password
       });

@@ -10,7 +10,7 @@ export const TestProvider = ({ children }) => {
 
   const fetchTests = async () => {
     try {
-      const res = await axios.get('https://labsync-lab-reporting-system-backend.onrender.com/api/tests/all');
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tests/all`);
       setTests(res.data.tests);
     } catch (error) {
       console.error('Error fetching tests:', error);
@@ -21,12 +21,12 @@ export const TestProvider = ({ children }) => {
 
 
   const deleteTest = async (id) => {
-    await axios.delete(`https://labsync-lab-reporting-system-backend.onrender.com/api/tests/delete/${id}`);
+    await axios.delete(`${import.meta.env.VITE_API_URL}/api/tests/delete/${id}`);
     setTests(tests.filter(test => test._id !== id));
   };
 
   const updateTest = async (id, data) => {
-    const res = await axios.put(`https://labsync-lab-reporting-system-backend.onrender.com/api/tests/update/${id}`, data);
+    const res = await axios.put(`${import.meta.env.VITE_API_URL}/api/tests/update/${id}`, data);
     setTests(tests.map(test => (test._id === id ? res.data : test)));
   };
 

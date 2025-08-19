@@ -11,7 +11,7 @@ export const LabInfoProvider = ({ children }) => {
 
         const fetchLabInfo = async () => {
             try {
-                const res = await axios.get('https://labsync-lab-reporting-system-backend.onrender.com/api/lab-info');
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/lab-info`);
                 setInfo(res.data || {});
             } catch (error) {
                 console.error('Error fetching lab info:', error);

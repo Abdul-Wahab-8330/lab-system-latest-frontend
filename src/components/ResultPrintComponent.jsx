@@ -77,7 +77,7 @@ export default function ResultPrintComponent() {
     const handleDeleteResubmit = async (patientId) => {
         try {
             setLoading(true);
-            await axios.patch(`https://labsync-lab-reporting-system-backend.onrender.com/api/results/${patientId}/reset`);
+            await axios.patch(`${import.meta.env.VITE_API_URL}/api/results/${patientId}/reset`);
 
             // Update the context by removing the patient
             setAddedPatients(addedPatients.filter((patient) => patient._id !== patientId));
@@ -103,7 +103,7 @@ export default function ResultPrintComponent() {
 
     async function loadLabInfo() {
         try {
-            const res = await axios.get("https://labsync-lab-reporting-system-backend.onrender.com/api/lab-info");
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/lab-info`);
             const info = Array.isArray(res.data) ? res.data[0] || null : res.data;
             setLabInfo(info || null);
         } catch (err) {
@@ -114,7 +114,7 @@ export default function ResultPrintComponent() {
     async function openPrintPreview(patient) {
         try {
             const res = await axios.get(
-                `https://labsync-lab-reporting-system-backend.onrender.com/api/results/${patient._id}/tests`
+                `${import.meta.env.VITE_API_URL}/api/results/${patient._id}/tests`
             );
             setPrintPatient(res.data);
             await loadLabInfo();
@@ -127,7 +127,7 @@ export default function ResultPrintComponent() {
     async function openPatientDetails(patient) {
         try {
             const res = await axios.get(
-                `https://labsync-lab-reporting-system-backend.onrender.com/api/results/${patient._id}/tests`
+                `${import.meta.env.VITE_API_URL}/api/results/${patient._id}/tests`
             );
             setSelectedPatient(res.data);
             setDetailsOpen(true);
@@ -152,7 +152,7 @@ export default function ResultPrintComponent() {
             body { 
               font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
               font-size: 13px; 
-              line-height: 1.5; 
+              line-height: 1; 
               color: #1a1a1a;
               margin: 0;
               padding: 0;
@@ -938,7 +938,7 @@ export default function ResultPrintComponent() {
                                     {printPatient?.tests?.map((test, ti) => (
                                         <div key={ti} className="preview-test-block">
                                             <div className="preview-test-header">
-                                                🧪 {test.testName}
+                                                {test.testName}
                                             </div>
                                             <table className="preview-table">
                                                 <thead>

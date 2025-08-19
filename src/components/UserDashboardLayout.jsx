@@ -468,11 +468,12 @@ const UserDashboardLayout = () => {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="cursor-pointer w-56 bg-gray-50 border border-gray-300 shadow-lg">
-              <DropdownMenuLabel className='flex gap-2'>
-                <User size={16} /> Logged in as <span className="font-semibold">{user.name}</span>
+              <DropdownMenuLabel className='flex gap-2 flex-wrap'>
+                <User size={16} /> Logged in as <span className="font-semibold px-3">{user.name}</span>
               </DropdownMenuLabel>
               <Separator />
               <DropdownMenuSeparator />
+              <Separator className='bg-gray-300 my-1'/>
               
               <DropdownMenuItem className=' cursor-pointer text-red-500 hover:bg-red-500 hover:text-white' onClick={handleLogout}>
                 <LogOut /> Logout

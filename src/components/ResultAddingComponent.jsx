@@ -71,7 +71,7 @@ export default function ResultAddingComponent() {
     }, []);
 
     const loadPendingPatients = async () => {
-        const res = await axios.get("https://labsync-lab-reporting-system-backend.onrender.com/api/results/pending");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/pending`);
         setPendingPatients(res.data);
         setFilteredPatients(res.data);
     };
@@ -101,7 +101,7 @@ export default function ResultAddingComponent() {
     };
 
     const openResultDialog = async (patient) => {
-        const res = await axios.get(`https://labsync-lab-reporting-system-backend.onrender.com/api/results/${patient._id}/tests`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${patient._id}/tests`);
         setSelectedPatient(res.data);
         setOpen(true);
     };
@@ -128,7 +128,7 @@ export default function ResultAddingComponent() {
 
         
         try {
-            await axios.patch(`https://labsync-lab-reporting-system-backend.onrender.com/api/results/${selectedPatient._id}/results`, {
+            await axios.patch(`${import.meta.env.VITE_API_URL}/api/results/${selectedPatient._id}/results`, {
             tests: changedTests,
             resultAddedBy: user?.name
         });

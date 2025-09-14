@@ -31,6 +31,8 @@ export default function RegisterPatient() {
 
     // Patient search functionality
     const [searchQuery, setSearchQuery] = useState("");
+    const [testSearchQuery, setTestSearchQuery] = useState("");
+
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
@@ -223,14 +225,19 @@ export default function RegisterPatient() {
             await fetchPatients();
             console.log("Patient created:", newPatient);
             toast.success('Registered Successfully!')
-            
+
         } catch (err) {
             console.error("submit err:", err);
             toast.error("Failed to create patient");
-        }finally{
+        } finally {
             SetLoading(false)
         }
     };
+
+    const filteredTests = tests.filter(test =>
+        test.testName?.toLowerCase().includes(testSearchQuery.toLowerCase()) ||
+        test.category?.toLowerCase().includes(testSearchQuery.toLowerCase())
+    );
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -430,46 +437,9 @@ export default function RegisterPatient() {
 
                             <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
 
+
                             {/* Test Selection Section */}
                             {/* <div className="space-y-6">
-                                <div className="flex items-center mb-6">
-                                    <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg mr-3">
-                                        <TestTube className="h-5 w-5 text-green-600" />
-                                    </div>
-                                    <h3 className="text-xl font-semibold text-gray-800">Test Selection</h3>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-6 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100">
-                                    {tests.map(test => {
-                                        const checked = !!selectedTests.find(t => String(t.testId) === String(test._id));
-                                        return (
-                                            <label key={test._id} className={`group flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${checked ? "bg-white border-green-400 shadow-lg transform scale-[1.02]" : "bg-white/80 border-gray-200 hover:bg-white hover:border-green-300 hover:shadow-md"}`}>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="font-semibold text-gray-900 truncate mb-1">{test.testName}</div>
-                                                    <div className="text-sm text-green-600 font-medium">Rs.{test.testPrice}</div>
-                                                </div>
-                                                <div className="relative ml-3">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={checked}
-                                                        onChange={() => handleToggleTest(test)}
-                                                        className="sr-only"
-                                                    />
-                                                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${checked ? 'bg-green-500 border-green-500' : 'border-gray-300 group-hover:border-green-400'}`}>
-                                                        {checked && <CheckCircle className="w-3 h-3 text-white" />}
-                                                    </div>
-                                                </div>
-                                            </label>
-                                        );
-                                    })}
-                                </div>
-                            </div> */}
-
-
-
-
-                            {/* Test Selection Section */}
-                            <div className="space-y-6">
                                 <div className="flex items-center mb-6">
                                     <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg mr-3">
                                         <TestTube className="h-5 w-5 text-green-600" />
@@ -524,6 +494,128 @@ export default function RegisterPatient() {
                                                 <label key={test._id} className={`group flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${checked ? "bg-white border-green-400 shadow-lg transform scale-[1.02]" : "bg-white/80 border-gray-200 hover:bg-white hover:border-green-300 hover:shadow-md"}`}>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="font-semibold text-gray-900 truncate mb-1">{test.testName}</div>
+                                                        <div className="text-sm text-green-600 font-medium">Rs.{test.testPrice}</div>
+                                                    </div>
+                                                    <div className="relative ml-3">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={checked}
+                                                            onChange={() => handleToggleTest(test)}
+                                                            className="sr-only"
+                                                        />
+                                                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${checked ? 'bg-green-500 border-green-500' : 'border-gray-300 group-hover:border-green-400'}`}>
+                                                            {checked && <CheckCircle className="w-3 h-3 text-white" />}
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div> */}
+
+
+                            <div className="space-y-6">
+                                <div className="flex items-center mb-6">
+                                    <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg mr-3">
+                                        <TestTube className="h-5 w-5 text-green-600" />
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-gray-800">Test Selection</h3>
+                                    {isLoadingTests && (
+                                        <div className="ml-3 flex items-center text-sm text-gray-500">
+                                            <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-600 rounded-full mr-2"></div>
+                                            Loading tests...
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Test Search Bar */}
+                                {!isLoadingTests && !testsError && tests.length > 0 && (
+                                    <div className="relative mb-6">
+                                        <div className="relative">
+                                            <Input
+                                                placeholder="Search tests by name or category..."
+                                                value={testSearchQuery}
+                                                onChange={(e) => setTestSearchQuery(e.target.value)}
+                                                className=" h-12 pl-12 pr-12 border-2 border-green-200 focus:border-green-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                            />
+                                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />
+                                            {testSearchQuery && (
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-green-100 rounded-full"
+                                                    onClick={() => setTestSearchQuery("")}
+                                                >
+                                                    ×
+                                                </Button>
+                                            )}
+                                        </div>
+                                        {testSearchQuery && (
+                                            <div className="mt-2 text-sm text-green-600 font-medium">
+                                                Found {filteredTests.length} test(s) matching "{testSearchQuery}"
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {testsError ? (
+                                    <div className="p-6 rounded-2xl bg-red-50 border-2 border-red-200 text-center">
+                                        <div className="text-red-600 font-semibold mb-2">Error Loading Tests</div>
+                                        <div className="text-red-500 text-sm mb-4">{testsError}</div>
+                                        <Button
+                                            type="button"
+                                            onClick={fetchTests}
+                                            variant="outline"
+                                            className="border-red-300 text-red-600 hover:bg-red-50"
+                                        >
+                                            Retry Loading Tests
+                                        </Button>
+                                    </div>
+                                ) : isLoadingTests ? (
+                                    <div className="p-12 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100 text-center">
+                                        <div className="animate-spin h-8 w-8 border-3 border-gray-300 border-t-green-600 rounded-full mx-auto mb-4"></div>
+                                        <div className="text-gray-600 font-medium">Loading available tests...</div>
+                                        <div className="text-gray-500 text-sm mt-2">Please wait while we fetch the test catalog</div>
+                                    </div>
+                                ) : tests.length === 0 ? (
+                                    <div className="p-12 rounded-2xl bg-gradient-to-br from-gray-50 via-slate-50 to-gray-50 border-2 border-gray-200 text-center">
+                                        <TestTube className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                        <div className="text-gray-600 font-medium mb-2">No Tests Available</div>
+                                        <div className="text-gray-500 text-sm mb-4">No tests found in the system</div>
+                                        <Button
+                                            type="button"
+                                            onClick={fetchTests}
+                                            variant="outline"
+                                            className="border-gray-300"
+                                        >
+                                            Refresh Tests
+                                        </Button>
+                                    </div>
+                                ) : filteredTests.length === 0 && testSearchQuery ? (
+                                    <div className="p-12 rounded-2xl bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 border-2 border-yellow-200 text-center">
+                                        <Search className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+                                        <div className="text-yellow-700 font-medium mb-2">No Tests Found</div>
+                                        <div className="text-yellow-600 text-sm mb-4">No tests match your search "{testSearchQuery}"</div>
+                                        <Button
+                                            type="button"
+                                            onClick={() => setTestSearchQuery("")}
+                                            variant="outline"
+                                            className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                                        >
+                                            Clear Search
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-6 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100">
+                                        {filteredTests.map(test => {
+                                            const checked = !!selectedTests.find(t => String(t.testId) === String(test._id));
+                                            return (
+                                                <label key={test._id} className={`group flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${checked ? "bg-white border-green-400 shadow-lg transform scale-[1.02]" : "bg-white/80 border-gray-200 hover:bg-white hover:border-green-300 hover:shadow-md"}`}>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="font-semibold text-gray-900 truncate mb-1">{test.testName}</div>
+                                                        <div className="text-xs text-gray-500 mb-1">{test.category}</div>
                                                         <div className="text-sm text-green-600 font-medium">Rs.{test.testPrice}</div>
                                                     </div>
                                                     <div className="relative ml-3">
@@ -652,7 +744,7 @@ export default function RegisterPatient() {
                                     className="w-full sm:w-auto h-12 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                                 >
                                     <UserPlus className="h-5 w-5 mr-2" />
-                                    { loading ? 'Registering...' : 'Register Patient'}
+                                    {loading ? 'Registering...' : 'Register Patient'}
                                 </Button>
                             </div>
                         </form>

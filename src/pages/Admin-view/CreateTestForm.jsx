@@ -14,12 +14,13 @@ import toast from "react-hot-toast";
 const CreateTestForm = () => {
     const [testName, setTestName] = useState("");
     const [testPrice, setTestPrice] = useState("");
+    const [category, setCategory] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const {fetchTests} = useContext(TestContext)
+    const { fetchTests } = useContext(TestContext)
     const [fields, setFields] = useState([
         { fieldName: '', fieldType: 'String', defaultValue: '', unit: '', range: '' }
     ]);
-    
+
     // Add new field input
     const addField = () => {
         setFields([
@@ -50,6 +51,7 @@ const CreateTestForm = () => {
             const payload = {
                 testName,
                 testPrice,
+                category,
                 fields,
             };
 
@@ -60,6 +62,7 @@ const CreateTestForm = () => {
                 fetchTests()
                 setTestName("");
                 setTestPrice("");
+                setCategory("");
                 setFields([{ fieldName: "", fieldType: "String", defaultValue: '', unit: '', range: '' }]);
             }
         } catch (error) {
@@ -93,7 +96,7 @@ const CreateTestForm = () => {
 
                     <form onSubmit={handleSubmit} className="p-8">
                         {/* Basic Test Information */}
-                        <div className="grid md:grid-cols-2 gap-6 mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                             <div className="space-y-2">
                                 <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                                     <TestTube2 className="w-4 h-4 text-blue-500" />
@@ -108,7 +111,7 @@ const CreateTestForm = () => {
                                     required
                                 />
                             </div>
-                            
+
                             <div className="space-y-2">
                                 <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                                     <DollarSign className="w-4 h-4 text-green-500" />
@@ -123,6 +126,51 @@ const CreateTestForm = () => {
                                     required
                                 />
                             </div>
+
+                            {/* test category dropdown */}
+                            <div className="space-y-2">
+                                <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                    <Settings className="w-4 h-4 text-purple-500" />
+                                    Test Category
+                                </Label>
+                                <Select
+                                    value={category}
+                                    onValueChange={(value) => setCategory(value)}
+                                    required
+                                >
+                                    <SelectTrigger className="h-12 w-full border-2 border-gray-200 rounded-xl px-4 text-gray-700 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200">
+                                        <SelectValue placeholder="Select test category" />
+                                    </SelectTrigger>
+                                    <SelectContent className=' bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden'>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="General Tests">General Tests</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Hematology">Hematology</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Routine Chemistry">Routine Chemistry</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Liver Function">Liver Function</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Kidney Function">Kidney Function</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Thyroid Function">Thyroid Function</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Cardiac Markers">Cardiac Markers</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Blood Gas Analysis">Blood Gas Analysis</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Coagulation">Coagulation</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Inflammatory Markers">Inflammatory Markers</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Hormones">Hormones</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Vitamins">Vitamins</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Minerals">Minerals</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Infectious Disease">Infectious Disease</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Tumor Markers">Tumor Markers</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Autoimmune Markers">Autoimmune Markers</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Allergy Testing">Allergy Testing</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Drug Monitoring">Drug Monitoring</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Toxicology">Toxicology</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Metabolic/Genetic">Metabolic/Genetic</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Special Chemistry">Special Chemistry</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Urine Analysis">Urine Analysis</SelectItem>
+                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Other">Other</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+
+
                         </div>
 
                         {/* Dynamic Fields Section */}
@@ -141,7 +189,7 @@ const CreateTestForm = () => {
                                     Add Field
                                 </button>
                             </div>
-                            
+
                             <div className="space-y-4">
                                 {fields.map((field, index) => (
                                     <div key={index} className="bg-white rounded-xl p-5 shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-200">
@@ -157,7 +205,7 @@ const CreateTestForm = () => {
                                                 </button>
                                             )}
                                         </div>
-                                        
+
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                                             <div className="lg:col-span-1">
                                                 <Label className="text-xs font-medium text-gray-600 mb-1 block">Field Name</Label>
@@ -172,7 +220,7 @@ const CreateTestForm = () => {
                                                     required
                                                 />
                                             </div>
-                                            
+
                                             <div className="lg:col-span-1">
                                                 <Label className="text-xs font-medium text-gray-600 mb-1 block">Default Value</Label>
                                                 <Input
@@ -196,7 +244,7 @@ const CreateTestForm = () => {
                                                     onChange={(e) => handleFieldChange(index, 'unit', e.target.value)}
                                                 />
                                             </div>
-                                            
+
                                             <div className="lg:col-span-1">
                                                 <Label className="text-xs font-medium text-gray-600 mb-1 block">Normal Range</Label>
                                                 <Input
@@ -207,7 +255,7 @@ const CreateTestForm = () => {
                                                     onChange={(e) => handleFieldChange(index, 'range', e.target.value)}
                                                 />
                                             </div>
-                                            
+
                                             <div className="lg:col-span-1">
                                                 <Label className="text-xs font-medium text-gray-600 mb-1 block">Field Type</Label>
                                                 <Select

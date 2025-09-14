@@ -12,13 +12,13 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
-import { 
-    Search, 
-    ClipboardList, 
-    Check, 
-    Edit, 
-    Info, 
-    Plus, 
+import {
+    Search,
+    ClipboardList,
+    Check,
+    Edit,
+    Info,
+    Plus,
     BellPlus,
     TestTube,
     User,
@@ -28,7 +28,9 @@ import {
     Activity,
     CheckCircle,
     Clock,
-    Users
+    Users,
+    ChevronDown,
+    ChevronRight
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { AddedPatientsContext } from "@/context/AddedPatientsContext";
@@ -50,6 +52,7 @@ export default function ResultAddingComponent() {
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [open, setOpen] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
+    const [expandedTests, setExpandedTests] = useState({});
 
     const [editedFields, setEditedFields] = useState({});
 
@@ -126,59 +129,74 @@ export default function ResultAddingComponent() {
             return;
         }
 
-        
+
         try {
             await axios.patch(`${import.meta.env.VITE_API_URL}/api/results/${selectedPatient._id}/results`, {
-            tests: changedTests,
-            resultAddedBy: user?.name
-        });
-
-        setLoading(true)
-        // Update results instantly for Saved badge & progress bar
-            setSelectedPatient(prev => {
-            const updatedResults = [...prev.results];
-            changedTests.forEach(ct => {
-                const idx = updatedResults.findIndex(r => r.testId?.toString() === ct.testId?.toString());
-                if (idx > -1) {
-                    updatedResults[idx] = { ...ct, testId: ct.testId };
-                } else {
-                    updatedResults.push({ ...ct, testId: ct.testId });
-                }
+                tests: changedTests,
+                resultAddedBy: user?.name
             });
 
-            return {
-                ...prev,
-                results: updatedResults
-            };
-        });
+            setLoading(true)
+            // Update results instantly for Saved badge & progress bar
+            setSelectedPatient(prev => {
+                const updatedResults = [...prev.results];
+                changedTests.forEach(ct => {
+                    const idx = updatedResults.findIndex(r => r.testId?.toString() === ct.testId?.toString());
+                    if (idx > -1) {
+                        updatedResults[idx] = { ...ct, testId: ct.testId };
+                    } else {
+                        updatedResults.push({ ...ct, testId: ct.testId });
+                    }
+                });
 
-        // Reset changed tests
-        setChangedTests([]);
-        toast.success('Result Added Successfully')
-        
+                return {
+                    ...prev,
+                    results: updatedResults
+                };
+            });
 
-        // Close dialogs based on completion
-        const totalResultsAfterSave = selectedPatient.results.length + changedTests.length;
-        const allCompleted = totalResultsAfterSave >= selectedPatient.tests.length;
+            // Reset changed tests
+            setChangedTests([]);
+            toast.success('Result Added Successfully')
 
-        if (allCompleted) {
-            setConfirmOpen(false);
-            setOpen(false);
-            fetchPatients();
-        } else {
-            setConfirmOpen(false);
-            fetchPatients();
-        }
 
-        // Refresh other lists
-        loadPendingPatients();
-        await fetchPatients();
-        fetchAddedPatients();
+            // Close dialogs based on completion
+            const totalResultsAfterSave = selectedPatient.results.length + changedTests.length;
+            const allCompleted = totalResultsAfterSave >= selectedPatient.tests.length;
+
+            if (allCompleted) {
+                setConfirmOpen(false);
+                setOpen(false);
+                fetchPatients();
+            } else {
+                setConfirmOpen(false);
+                fetchPatients();
+            }
+
+            // Refresh other lists
+            loadPendingPatients();
+            await fetchPatients();
+            fetchAddedPatients();
         } catch (error) {
             console.log(error)
             toast.error('Failed to Add Result!')
-        }finally{
+        } finally {
             setLoading(false)
+        }
+    };
+
+
+    const handleEnterPress = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const form = e.target.form || e.target.closest('form') || e.target.closest('[role="dialog"]');
+            const inputs = form.querySelectorAll('input:not([disabled])');
+            const currentIndex = Array.from(inputs).indexOf(e.target);
+            const nextInput = inputs[currentIndex + 1];
+
+            if (nextInput) {
+                nextInput.focus();
+            }
         }
     };
 
@@ -282,11 +300,10 @@ export default function ResultAddingComponent() {
                                         </TableHeader>
                                         <TableBody>
                                             {filteredPatients.slice().reverse().map((p, index) => (
-                                                <TableRow 
-                                                    key={p._id} 
-                                                    className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-indigo-50 ${
-                                                        index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'
-                                                    }`}
+                                                <TableRow
+                                                    key={p._id}
+                                                    className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-indigo-50 ${index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'
+                                                        }`}
                                                 >
                                                     <TableCell className="font-semibold text-purple-700 py-4">
                                                         {p.refNo}
@@ -323,13 +340,13 @@ export default function ResultAddingComponent() {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Button  
-                                                            size="sm" 
+                                                        <Button
+                                                            size="sm"
                                                             className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                                                             onClick={() => openResultDialog(p)}
                                                         >
                                                             <Edit className="w-4 h-4 mr-1" />
-                                                           Add Results
+                                                            Add Results
                                                         </Button>
                                                     </TableCell>
                                                 </TableRow>
@@ -357,8 +374,8 @@ export default function ResultAddingComponent() {
                 {/* Add Results Dialog */}
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogContent className="max-w-4xl bg-white rounded-2xl border-0 shadow-2xl max-h-[95vh] overflow-auto">
-                        <DialogHeader className="pb-4">
-                            <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
+                        <DialogHeader className="">
+                            <DialogTitle className="text-xl font-bold text-gray-900 flex items-center mt-2">
                                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                                     <TestTube className="h-4 w-4 text-purple-600" />
                                 </div>
@@ -369,7 +386,7 @@ export default function ResultAddingComponent() {
 
                         {/* Patient Info Card */}
                         {selectedPatient && (
-                            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 mb-6">
+                            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 mb-2">
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                     <div className="flex items-center">
                                         <FileText className="h-4 w-4 mr-2 text-purple-600" />
@@ -409,7 +426,7 @@ export default function ResultAddingComponent() {
                         )}
 
                         {/* Tests */}
-                        <div className="space-y-4">
+                        {/* <div className="space-y-4">
                             {selectedPatient?.tests?.map((test, ti) => {
                                 const isSaved = selectedPatient.results?.some(r => r.testId?.toString() === test.testId?.toString());
                                 return (
@@ -460,10 +477,102 @@ export default function ResultAddingComponent() {
                                     </div>
                                 );
                             })}
+                        </div> */}
+
+
+                        {/* Tests - Enhanced Collapsible Layout */}
+                        <div className="space-y-3">
+                            {selectedPatient?.tests?.map((test, ti) => {
+                                const isSaved = selectedPatient.results?.some(r => r.testId?.toString() === test.testId?.toString());
+                                const testKey = `${selectedPatient._id}-${ti}`;
+                                const isExpanded = expandedTests[testKey] !== undefined ? expandedTests[testKey] : !isSaved;
+
+                                const toggleExpanded = () => {
+                                    setExpandedTests(prev => ({
+                                        ...prev,
+                                        [testKey]: !isExpanded
+                                    }));
+                                };
+
+                                return (
+                                    <div key={ti} className={`border-2 rounded-lg shadow-sm transition-all duration-200 ${isSaved ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-white hover:border-purple-200'
+                                        }`}>
+                                        {/* Collapsible Header */}
+                                        <div
+                                            className="flex justify-between items-center p-3 cursor-pointer hover:bg-gray-50/50 transition-colors"
+                                            onClick={toggleExpanded}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <button className="p-1 rounded-full hover:bg-gray-200 transition-colors">
+                                                    {isExpanded ? (
+                                                        <ChevronDown className="h-4 w-4 text-gray-600" />
+                                                    ) : (
+                                                        <ChevronRight className="h-4 w-4 text-gray-600" />
+                                                    )}
+                                                </button>
+                                                <TestTube className="h-4 w-4 text-purple-600" />
+                                                <h3 className="font-medium text-sm text-purple-700">
+                                                    {test.testName}
+                                                </h3>
+                                                <span className="text-xs text-gray-500">
+                                                    ({test.fields?.length || 0} parameters)
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                {isSaved && (
+                                                    <Badge className="bg-green-100 text-green-700 border border-green-300 rounded-full px-2 py-0.5 text-xs">
+                                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                                        Saved
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Collapsible Content */}
+                                        {isExpanded && (
+                                            <div className="px-3 pb-3 border-t border-gray-100">
+                                                <div className="space-y-2 mt-3">
+                                                    {test.fields?.map((f, fi) => (
+                                                        <div key={fi} className="w-full">
+                                                            <Label className="block text-xs font-medium text-gray-700 mb-1">
+                                                                {f.fieldName}
+                                                            </Label>
+                                                            <Input
+                                                                disabled={isSaved}
+                                                                value={f.defaultValue || ''}
+                                                                onChange={(e) => handleFieldChange(ti, fi, e.target.value)}
+                                                                onKeyDown={handleEnterPress}
+                                                                className={`w-full h-9 px-3 border rounded-md text-sm transition-all duration-200 ${isSaved
+                                                                    ? 'border-green-200 bg-green-50 text-green-800'
+                                                                    : 'border-purple-300 focus:border-purple-500 hover:border-gray-300 focus:ring-1 focus:ring-purple-200'
+                                                                    }`}
+                                                                placeholder={`Enter ${f.fieldName.toLowerCase()}...`}
+                                                            />
+
+                                                            {/* Unit and Range - Minimal style */}
+                                                            {(f.unit || f.range) && (
+                                                                <div className="flex items-center gap-3 mt-0.5 text-xs pl-2 text-gray-400">
+                                                                    {f.unit && (
+                                                                        <span>Unit: <span className="text-gray-400">{f.unit}</span></span>
+                                                                    )}
+                                                                    {f.range && (
+                                                                        <span>Range: <span className="text-gray-400">{f.range}</span></span>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
 
                         <div className="flex justify-end pt-6">
-                            <Button 
+                            <Button
                                 className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                                 onClick={() => setConfirmOpen(true)}
                             >
@@ -492,14 +601,14 @@ export default function ResultAddingComponent() {
                                 <span className="font-semibold text-gray-900">{selectedPatient?.name}</span>?
                             </p>
                             <div className="flex justify-end gap-3 mt-6">
-                                <Button 
-                                    variant="outline" 
+                                <Button
+                                    variant="outline"
                                     onClick={() => setConfirmOpen(false)}
                                     className="rounded-lg"
                                 >
                                     Cancel
                                 </Button>
-                                <Button  disabled={loading}
+                                <Button disabled={loading}
                                     className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg"
                                     onClick={submitResults}
                                 >

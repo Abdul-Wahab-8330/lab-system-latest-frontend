@@ -1,314 +1,3 @@
-// import {
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableHead,
-//   TableHeader,
-//   TableRow,
-// } from "@/components/ui/table";
-// import { Input } from "@/components/ui/input";
-// import { Button } from "@/components/ui/button";
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogHeader,
-//   DialogTitle,
-// } from "@/components/ui/dialog";
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu";
-// import { MoreHorizontal, Pencil, Search, Trash2 } from "lucide-react";
-// import { useContext, useState, useMemo } from "react";
-// import { TestContext } from "../context/TestContext";
-
-// const TestList = () => {
-//   const { tests, deleteTest, updateTest, loading } = useContext(TestContext);
-
-//   const [search, setSearch] = useState("");
-//   const [editDialogOpen, setEditDialogOpen] = useState(false);
-//   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-//   const [currentTest, setCurrentTest] = useState(null);
-//   const [editForm, setEditForm] = useState({ testName: "",testPrice: "", fields: [] });
-
-//   const filteredTests = useMemo(() => {
-//     return tests.filter((test) =>
-//       test.testName.toLowerCase().includes(search.toLowerCase())
-//     );
-//   }, [tests, search]);
-
-//   const handleEditClick = (test) => {
-//     setCurrentTest(test);
-//     setEditForm({
-//       testName: test.testName,
-//       testPrice: test.testPrice,
-//       fields: [...test.fields],
-//     });
-//     setEditDialogOpen(true);
-//   };
-
-//   const handleDeleteClick = (test) => {
-//     setCurrentTest(test);
-//     setDeleteDialogOpen(true);
-//   };
-
-//   const handleFieldChange = (index, field, value) => {
-//     const updatedFields = [...editForm.fields];
-//     updatedFields[index] = {
-//       ...updatedFields[index],
-//       [field]: value,
-//     };
-//     setEditForm({ ...editForm, fields: updatedFields });
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     await updateTest(currentTest._id, editForm);
-//     setEditDialogOpen(false);
-//   };
-
-//   const confirmDelete = async () => {
-//     await deleteTest(currentTest._id);
-//     setDeleteDialogOpen(false);
-//   };
-
-//   if (loading) return <p className="p-4">Loading tests...</p>;
-
-//   return (
-//     <div className="p-4 space-y-4 border bg-white rounded-3xl shadow-2xl mt-7">
-//       {/* Header */}
-//       <div className="flex justify-between items-center">
-//         <h2 className="text-2xl font-semibold">Test Templates</h2>
-//         <div className="w-1/3 relative flex items-center">
-//           <Input
-//            className='border-gray-500 rounded-3xl'
-//             placeholder="Search tests..."
-//             value={search}
-//             onChange={(e) => setSearch(e.target.value)}
-//           />
-//           <Search size={18} className="absolute right-3 text-gray-500"/>
-//         </div>
-//       </div>
-
-//       {/* Table */}
-//       <div className="rounded-md border overflow-x-auto bg-white shadow-sm border-none">
-//   <Table className=''>
-//     <TableHeader>
-//       <TableRow className="bg-gray-100 font-bold">
-//         <TableHead className="whitespace-nowrap font-bold text-gray-800">Test Name</TableHead>
-//         <TableHead className=" font-bold text-gray-800">Price</TableHead>
-//         <TableHead className="text-right  font-bold text-gray-800">Actions</TableHead>
-//       </TableRow>
-//     </TableHeader>
-//     <TableBody>
-//       {filteredTests.length === 0 ? (
-//         <TableRow>
-//           <TableCell colSpan={3} className="text-center py-4 bg-white text-gray-600">
-//             No tests found
-//           </TableCell>
-//         </TableRow>
-//       ) : (
-//         filteredTests.map((test) => (
-//           <TableRow key={test._id} className="bg-white hover:bg-gray-50">
-//             <TableCell className=" text-gray-800">{test.testName}</TableCell>
-//             <TableCell className="text-gray-700">{test.testPrice}</TableCell>
-//             <TableCell className="text-right">
-//               <DropdownMenu>
-//                 <DropdownMenuTrigger asChild>
-//                   <Button variant="ghost" className="bg-gray-50 h-8 w-8 p-0 hover:bg-gray-100">
-//                     <MoreHorizontal className="h-4 w-4 text-gray-600" />
-//                   </Button>
-//                 </DropdownMenuTrigger>
-//                 <DropdownMenuContent align="end" className="bg-white border shadow-md rounded-md">
-//                   <DropdownMenuItem
-//                     onClick={() => handleEditClick(test)}
-//                     className="hover:bg-gray-100 text-gray-700"
-//                   >
-//                     <Pencil className="mr-2 h-4 w-4 text-gray-500" />
-//                     Edit
-//                   </DropdownMenuItem>
-//                   <DropdownMenuItem
-//                     onClick={() => handleDeleteClick(test)}
-//                     className="hover:bg-gray-100 text-red-500"
-//                   >
-//                     <Trash2 className="mr-2 h-4 w-4" />
-//                     Delete
-//                   </DropdownMenuItem>
-//                 </DropdownMenuContent>
-//               </DropdownMenu>
-//             </TableCell>
-//           </TableRow>
-//         ))
-//       )}
-//     </TableBody>
-//   </Table>
-// </div>
-
-// {/* Edit Dialog */}
-// <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-//   {currentTest && (
-//     <DialogContent className="sm:max-w-2xl bg-white p-6 rounded-lg shadow-lg">
-//       <DialogHeader>
-//         <DialogTitle className="text-lg font-semibold text-gray-800">
-//           Edit Test Template
-//         </DialogTitle>
-//       </DialogHeader>
-//       <form onSubmit={handleSubmit} className="space-y-4">
-//         <div>
-//           <label className="block text-sm font-medium text-gray-700">Test Name</label>
-//           <Input
-//             className="bg-white border-gray-300"
-//             value={editForm.testName}
-//             onChange={(e) =>
-//               setEditForm({ ...editForm, testName: e.target.value })
-//             }
-//             required
-//           />
-//           <label className="block text-sm font-medium text-gray-700 mt-2">Test Price</label>
-//           <Input
-//             className="bg-white border-gray-300"
-//             value={editForm.testPrice}
-//             onChange={(e) =>
-//               setEditForm({ ...editForm, testPrice: e.target.value })
-//             }
-//             required
-//           />
-//         </div>
-
-//         {/* Editable Fields */}
-//         <div className="space-y-4">
-//           {editForm.fields.map((field, index) => (
-//             <div
-//               key={index}
-//               className="grid grid-cols-4 gap-4 border border-gray-300 p-4 rounded-lg bg-gray-50"
-//             >
-//               <Input
-//                 className="bg-white border-gray-300"
-//                 value={field.fieldName}
-//                 placeholder="Field Name"
-//                 onChange={(e) =>
-//                   handleFieldChange(index, "fieldName", e.target.value)
-//                 }
-//                 required
-//               />
-              
-//               <Input
-//                 className="bg-white border-gray-300"
-//                 value={field.defaultValue}
-//                 placeholder="Default"
-//                 onChange={(e) =>
-//                   handleFieldChange(index, "defaultValue", e.target.value)
-//                 }
-//               />
-//               <Input
-//                 className="bg-white border-gray-300"
-//                 value={field.unit}
-//                 placeholder="Unit"
-//                 onChange={(e) =>
-//                   handleFieldChange(index, "unit", e.target.value)
-//                 }
-//               />
-//               <Input
-//                 className="bg-white border-gray-300"
-//                 value={field.range}
-//                 placeholder="Range"
-//                 onChange={(e) =>
-//                   handleFieldChange(index, "range", e.target.value)
-//                 }
-//               />
-//             </div>
-//           ))}
-//         </div>
-
-//         <div className="flex justify-end gap-2">
-//           <Button
-//             type="button"
-//             variant="outline"
-//             className="border-gray-300 text-gray-700 hover:bg-gray-100"
-//             onClick={() => setEditDialogOpen(false)}
-//           >
-//             Cancel
-//           </Button>
-//           <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
-//             Save
-//           </Button>
-//         </div>
-//       </form>
-//     </DialogContent>
-//   )}
-// </Dialog>
-
-// {/* Delete Confirmation */}
-// <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-//   {currentTest && (
-//     <DialogContent className="sm:max-w-md bg-white p-6 rounded-lg shadow-lg">
-//       <DialogHeader>
-//         <DialogTitle className="text-lg font-semibold text-gray-800">
-//           Confirm Deletion
-//         </DialogTitle>
-//       </DialogHeader>
-//       <p className="text-gray-700">
-//         Are you sure you want to delete{" "}
-//         <span className="font-semibold">{currentTest.testName}</span>?
-//       </p>
-//       <div className="flex justify-end gap-2 mt-4">
-//         <Button
-//           variant="outline"
-//           className="border-gray-300 text-gray-700 hover:bg-gray-100"
-//           onClick={() => setDeleteDialogOpen(false)}
-//         >
-//           Cancel
-//         </Button>
-//         <Button
-//           variant="destructive"
-//           className="bg-red-600 hover:bg-red-700 text-white"
-//           onClick={confirmDelete}
-//         >
-//           Delete
-//         </Button>
-//       </div>
-//     </DialogContent>
-//   )}
-// </Dialog>
-//     </div>
-//   );
-// };
-
-// export default TestList;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 import { Input } from "@/components/ui/input";
@@ -330,28 +19,50 @@ import { useContext, useState, useMemo } from "react";
 import { TestContext } from "../context/TestContext";
 import toast from "react-hot-toast";
 
+import { Categories } from "@/utils/testCategories";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 const TestList = () => {
   const { tests, deleteTest, updateTest, loading } = useContext(TestContext);
 
   const [search, setSearch] = useState("");
+  const [searchTestCode, setSearchTestCode] = useState("");
+  const [searchCategory, setSearchCategory] = useState("");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [currentTest, setCurrentTest] = useState(null);
-  const [editForm, setEditForm] = useState({ testName: "",testPrice: "", fields: [] });
+  const [editForm, setEditForm] = useState({
+    testCode: "",
+    testName: "",
+    testPrice: "",
+    category: "",
+    specimen: "",
+    performed: "",
+    reported: "",
+    fields: []
+  });
   const [updateLoading, setUpdateLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const filteredTests = useMemo(() => {
-    return tests.filter((test) =>
-      test.testName.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [tests, search]);
+    return tests.filter((test) => {
+      const matchesName = test.testName.toLowerCase().includes(search.toLowerCase());
+      const matchesCode = searchTestCode === "" || test.testCode.toString().includes(searchTestCode);
+      const matchesCategory = searchCategory === "" || searchCategory === "all" || test.category === searchCategory;
+      return matchesName && matchesCode && matchesCategory;
+    });
+  }, [tests, search, searchTestCode, searchCategory]);
 
   const handleEditClick = (test) => {
     setCurrentTest(test);
     setEditForm({
+      testCode: test.testCode,
       testName: test.testName,
       testPrice: test.testPrice,
+      category: test.category,
+      specimen: test.specimen,
+      performed: test.performed,
+      reported: test.reported,
       fields: [...test.fields],
     });
     setEditDialogOpen(true);
@@ -378,7 +89,7 @@ const TestList = () => {
       await updateTest(currentTest._id, editForm);
       setEditDialogOpen(false);
       toast.success('Test Updated successfully!')
-    }catch(error){
+    } catch (error) {
       toast.error('Failed to Update Test')
     } finally {
       setUpdateLoading(false);
@@ -391,7 +102,7 @@ const TestList = () => {
       await deleteTest(currentTest._id);
       setDeleteDialogOpen(false);
       toast.success('Test Deleted successfully!')
-    }catch(error){
+    } catch (error) {
       toast.error('Failed to Delete Test')
     } finally {
       setDeleteLoading(false);
@@ -460,15 +171,49 @@ const TestList = () => {
 
           <div className="p-8">
             {/* Search Bar */}
+            {/* Search Bar */}
             <div className="mb-8">
-              <div className="relative max-w-md mx-auto">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  className="pl-12 h-14 border-2 border-gray-200 rounded-2xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200 text-gray-700 placeholder-gray-400"
-                  placeholder="Search test templates..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+                {/* Search by Name */}
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Input
+                    className="pl-12 h-12 border-2 border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200 text-gray-700 placeholder-gray-400"
+                    placeholder="Search by name..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+
+                {/* Search by Test Code */}
+                <div className="relative">
+                  <TestTube2 className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Input
+                    type="number"
+                    className="pl-12 h-12 border-2 border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200 text-gray-700 placeholder-gray-400"
+                    placeholder="Search by code..."
+                    value={searchTestCode}
+                    onChange={(e) => setSearchTestCode(e.target.value)}
+                  />
+                </div>
+
+                {/* Filter by Category */}
+                <div>
+                  <Select
+                    value={searchCategory}
+                    onValueChange={(value) => setSearchCategory(value)}
+                  >
+                    <SelectTrigger className="h-12 w-full border-2 border-gray-200 rounded-xl px-4 text-gray-700 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200">
+                      <SelectValue placeholder="Filter by category" />
+                    </SelectTrigger>
+                    <SelectContent className='bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden'>
+                      <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="all">All Categories</SelectItem>
+                      {Categories.map((cat) => (
+                        <SelectItem key={cat} className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
@@ -482,6 +227,11 @@ const TestList = () => {
                         <div className="flex items-center gap-2">
                           <TestTube2 className="w-4 h-4 text-blue-500" />
                           Test Name
+                        </div>
+                      </th>
+                      <th className="font-bold text-gray-800 py-4 px-6">
+                        <div className="flex items-center gap-2">
+                          Test Code
                         </div>
                       </th>
                       <th className="font-bold text-gray-800 py-4 px-6">
@@ -513,8 +263,8 @@ const TestList = () => {
                       </tr>
                     ) : (
                       filteredTests.map((test, index) => (
-                        <tr 
-                          key={test._id} 
+                        <tr
+                          key={test._id}
                           className="border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200"
                         >
                           <td className="py-5 px-6">
@@ -530,14 +280,19 @@ const TestList = () => {
                           </td>
                           <td className="py-5 px-6">
                             <div className="flex items-center gap-1">
+                              <span className="font-semibold text-gray-600 text-md">{test.testCode}</span>
+                            </div>
+                          </td>
+                          <td className="py-5 px-6">
+                            <div className="flex items-center gap-1">
                               <span className="font-bold text-green-600 text-lg">Rs. {test.testPrice}</span>
                             </div>
                           </td>
                           <td className="py-5 px-6 text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
+                                <Button
+                                  variant="ghost"
                                   className="h-10 w-10 p-0 rounded-xl hover:bg-gray-100 border border-gray-200 shadow-sm"
                                 >
                                   <MoreHorizontal className="h-4 w-4 text-gray-600" />
@@ -584,10 +339,28 @@ const TestList = () => {
                   <p className="text-blue-100 mt-1">Modify test configuration and field settings</p>
                 </DialogHeader>
               </div>
-              
+
               <div className="px-6 pb-6">
                 <div className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
+                    {/* Test Code */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <TestTube2 className="w-4 h-4 text-blue-500" />
+                        Test Code
+                      </label>
+                      <Input
+                        type="number"
+                        className="h-12 border-2 border-gray-200 rounded-xl px-4 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200"
+                        value={editForm.testCode}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, testCode: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+
+                    {/* Test Name */}
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                         <TestTube2 className="w-4 h-4 text-blue-500" />
@@ -602,17 +375,90 @@ const TestList = () => {
                         required
                       />
                     </div>
-                    
+
+                    {/* Test Price */}
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-green-500" />
                         Test Price (Rs.)
                       </label>
                       <Input
+                        type="number"
                         className="h-12 border-2 border-gray-200 rounded-xl px-4 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200"
                         value={editForm.testPrice}
                         onChange={(e) =>
                           setEditForm({ ...editForm, testPrice: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+
+                    {/* Category */}
+                    {/* Category */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-purple-500" />
+                        Category
+                      </label>
+                      <Select
+                        value={editForm.category}
+                        onValueChange={(value) => setEditForm({ ...editForm, category: value })}
+                        required
+                      >
+                        <SelectTrigger className="h-12 w-full border-2 border-gray-200 rounded-xl px-4 text-gray-700 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200">
+                          <SelectValue placeholder="Select test category" />
+                        </SelectTrigger>
+                        <SelectContent className='bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden'>
+                          {Categories.map((cat) => (
+                            <SelectItem key={cat} className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value={cat}>{cat}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Specimen */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <TestTube2 className="w-4 h-4 text-orange-500" />
+                        Specimen Type
+                      </label>
+                      <Input
+                        className="h-12 border-2 border-gray-200 rounded-xl px-4 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200"
+                        value={editForm.specimen}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, specimen: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+
+                    {/* Performed */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-indigo-500" />
+                        Test Performed
+                      </label>
+                      <Input
+                        className="h-12 border-2 border-gray-200 rounded-xl px-4 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200"
+                        value={editForm.performed}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, performed: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+
+                    {/* Reported */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-teal-500" />
+                        Report Time
+                      </label>
+                      <Input
+                        className="h-12 border-2 border-gray-200 rounded-xl px-4 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200"
+                        value={editForm.reported}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, reported: e.target.value })
                         }
                         required
                       />
@@ -648,7 +494,7 @@ const TestList = () => {
                                   required
                                 />
                               </div>
-                              
+
                               <div>
                                 <label className="text-xs font-medium text-gray-600 mb-1 block">Default Value</label>
                                 <Input
@@ -660,7 +506,7 @@ const TestList = () => {
                                   }
                                 />
                               </div>
-                              
+
                               <div>
                                 <label className="text-xs font-medium text-gray-600 mb-1 block">Unit</label>
                                 <Input
@@ -672,7 +518,7 @@ const TestList = () => {
                                   }
                                 />
                               </div>
-                              
+
                               <div>
                                 <label className="text-xs font-medium text-gray-600 mb-1 block">Normal Range</label>
                                 <Input
@@ -701,7 +547,7 @@ const TestList = () => {
                     >
                       Cancel
                     </Button>
-                    <Button 
+                    <Button
                       type="button"
                       onClick={handleSubmit}
                       disabled={updateLoading}
@@ -739,7 +585,7 @@ const TestList = () => {
                   <p className="text-red-100 mt-1">This action cannot be undone</p>
                 </DialogHeader>
               </div>
-              
+
               <div className="px-6 pb-6">
                 <div className="text-center mb-6">
                   <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -751,7 +597,7 @@ const TestList = () => {
                   </p>
                   <p className="text-gray-500 text-sm mt-2">This will permanently remove the test template and all its configurations.</p>
                 </div>
-                
+
                 <div className="flex justify-center gap-4">
                   <Button
                     variant="outline"

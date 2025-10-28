@@ -10,13 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
-import { 
-    Search, 
-    Users, 
-    Check, 
-    Edit, 
-    Info, 
-    Plus, 
+import {
+    Search,
+    Users,
+    Check,
+    Edit,
+    Info,
+    Plus,
     UserCheck,
     TestTube,
     User,
@@ -69,7 +69,7 @@ export default function AllPatientsComponent() {
                 p.refNo.toString().includes(search)
             );
         }
-        
+
         if (testSearch) {
             data = data.filter(p =>
                 p.tests.some(t => t.testName.toLowerCase().includes(testSearch.toLowerCase()))
@@ -197,7 +197,7 @@ export default function AllPatientsComponent() {
                                 </div>
 
                                 {/* Status Filter */}
-                                 <div className="relative group">
+                                <div className="relative group">
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         <Activity className="inline h-4 w-4 mr-1" />
                                         Status Filter
@@ -262,11 +262,10 @@ export default function AllPatientsComponent() {
                                         </TableHeader>
                                         <TableBody>
                                             {filteredPatients.slice().reverse().map((p, index) => (
-                                                <TableRow 
-                                                    key={p._id} 
-                                                    className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 ${
-                                                        index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'
-                                                    }`}
+                                                <TableRow
+                                                    key={p._id}
+                                                    className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 ${index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'
+                                                        }`}
                                                 >
                                                     <TableCell className="font-semibold text-emerald-700 py-4">
                                                         {p.refNo}
@@ -425,13 +424,19 @@ export default function AllPatientsComponent() {
                                     {detailsPatient.tests?.length > 0 ? (
                                         <div className="space-y-4">
                                             {detailsPatient.tests.map((t, i) => {
+                                                console.log('Test object:', t); // Add this line
                                                 const isCompleted = detailsPatient.results?.some(r => r.testId?.toString() === t.testId?.toString());
                                                 return (
-                                                    <div key={i} className={`rounded-lg p-4 ${isCompleted ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50'}`}>
-                                                        <div className="flex justify-between items-center mb-3">
-                                                            <h4 className={`font-semibold ${isCompleted ? 'text-emerald-800' : 'text-gray-800'}`}>
-                                                                {t.testName}
-                                                            </h4>
+                                                    <div key={i} className={`rounded-lg p-4 ${isCompleted ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-emerald-300'}`}>
+                                                        <div className="flex justify-between items-center mb-3 pb-3 border-b border-gray-200">
+                                                            <div>
+                                                                <h4 className={`font-semibold text-lg ${isCompleted ? 'text-emerald-800' : 'text-gray-800'}`}>
+                                                                    {t.testName}
+                                                                </h4>
+                                                                {t.price && (
+                                                                    <span className="text-sm text-green-600 font-medium">Rs.{t.price}</span>
+                                                                )}
+                                                            </div>
                                                             {isCompleted && (
                                                                 <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 rounded-full px-2 py-1 text-xs">
                                                                     <CheckCircle className="h-3 w-3 mr-1" />
@@ -439,30 +444,59 @@ export default function AllPatientsComponent() {
                                                                 </Badge>
                                                             )}
                                                         </div>
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                            {t.fields?.map((f, fi) => (
-                                                                <div key={fi} className="bg-white rounded-lg p-3 text-sm">
-                                                                    <div className="flex justify-between items-center">
-                                                                        <span className="text-gray-700">{f.fieldName}:</span>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <span className="font-semibold text-gray-900">
-                                                                                {f.defaultValue || "—"}
-                                                                            </span>
-                                                                            {f.unit && (
-                                                                                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                                                                    {f.unit}
-                                                                                </Badge>
-                                                                            )}
+
+                                                        {/* Test Details (Code, Specimen, Performed, Reported) */}
+                                                        {(t?.testId?.testCode || t?.testId?.specimen || t?.testId?.performed || t?.testId?.reported) && (
+                                                            <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                                                                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                                                    {t.testId?.testCode && (
+                                                                        <div className="flex items-start">
+                                                                            <strong className="text-gray-600 mr-2 min-w-[70px]">Code:</strong>
+                                                                            <span className="text-gray-800">{t.testId.testCode}</span>
                                                                         </div>
-                                                                    </div>
-                                                                    {f.range && (
-                                                                        <div className="text-xs text-gray-500 mt-1">
-                                                                            Range: {f.range}
+                                                                    )}
+                                                                    {t.testId?.specimen && (
+                                                                        <div className="flex items-start">
+                                                                            <strong className="text-gray-600 mr-2 min-w-[70px]">Specimen:</strong>
+                                                                            <span className="text-gray-800">{t.testId.specimen}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {t.testId?.performed && (
+                                                                        <div className="flex items-start">
+                                                                            <strong className="text-gray-600 mr-2 min-w-[70px]">Performed:</strong>
+                                                                            <span className="text-gray-800">{t.testId.performed}</span>
+                                                                        </div>
+                                                                    )}
+                                                                    {t.testId?.reported && (
+                                                                        <div className="flex items-start">
+                                                                            <strong className="text-gray-600 mr-2 min-w-[70px]">Reported:</strong>
+                                                                            <span className="text-gray-800">{t.testId.reported}</span>
                                                                         </div>
                                                                     )}
                                                                 </div>
-                                                            ))}
-                                                        </div>
+                                                            </div>
+                                                        )}
+
+
+
+                                                        {/* Test Fields/Parameters */}
+                                                        {t.testId?.fields && t.testId.fields.length > 0 && (
+                                                            <ol className="space-y-2 list-decimal list-inside">
+                                                                {t.testId.fields.map((f, fi) => (
+                                                                    <li key={fi} className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">
+                                                                        <span className="font-medium">{f.fieldName}</span>
+                                                                        {f.unit && (
+                                                                            <span className="text-gray-500 text-xs ml-2">({f.unit})</span>
+                                                                        )}
+                                                                        {f.range && (
+                                                                            <span className="text-gray-500 text-xs ml-2">• Range: {f.range}</span>
+                                                                        )}
+                                                                    </li>
+                                                                ))}
+                                                            </ol>
+                                                        )}
+
+
                                                     </div>
                                                 );
                                             })}
@@ -506,14 +540,14 @@ export default function AllPatientsComponent() {
                                 </div>
                             </div>
                             <div className="flex justify-end gap-3">
-                                <Button 
-                                    variant="outline" 
+                                <Button
+                                    variant="outline"
                                     onClick={() => setDeleteOpen(false)}
                                     className="rounded-lg"
                                 >
                                     Cancel
                                 </Button>
-                                <Button 
+                                <Button
                                     className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg"
                                     onClick={handleDeletePatient}
                                 >

@@ -10,11 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TestContext } from "@/context/TestContext";
 import { Plus, X, TestTube2, DollarSign, Settings, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { Categories } from "@/utils/testCategories";
 
 const CreateTestForm = () => {
     const [testName, setTestName] = useState("");
     const [testPrice, setTestPrice] = useState("");
     const [category, setCategory] = useState("");
+    const [testCode, setTestCode] = useState("");
+    const [specimen, setSpecimen] = useState("");
+    const [performed, setPerformed] = useState("");
+    const [reported, setReported] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { fetchTests } = useContext(TestContext)
     const [fields, setFields] = useState([
@@ -49,9 +54,13 @@ const CreateTestForm = () => {
 
         try {
             const payload = {
+                testCode,
                 testName,
                 testPrice,
                 category,
+                specimen,
+                performed,
+                reported,
                 fields,
             };
 
@@ -63,6 +72,10 @@ const CreateTestForm = () => {
                 setTestName("");
                 setTestPrice("");
                 setCategory("");
+                setTestCode("");
+                setSpecimen("");
+                setPerformed("");
+                setReported("");
                 setFields([{ fieldName: "", fieldType: "String", defaultValue: '', unit: '', range: '' }]);
             }
         } catch (error) {
@@ -97,6 +110,23 @@ const CreateTestForm = () => {
                     <form onSubmit={handleSubmit} className="p-8">
                         {/* Basic Test Information */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            {/* Test Code */}
+                            <div className="space-y-2">
+                                <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                    <TestTube2 className="w-4 h-4 text-blue-500" />
+                                    Test Code
+                                </Label>
+                                <Input
+                                    type="number"
+                                    className="h-12 border-2 border-gray-200 rounded-xl px-4 text-gray-700 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200"
+                                    placeholder="Enter unique test code (1001 - 9999)"
+                                    value={testCode}
+                                    onChange={(e) => setTestCode(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            {/* Test Name */}
                             <div className="space-y-2">
                                 <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                                     <TestTube2 className="w-4 h-4 text-blue-500" />
@@ -112,6 +142,7 @@ const CreateTestForm = () => {
                                 />
                             </div>
 
+                            {/* Test Price */}
                             <div className="space-y-2">
                                 <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                                     <DollarSign className="w-4 h-4 text-green-500" />
@@ -127,7 +158,7 @@ const CreateTestForm = () => {
                                 />
                             </div>
 
-                            {/* test category dropdown */}
+                            {/* Test Category */}
                             <div className="space-y-2">
                                 <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                                     <Settings className="w-4 h-4 text-purple-500" />
@@ -141,36 +172,61 @@ const CreateTestForm = () => {
                                     <SelectTrigger className="h-12 w-full border-2 border-gray-200 rounded-xl px-4 text-gray-700 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200">
                                         <SelectValue placeholder="Select test category" />
                                     </SelectTrigger>
-                                    <SelectContent className=' bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden'>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="General Tests">General Tests</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Hematology">Hematology</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Routine Chemistry">Routine Chemistry</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Liver Function">Liver Function</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Kidney Function">Kidney Function</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Thyroid Function">Thyroid Function</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Cardiac Markers">Cardiac Markers</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Blood Gas Analysis">Blood Gas Analysis</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Coagulation">Coagulation</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Inflammatory Markers">Inflammatory Markers</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Hormones">Hormones</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Vitamins">Vitamins</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Minerals">Minerals</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Infectious Disease">Infectious Disease</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Tumor Markers">Tumor Markers</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Autoimmune Markers">Autoimmune Markers</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Allergy Testing">Allergy Testing</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Drug Monitoring">Drug Monitoring</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Toxicology">Toxicology</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Metabolic/Genetic">Metabolic/Genetic</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Special Chemistry">Special Chemistry</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Urine Analysis">Urine Analysis</SelectItem>
-                                        <SelectItem className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="Other">Other</SelectItem>
+                                    <SelectContent className='bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden'>
+                                        {Categories.map((cat) => (
+                                            <SelectItem key={cat} className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value={cat}>{cat}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
 
+                            {/* Specimen */}
+                            <div className="space-y-2">
+                                <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                    <TestTube2 className="w-4 h-4 text-orange-500" />
+                                    Specimen Type
+                                </Label>
+                                <Input
+                                    type="text"
+                                    className="h-12 border-2 border-gray-200 rounded-xl px-4 text-gray-700 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200"
+                                    placeholder="e.g., Blood, Urine, Serum"
+                                    value={specimen}
+                                    onChange={(e) => setSpecimen(e.target.value)}
+                                    required
+                                />
+                            </div>
 
+                            {/* Performed */}
+                            <div className="space-y-2">
+                                <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                    <Settings className="w-4 h-4 text-indigo-500" />
+                                    Test Performed
+                                </Label>
+                                <Input
+                                    type="text"
+                                    className="h-12 border-2 border-gray-200 rounded-xl px-4 text-gray-700 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200"
+                                    placeholder="e.g., Daily, On demand"
+                                    value={performed}
+                                    onChange={(e) => setPerformed(e.target.value)}
+                                    required
+                                />
+                            </div>
 
+                            {/* Reported */}
+                            <div className="space-y-2">
+                                <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                    <Settings className="w-4 h-4 text-teal-500" />
+                                    Report Time
+                                </Label>
+                                <Input
+                                    type="text"
+                                    className="h-12 border-2 border-gray-200 rounded-xl px-4 text-gray-700 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200"
+                                    placeholder="e.g., Same day, 24 hours"
+                                    value={reported}
+                                    onChange={(e) => setReported(e.target.value)}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         {/* Dynamic Fields Section */}
@@ -259,9 +315,9 @@ const CreateTestForm = () => {
                                             <div className="lg:col-span-1">
                                                 <Label className="text-xs font-medium text-gray-600 mb-1 block">Field Type</Label>
                                                 <Select
+                                                    defaultValue="String"
                                                     value={field.fieldType}
                                                     onValueChange={(value) => handleFieldChange(index, "fieldType", value)}
-                                                    defaultValue="string"
                                                 >
                                                     <SelectTrigger className="h-10 border border-gray-200 rounded-lg px-3 text-sm bg-gray-50 hover:bg-white focus:border-blue-400 transition-all duration-200">
                                                         <SelectValue />

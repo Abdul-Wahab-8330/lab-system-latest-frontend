@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import axios from "axios";
 import { PatientsContext } from "@/context/PatientsContext";
 import ConfirmDialog from "./ConfirmDialog";
-import { Trash2, Search, User, UserPlus, FileText, CreditCard, TestTube, CheckCircle } from "lucide-react";
+import { Trash2, Search, User, UserPlus, FileText, CreditCard, TestTube, CheckCircle, Lightbulb } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -14,6 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Categories } from "@/utils/testCategories";
 import { AuthContext } from "@/context/AuthProvider";
 import { Separator } from "./ui/separator";
 import toast from "react-hot-toast";
@@ -26,6 +27,7 @@ export default function RegisterPatient() {
     const [testsError, setTestsError] = useState(null);
     const [loading, SetLoading] = useState(false)
 
+
     const [doctors, setDoctors] = useState([]);
     const [tests, setTests] = useState([]);
 
@@ -36,6 +38,7 @@ export default function RegisterPatient() {
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
+    const [categoryFilter, setCategoryFilter] = useState("All");
     const searchTimeoutRef = useRef(null);
 
     const [form, setForm] = useState({
@@ -94,6 +97,15 @@ export default function RegisterPatient() {
             setIsSearching(false);
         }
     };
+
+
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter' && searchResults.length > 0) {
+            e.preventDefault(); // Prevent form submission
+            handlePatientSelect(searchResults[0]); // Select first result
+        }
+    };
+
 
     const handlePatientSelect = (patient) => {
         setForm(prev => ({
@@ -182,11 +194,11 @@ export default function RegisterPatient() {
         e.preventDefault();
         SetLoading(true)
         if (!form.name || !form.age || !form.gender || !form.phone) {
-            alert("Please fill required fields");
+            toast.error("Please fill required fields");
             return;
         }
         if (selectedTests.length === 0) {
-            alert("Please select at least one test");
+            toast.error("Please select at least one test");
             return;
         }
 
@@ -234,10 +246,40 @@ export default function RegisterPatient() {
         }
     };
 
-    const filteredTests = tests.filter(test =>
-        test.testName?.toLowerCase().includes(testSearchQuery.toLowerCase()) ||
-        test.category?.toLowerCase().includes(testSearchQuery.toLowerCase())
-    );
+    // const filteredTests = tests.filter(test =>
+    //     test.testName?.toLowerCase().includes(testSearchQuery.toLowerCase()) ||
+    //     test.category?.toLowerCase().includes(testSearchQuery.toLowerCase())
+    // );
+
+    const filteredTests = tests.filter(test => {
+        const matchesSearch = test.testName?.toLowerCase().includes(testSearchQuery.toLowerCase()) ||
+            test.category?.toLowerCase().includes(testSearchQuery.toLowerCase());
+
+        const matchesCategory = categoryFilter === "All" || test.category === categoryFilter;
+
+        return matchesSearch && matchesCategory;
+    });
+
+    const handleSelectAllVisibleTests = () => {
+        const visibleTestIds = filteredTests.map(test => test._id);
+        const alreadySelectedIds = selectedTests.map(t => t.testId);
+
+        const newSelections = filteredTests
+            .filter(test => !alreadySelectedIds.includes(test._id))
+            .map(test => ({
+                testId: test._id,
+                testName: test.testName,
+                price: test.testPrice
+            }));
+
+        if (newSelections.length > 0) {
+            setSelectedTests(prev => [...prev, ...newSelections]);
+            toast.success(`Selected ${newSelections.length} test(s)`);
+        } else {
+            toast.info('All visible tests are already selected');
+        }
+    };
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -277,12 +319,17 @@ export default function RegisterPatient() {
                                     <div className="relative">
                                         <label className="block text-sm font-semibold text-gray-700 mb-3">
                                             Patient Name <span className="text-red-500">*</span>
+                                            <span className="ml-2 text-xs font-normal text-gray-500 bg-blue-50 px-2 py-1 rounded-md">
+                                                <Lightbulb size='16' className="inline"/> Search by name or phone number
+                                            </span>
                                         </label>
                                         <div className="relative">
+                    
                                             <Input
-                                                placeholder="Enter patient name or search existing"
+                                                placeholder="Search by name or phone number..."
                                                 value={form.name}
                                                 onChange={handleNameInputChange}
+                                                onKeyDown={handleSearchKeyDown}  // 👈 Add this
                                                 onFocus={() => setIsFocused(true)}
                                                 onBlur={() => {
                                                     setTimeout(() => setIsFocused(false), 200);
@@ -309,19 +356,50 @@ export default function RegisterPatient() {
                                             </div>
                                         </div>
 
+                                        {/* Helper text below input */}
+                                        <p className="mt-2 text-xs text-gray-500 flex items-center gap-1">
+                                            <Search className="h-3 w-3" />
+                                            Type at least 2 characters to search existing patients by name or phone
+                                        </p>
+
                                         {/* Search Results Dropdown */}
                                         {isFocused && showSearchResults && searchResults.length > 0 && (
                                             <div className="absolute top-full left-0 right-0 z-50 bg-white border-2 border-gray-100 rounded-xl shadow-2xl max-h-48 overflow-y-auto mt-2">
                                                 <div className="p-3 text-xs font-medium text-gray-500 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
                                                     Found {searchResults.length} existing patient(s)
                                                 </div>
-                                                {searchResults.map((patient) => (
+                                                {/* {searchResults.map((patient) => (
                                                     <div
                                                         key={patient._id}
                                                         className="p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 cursor-pointer border-b last:border-b-0 transition-all duration-200"
                                                         onClick={() => handlePatientSelect(patient)}
                                                     >
                                                         <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                                                <User className="h-4 w-4 text-blue-600" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-semibold text-gray-900">{patient.name}</div>
+                                                                <div className="text-sm text-gray-500">
+                                                                    Age: {patient.age} • Phone: {patient.phone} • Gender: {patient.gender}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))} */}
+                                                {searchResults.map((patient, index) => (
+                                                    <div
+                                                        key={patient._id}
+                                                        className={`p-4 cursor-pointer border-b last:border-b-0 transition-all duration-200 ${index === 0
+                                                                ? 'bg-gradient-to-r from-blue-100 to-indigo-100 hover:from-blue-150 hover:to-indigo-150'
+                                                                : 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50'
+                                                            }`}
+                                                        onClick={() => handlePatientSelect(patient)}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            {index === 0 && (
+                                                                <div className="text-xs text-blue-600 font-semibold">↵ Enter</div>
+                                                            )}
                                                             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                                                                 <User className="h-4 w-4 text-blue-600" />
                                                             </div>
@@ -438,82 +516,6 @@ export default function RegisterPatient() {
                             <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
 
 
-                            {/* Test Selection Section */}
-                            {/* <div className="space-y-6">
-                                <div className="flex items-center mb-6">
-                                    <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg mr-3">
-                                        <TestTube className="h-5 w-5 text-green-600" />
-                                    </div>
-                                    <h3 className="text-xl font-semibold text-gray-800">Test Selection</h3>
-                                    {isLoadingTests && (
-                                        <div className="ml-3 flex items-center text-sm text-gray-500">
-                                            <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-600 rounded-full mr-2"></div>
-                                            Loading tests...
-                                        </div>
-                                    )}
-                                </div>
-
-                                {testsError ? (
-                                    <div className="p-6 rounded-2xl bg-red-50 border-2 border-red-200 text-center">
-                                        <div className="text-red-600 font-semibold mb-2">Error Loading Tests</div>
-                                        <div className="text-red-500 text-sm mb-4">{testsError}</div>
-                                        <Button
-                                            type="button"
-                                            onClick={fetchTests}
-                                            variant="outline"
-                                            className="border-red-300 text-red-600 hover:bg-red-50"
-                                        >
-                                            Retry Loading Tests
-                                        </Button>
-                                    </div>
-                                ) : isLoadingTests ? (
-                                    <div className="p-12 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100 text-center">
-                                        <div className="animate-spin h-8 w-8 border-3 border-gray-300 border-t-green-600 rounded-full mx-auto mb-4"></div>
-                                        <div className="text-gray-600 font-medium">Loading available tests...</div>
-                                        <div className="text-gray-500 text-sm mt-2">Please wait while we fetch the test catalog</div>
-                                    </div>
-                                ) : tests.length === 0 ? (
-                                    <div className="p-12 rounded-2xl bg-gradient-to-br from-gray-50 via-slate-50 to-gray-50 border-2 border-gray-200 text-center">
-                                        <TestTube className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                        <div className="text-gray-600 font-medium mb-2">No Tests Available</div>
-                                        <div className="text-gray-500 text-sm mb-4">No tests found in the system</div>
-                                        <Button
-                                            type="button"
-                                            onClick={fetchTests}
-                                            variant="outline"
-                                            className="border-gray-300"
-                                        >
-                                            Refresh Tests
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-6 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100">
-                                        {tests.map(test => {
-                                            const checked = !!selectedTests.find(t => String(t.testId) === String(test._id));
-                                            return (
-                                                <label key={test._id} className={`group flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${checked ? "bg-white border-green-400 shadow-lg transform scale-[1.02]" : "bg-white/80 border-gray-200 hover:bg-white hover:border-green-300 hover:shadow-md"}`}>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="font-semibold text-gray-900 truncate mb-1">{test.testName}</div>
-                                                        <div className="text-sm text-green-600 font-medium">Rs.{test.testPrice}</div>
-                                                    </div>
-                                                    <div className="relative ml-3">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={checked}
-                                                            onChange={() => handleToggleTest(test)}
-                                                            className="sr-only"
-                                                        />
-                                                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${checked ? 'bg-green-500 border-green-500' : 'border-gray-300 group-hover:border-green-400'}`}>
-                                                            {checked && <CheckCircle className="w-3 h-3 text-white" />}
-                                                        </div>
-                                                    </div>
-                                                </label>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div> */}
-
 
                             <div className="space-y-6">
                                 <div className="flex items-center mb-6">
@@ -530,33 +532,83 @@ export default function RegisterPatient() {
                                 </div>
 
                                 {/* Test Search Bar */}
+                                {/* Test Search Bar */}
                                 {!isLoadingTests && !testsError && tests.length > 0 && (
-                                    <div className="relative mb-6">
-                                        <div className="relative">
-                                            <Input
-                                                placeholder="Search tests by name or category..."
-                                                value={testSearchQuery}
-                                                onChange={(e) => setTestSearchQuery(e.target.value)}
-                                                className=" h-12 pl-12 pr-12 border-2 border-green-200 focus:border-green-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
-                                            />
-                                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />
-                                            {testSearchQuery && (
+                                    <div className="space-y-4 mb-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* Search Input */}
+                                            <div className="relative">
+                                                <div className="relative">
+                                                    <Input
+                                                        placeholder="Search tests by name or category..."
+                                                        value={testSearchQuery}
+                                                        onChange={(e) => setTestSearchQuery(e.target.value)}
+                                                        className="h-12 pl-12 pr-12 border-2 border-green-200 focus:border-green-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                                    />
+                                                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />
+                                                    {testSearchQuery && (
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-green-100 rounded-full"
+                                                            onClick={() => setTestSearchQuery("")}
+                                                        >
+                                                            ×
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Category Filter */}
+                                            <div>
+                                                <Select
+                                                    value={categoryFilter}
+                                                    onValueChange={(value) => setCategoryFilter(value)}
+                                                >
+                                                    <SelectTrigger className="h-12 w-full border-2 border-green-200 focus:border-green-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
+                                                        <SelectValue placeholder="Filter by Category" />
+                                                    </SelectTrigger>
+                                                    <SelectContent className='bg-white border-0 shadow-xl rounded-xl max-h-72'>
+                                                        <SelectItem className='hover:bg-green-50 rounded-lg m-1 font-semibold' value="All">
+                                                            All Categories
+                                                        </SelectItem>
+                                                        {Categories.map((category) => (
+                                                            <SelectItem
+                                                                key={category}
+                                                                className='hover:bg-green-50 rounded-lg m-1'
+                                                                value={category}
+                                                            >
+                                                                {category}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+
+                                        {/* Filter Results Info and Select All Button */}
+                                        <div className="flex items-center justify-between">
+                                            {(testSearchQuery || categoryFilter !== "All") && (
+                                                <div className="text-sm text-green-600 font-medium">
+                                                    Found {filteredTests.length} test(s)
+                                                    {testSearchQuery && ` matching "${testSearchQuery}"`}
+                                                    {categoryFilter !== "All" && ` in category "${categoryFilter}"`}
+                                                </div>
+                                            )}
+
+                                            {filteredTests.length > 0 && (
                                                 <Button
                                                     type="button"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-green-100 rounded-full"
-                                                    onClick={() => setTestSearchQuery("")}
+                                                    onClick={handleSelectAllVisibleTests}
+                                                    variant="outline"
+                                                    className="ml-auto border-2 border-green-500 text-green-700 hover:bg-green-50 hover:border-green-600 rounded-xl font-semibold transition-all duration-200"
                                                 >
-                                                    ×
+                                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                                    Select All Visible Tests
                                                 </Button>
                                             )}
                                         </div>
-                                        {testSearchQuery && (
-                                            <div className="mt-2 text-sm text-green-600 font-medium">
-                                                Found {filteredTests.length} test(s) matching "{testSearchQuery}"
-                                            </div>
-                                        )}
                                     </div>
                                 )}
 
@@ -616,6 +668,7 @@ export default function RegisterPatient() {
                                                     <div className="flex-1 min-w-0">
                                                         <div className="font-semibold text-gray-900 truncate mb-1">{test.testName}</div>
                                                         <div className="text-xs text-gray-500 mb-1">{test.category}</div>
+                                                        <div className="text-xs text-gray-600 mb-1">{test.testCode}</div>
                                                         <div className="text-sm text-green-600 font-medium">Rs.{test.testPrice}</div>
                                                     </div>
                                                     <div className="relative ml-3">

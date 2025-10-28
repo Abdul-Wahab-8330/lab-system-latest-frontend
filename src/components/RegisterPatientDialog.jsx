@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { AuthContext } from "@/context/AuthProvider";
 import { Separator } from "./ui/separator";
+import toast from "react-hot-toast";
 
 export default function RegisterPatient() {
     const { createPatient, setPatients, patients, fetchPatients } = useContext(PatientsContext);
@@ -156,11 +157,11 @@ export default function RegisterPatient() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.name || !form.age || !form.gender || !form.phone) {
-            alert("Please fill required fields");
+            toast.error("Please fill required fields");
             return;
         }
         if (selectedTests.length === 0) {
-            alert("Please select at least one test");
+            toast.error("Please select at least one test");
             return;
         }
 
@@ -201,7 +202,7 @@ export default function RegisterPatient() {
             console.log("Patient created:", newPatient);
         } catch (err) {
             console.error("submit err:", err);
-            alert("Failed to create patient");
+            toast.error("Failed to create patient");
         }
     };
 

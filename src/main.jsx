@@ -8,21 +8,24 @@ import { TestProvider } from './context/TestContext';
 import { PatientsProvider } from './context/PatientsContext';
 import { AddedPatientsProvider } from './context/AddedPatientsContext';
 import { LabInfoProvider } from './context/LabnfoContext';
+import { InventoryProvider } from './context/InventoryContext';
 
 
 
 createRoot(document.getElementById('root')).render(
   <AuthProvider>
-    <AddedPatientsProvider>
-      <LabInfoProvider>
-        <PatientsProvider>
-          <TestProvider>
-            <BrowserRouter>
-              <App />
-            </BrowserRouter>
-          </TestProvider>
-        </PatientsProvider>
-      </LabInfoProvider>
-    </AddedPatientsProvider>
+    <InventoryProvider>
+      <AddedPatientsProvider>
+        <LabInfoProvider>
+          <PatientsProvider>
+            <TestProvider>
+              <BrowserRouter>
+                <App />
+              </BrowserRouter>
+            </TestProvider>
+          </PatientsProvider>
+        </LabInfoProvider>
+      </AddedPatientsProvider>
+    </InventoryProvider>
   </AuthProvider>
 )

@@ -30,6 +30,7 @@ import FinanceCharts from "./components/FinanceCharts";
 import TestsCharts from "./components/TestsCharts";
 import UserManagementCharts from "./components/UserManagementCharts";
 import AccessDenied from './components/AccesssDenied'
+import InventoryManagement from "./components/InventoryManagement";
 
 const UserManagementRoute = ({ children, user }) => {
     if (user?.userName !== 'abdulwahab123') {
@@ -95,6 +96,8 @@ function App() {
           <Route path="finance-analytics" element={<FinanceCharts />} />
           <Route path="user-analytics" element={<UserManagementCharts />} />
           <Route path="test-analytics" element={<TestsCharts />} />
+
+          <Route path="inventory" element={<InventoryManagement />} />
         </Route>
 
         {/* User Routes */}

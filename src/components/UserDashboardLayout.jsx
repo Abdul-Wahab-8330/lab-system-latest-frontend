@@ -77,10 +77,9 @@ const UserDashboardLayout = () => {
 
     // + normal user options
     { id: 'register patients', icon: Plus, label: 'Register Patients', link: '/user/register-patient' },
-    { id: 'all patients', icon: Users, label: 'Manage Patients', link: '/user/all-patients' },
+    { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
     { id: 'payments', icon: DollarSign, label: 'Payments', link: '/user/payments' },
     { id: 'results', icon: Microscope, label: 'Manage Results', link: '/user/results' },
-    { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
     { id: 'final reports', icon: LineChart , label: 'Final Reports', link: '/user/result-print' },
     { id: 'analytics', icon: BarChart3, label: 'Patient Analytics', link: '/user/patient-analytics' },
   ];
@@ -89,10 +88,9 @@ const UserDashboardLayout = () => {
     //normal user options
     { id: 'dashboard', icon: Home, label: 'Dashboard', link: '/user/dashboard' },
     { id: 'register patients', icon: Plus, label: 'Register Patients', link: '/user/register-patient' },
-    { id: 'all patients', icon: Users, label: 'Manage Patients', link: '/user/all-patients' },
+    { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
     { id: 'payments', icon: DollarSign, label: 'Payments', link: '/user/payments' },
     { id: 'results', icon: Microscope, label: 'Manage Results', link: '/user/results' },
-    { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
     { id: 'final reports', icon: LineChart , label: 'Final Reports', link: '/user/result-print' },
     { id: 'analytics', icon: BarChart3, label: 'Patient Analytics', link: '/user/patient-analytics' },
   ];
@@ -159,7 +157,7 @@ const UserDashboardLayout = () => {
                       }`}
                   >
                     <IconComponent className="w-5 h-5 flex-shrink-0" />
-                    {sidebarOpen && <span className="text-sm font-medium truncate flex gap-2 items-center">{item.label}{item?.icon2 ? <item.icon2 size={15} className='text-amber-400' /> : ''}</span>}
+                    {sidebarOpen && <span className="text-sm font-medium truncate flex gap-2 items-center">{item.label}{item?.icon2 ? <item.icon2 size={13} className='text-amber-300' /> : ''}</span>}
                   </Link>
                 </li>
               );
@@ -237,7 +235,7 @@ const UserDashboardLayout = () => {
               {/* Export Button */}
               {user?.role == 'admin' && <Link to='/user/patients' className="flex items-center space-x-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors duration-200">
                 <Download className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700 flex gap-2 items-center">Export <Crown className='text-amber-400' size={16} /></span>
+                <span className="text-sm font-medium text-gray-700 flex gap-2 items-center">Export <Crown className='text-gray-5  00' size={16} /></span>
               </Link>}
 
               {/* Add New Button */}

@@ -1,8 +1,3 @@
-
-
-
-
-
 import { useState, useMemo, useContext } from "react";
 import { PatientsContext } from "@/context/PatientsContext"; // your context
 import { Input } from "@/components/ui/input";
@@ -53,12 +48,15 @@ import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { AlertTriangle } from "lucide-react";
 
 export default function PatientsList() {
     const { patients, fetchPatients } = useContext(PatientsContext);
     const { info } = useContext(LabInfoContext)
     const { user } = useContext(AuthContext)
     const [search, setSearch] = useState("");
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [patientToDelete, setPatientToDelete] = useState(null);
     const [testSearch, setTestSearch] = useState("");
 
     // State for date search
@@ -128,19 +126,26 @@ export default function PatientsList() {
         link.click();
     };
 
-    const handleDeletePatient = async (patiendId) => {
+    const handleDeletePatient = async () => {
         try {
-            const res = await axios.delete(`${import.meta.env.VITE_API_URL}/api/patients/delete/${patiendId}`)
+            const res = await axios.delete(`${import.meta.env.VITE_API_URL}/api/patients/delete/${patientToDelete._id}`);
             if (res.data.success) {
-                console.log('patient deleted')
-                fetchPatients()
-                toast.success('Deleted Successfully!')
+                console.log('patient deleted');
+                setDeleteOpen(false);
+                setPatientToDelete(null);
+                fetchPatients();
+                toast.success('Deleted Successfully!');
             }
         } catch (error) {
-            console.log(error)
-            toast.error('Failed to delete!')
+            console.log(error);
+            toast.error('Failed to delete patient. Please try again.');
         }
-    }
+    };
+
+    const openDeleteDialog = (patient) => {
+        setPatientToDelete(patient);
+        setDeleteOpen(true);
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 m-2">
@@ -265,6 +270,8 @@ export default function PatientsList() {
                                             </TableHead>
                                             <TableHead className="font-bold text-gray-800">Details</TableHead>
                                             <TableHead className="font-bold text-gray-800">Print</TableHead>
+                                            <TableHead className="font-bold text-gray-800">
+                                                <Trash2 className="inline h-4 w-4 mr-2" />Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -291,9 +298,9 @@ export default function PatientsList() {
                                                     <TableCell>
                                                         <Badge
                                                             className={`${patient?.paymentStatus?.toLowerCase() === "not paid"
-                                                                ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
-                                                                : "bg-gradient-to-r from-green-400 to-emerald-500 text-white"
-                                                                } rounded-full px-3 py-1 font-medium shadow-sm`}
+                                                                ? "bg-orange-100 text-orange-700 border-orange-200"
+                                                                : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                                } rounded-full px-3 py-1 font-medium border`}
                                                         >
                                                             <DollarSign className="h-3 w-3 mr-1" />
                                                             {patient.paymentStatus}
@@ -302,9 +309,9 @@ export default function PatientsList() {
                                                     <TableCell>
                                                         <Badge
                                                             className={`${patient?.resultStatus?.toLowerCase() === "pending"
-                                                                ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
-                                                                : "bg-gradient-to-r from-green-400 to-emerald-500 text-white"
-                                                                } rounded-full px-3 py-1 font-medium shadow-sm`}
+                                                                ? "bg-orange-100 text-orange-700 border-orange-200"
+                                                                : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                                } rounded-full px-3 py-1 font-medium border`}
                                                         >
                                                             <NotebookPen className="h-3 w-3 mr-1" />
                                                             {patient.resultStatus}
@@ -375,15 +382,25 @@ export default function PatientsList() {
                                                                     <div className="flex flex-col gap-4 pt-2">
                                                                         <div className="flex items-center">
                                                                             <strong className="text-gray-700 mr-2">Payment Status:</strong>
-                                                                            <Badge className={`${patient?.paymentStatus?.toLowerCase() == 'not paid' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'} rounded-full px-3 py-1`}>
+                                                                            <Badge
+                                                                                className={`${patient?.paymentStatus?.toLowerCase() === "not paid"
+                                                                                    ? "bg-orange-100 text-orange-700 border-orange-200"
+                                                                                    : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                                                    } rounded-full px-3 py-1 font-medium border`}
+                                                                            >
                                                                                 <DollarSign className="h-3 w-3 mr-1" />
                                                                                 {patient.paymentStatus}
                                                                             </Badge>
                                                                         </div>
                                                                         <div className="flex items-center">
                                                                             <strong className="text-gray-700 mr-2">Result Status:</strong>
-                                                                            <Badge className={`${patient?.resultStatus?.toLowerCase() == 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'} rounded-full px-3 py-1`}>
-                                                                                <NotebookPenIcon className="h-3 w-3 mr-1" />
+                                                                            <Badge
+                                                                                className={`${patient?.resultStatus?.toLowerCase() === "pending"
+                                                                                    ? "bg-orange-100 text-orange-700 border-orange-200"
+                                                                                    : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                                                    } rounded-full px-3 py-1 font-medium border`}
+                                                                            >
+                                                                                <NotebookPen className="h-3 w-3 mr-1" />
                                                                                 {patient.resultStatus}
                                                                             </Badge>
                                                                         </div>
@@ -405,29 +422,8 @@ export default function PatientsList() {
                                                                         </div>
                                                                     </div>
 
-                                                                    {/* {patient.tests && patient.tests.length > 0 && (
-                                                                        <div className="pt-4">
-                                                                            <div className="flex items-center mb-3">
-                                                                                <TestTube className="h-4 w-4 mr-2 text-gray-500" />
-                                                                                <strong className="text-gray-700">Tests:</strong>
-                                                                                <Badge className='bg-blue-100 text-blue-800 rounded-full px-3 py-1 ml-2'>
-                                                                                    {patient?.tests?.length}
-                                                                                </Badge>
-                                                                            </div>
-                                                                            <div className="bg-indigo-50 rounded-xl p-4">
-                                                                                <ul className="">
-                                                                                    {patient.tests.map((t, i) => (
-                                                                                        <li key={i} className="flex justify-between items-center bg-indigo-50 rounded-lg ">
-                                                                                            <span className="text-gray-900">{t.testName}</span>
-                                                                                            <span className="text-green-600 font-semibold">Rs.{t.price}</span>
-                                                                                        </li>
-                                                                                    ))}
-                                                                                </ul>
-                                                                            </div>
-                                                                        </div>
-                                                                    )} */}
                                                                     {/* Test Fields/Parameters Section - Add this after the tests list */}
-                                                                    {patient.tests && patient.tests.length > 0 && (
+                                                                    {/* {patient.tests && patient.tests.length > 0 && (
                                                                         <div className="">
                                                                             <div className="space-y-4">
                                                                                 {patient.tests.map((t, idx) => (
@@ -458,10 +454,93 @@ export default function PatientsList() {
                                                                                 ))}
                                                                             </div>
                                                                         </div>
+                                                                    )} */}
+
+                                                                    {patient.tests && patient.tests.length > 0 && (
+                                                                        <div className="">
+                                                                            <div className="flex items-center mb-4">
+                                                                                <TestTube className="h-5 w-5 mr-2 text-blue-600" />
+                                                                                <strong className="text-gray-800 text-lg">Tests & Parameters</strong>
+                                                                                <Badge className='bg-blue-100 text-blue-800 rounded-full px-3 py-1 ml-2'>
+                                                                                    {patient.tests.length} tests
+                                                                                </Badge>
+                                                                            </div>
+                                                                            <div className="space-y-4">
+                                                                                {patient.tests.map((t, idx) => (
+                                                                                    <div key={idx} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+                                                                                        {/* Test Header with Name and Price */}
+                                                                                        <div className="flex justify-between items-center mb-3 pb-3 border-b border-blue-200">
+                                                                                            <div>
+                                                                                                <h4 className="font-semibold text-lg text-gray-800">
+                                                                                                    {t.testName}
+                                                                                                </h4>
+                                                                                                {t.price && (
+                                                                                                    <span className="text-sm text-green-600 font-medium">Rs.{t.price}</span>
+                                                                                                )}
+                                                                                            </div>
+                                                                                        </div>
+
+                                                                                        {/* Test Details (Code, Specimen, Performed, Reported) */}
+                                                                                        {(t?.testId?.testCode || t?.testId?.specimen || t?.testId?.performed || t?.testId?.reported) && (
+                                                                                            <div className="bg-white/60 rounded-lg p-3 mb-3">
+                                                                                                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                                                                                    {t.testId?.testCode && (
+                                                                                                        <div className="flex items-start">
+                                                                                                            <strong className="text-gray-600 mr-2 min-w-[70px]">Code:</strong>
+                                                                                                            <span className="text-gray-800">{t.testId.testCode}</span>
+                                                                                                        </div>
+                                                                                                    )}
+                                                                                                    {t.testId?.specimen && (
+                                                                                                        <div className="flex items-start">
+                                                                                                            <strong className="text-gray-600 mr-2 min-w-[70px]">Specimen:</strong>
+                                                                                                            <span className="text-gray-800">{t.testId.specimen}</span>
+                                                                                                        </div>
+                                                                                                    )}
+                                                                                                    {t.testId?.performed && (
+                                                                                                        <div className="flex items-start">
+                                                                                                            <strong className="text-gray-600 mr-2 min-w-[70px]">Performed:</strong>
+                                                                                                            <span className="text-gray-800">{t.testId.performed}</span>
+                                                                                                        </div>
+                                                                                                    )}
+                                                                                                    {t.testId?.reported && (
+                                                                                                        <div className="flex items-start">
+                                                                                                            <strong className="text-gray-600 mr-2 min-w-[70px]">Reported:</strong>
+                                                                                                            <span className="text-gray-800">{t.testId.reported}</span>
+                                                                                                        </div>
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        )}
+
+                                                                                        {/* Test Parameters/Fields */}
+                                                                                        {t.testId?.fields && t.testId.fields.length > 0 && (
+                                                                                            <div>
+                                                                                                <div className="flex items-center mb-2">
+                                                                                                    <strong className="text-gray-700 text-sm">Parameters:</strong>
+                                                                                                    <Badge className='bg-blue-100 text-blue-800 rounded-full px-2 py-1 ml-2 text-xs'>
+                                                                                                        {t.testId.fields.length} fields
+                                                                                                    </Badge>
+                                                                                                </div>
+                                                                                                <ol className="space-y-2 list-decimal pl-5">
+                                                                                                    {t.testId.fields.map((f, fi) => (
+                                                                                                        <li key={fi} className="bg-white/60 rounded-lg p-2 text-sm text-gray-700">
+                                                                                                            <span className="font-medium">{f.fieldName}</span>
+                                                                                                            {(f.unit || f.range) && (
+                                                                                                                <span className="text-gray-500 text-xs ml-2">
+                                                                                                                    {f.unit && `(${f.unit})`}
+                                                                                                                    {f.range && ` • Range: ${f.range}`}
+                                                                                                                </span>
+                                                                                                            )}
+                                                                                                        </li>
+                                                                                                    ))}
+                                                                                                </ol>
+                                                                                            </div>
+                                                                                        )}
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
                                                                     )}
-
-
-
                                                                 </div>
                                                             </DialogContent>
 
@@ -553,6 +632,16 @@ export default function PatientsList() {
                                                             Print
                                                         </Button>
                                                     </TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="bg-red-50 border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all duration-200"
+                                                            onClick={() => openDeleteDialog(patient)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4 text-red-600" />
+                                                        </Button>
+                                                    </TableCell>
 
 
                                                 </TableRow>
@@ -575,6 +664,51 @@ export default function PatientsList() {
                     </CardContent>
                 </Card>
             </div>
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                <DialogContent className="max-w-md bg-white rounded-2xl border-0 shadow-2xl">
+                    <DialogHeader className="pb-4">
+                        <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
+                            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                                <AlertTriangle className="h-4 w-4 text-red-600" />
+                            </div>
+                            Delete Patient
+                        </DialogTitle>
+                    </DialogHeader>
+                    <Separator className="bg-gray-200" />
+                    <div className="py-4">
+                        <div className="mb-4">
+                            <p className="text-gray-600">
+                                Are you sure you want to delete patient{" "}
+                                <span className="font-semibold text-gray-900">{patientToDelete?.name}</span>
+                                {" "}(Ref: {patientToDelete?.refNo})?
+                            </p>
+                            <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                                <p className="text-sm text-red-700 flex items-center">
+                                    <AlertTriangle className="h-4 w-4 mr-2" />
+                                    This action cannot be undone. All associated test results will also be deleted.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-3">
+                            <Button
+                                variant="outline"
+                                onClick={() => setDeleteOpen(false)}
+                                className="rounded-lg"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg"
+                                onClick={handleDeletePatient}
+                            >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Delete Patient
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

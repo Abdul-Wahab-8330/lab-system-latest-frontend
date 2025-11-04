@@ -159,7 +159,7 @@ export default function InventoryManagement() {
         toast.success('Stock added successfully!');
       } else {
         await removeStock(payload);
-        toast.success('Stock removed successfully!');
+        toast.success('Stock Issued successfully!');
       }
 
       setTransactionDialogOpen(false);
@@ -370,7 +370,7 @@ export default function InventoryManagement() {
                     </Button>
                     <Button onClick={() => openTransactionDialog('removal')} className="bg-orange-500 hover:bg-orange-600">
                       <PackageMinus className="h-4 w-4 mr-2" />
-                      Remove Stock
+                      Issue Stock
                     </Button>
                   </div>
                 </div>
@@ -645,7 +645,7 @@ export default function InventoryManagement() {
                 ) : (
                   <>
                     <PackageMinus className="h-5 w-5 mr-2 text-orange-600" />
-                    Remove Stock
+                    Issue Stock
                   </>
                 )}
               </DialogTitle>
@@ -716,7 +716,7 @@ export default function InventoryManagement() {
                   type="submit"
                   className={transactionType === 'addition' ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700 text-white'}
                 >
-                  {transactionType === 'addition' ? 'Add Stock' : 'Remove Stock'}
+                  {transactionType === 'addition' ? 'Add Stock' : 'Isue Stock'}
                 </Button>
               </div>
             </form>

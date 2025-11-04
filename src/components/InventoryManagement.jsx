@@ -716,7 +716,7 @@ export default function InventoryManagement() {
                   type="submit"
                   className={transactionType === 'addition' ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700 text-white'}
                 >
-                  {transactionType === 'addition' ? 'Add Stock' : 'Isue Stock'}
+                  {transactionType === 'addition' ? 'Add Stock' : 'Issue Stock'}
                 </Button>
               </div>
             </form>

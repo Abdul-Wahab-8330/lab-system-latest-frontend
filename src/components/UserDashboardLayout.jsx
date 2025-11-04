@@ -7,7 +7,8 @@ import {
   UserCog,
   FileChartColumn,
   LineChart,
-  LucideBoxes
+  LucideBoxes,
+  CalculatorIcon
 } from "lucide-react";
 
 import {
@@ -72,6 +73,7 @@ const UserDashboardLayout = () => {
     { id: 'user analytics', icon: UserCog, label: 'User Analytics', link: '/admin/user-analytics', icon2: Crown },
     { id: 'test analytics', icon: FileChartColumn, label: 'Test Analytics', link: '/admin/test-analytics', icon2: Crown },
     { id: 'inventory', icon: LucideBoxes, label: 'Inventory Mngmnt', link: '/admin/inventory', icon2: Crown },
+    { id: 'expenses', icon: CalculatorIcon, label: 'Expense Mngmnt', link: '/admin/expenses', icon2: Crown },
 
     // + normal user options
     { id: 'register patients', icon: Plus, label: 'Register Patients', link: '/user/register-patient' },

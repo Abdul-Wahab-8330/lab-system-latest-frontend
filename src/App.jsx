@@ -31,6 +31,7 @@ import TestsCharts from "./components/TestsCharts";
 import UserManagementCharts from "./components/UserManagementCharts";
 import AccessDenied from './components/AccesssDenied'
 import InventoryManagement from "./components/InventoryManagement";
+import ExpenseManagement from "./components/ExpenseManagement";
 
 const UserManagementRoute = ({ children, user }) => {
     if (user?.userName !== 'abdulwahab123') {
@@ -90,7 +91,6 @@ function App() {
           />
 
 
-
           <Route path="add-reference" element={<DoctorCard />} />
           <Route path="edit-labinfo" element={<LabInfoForm />} />
           <Route path="finance-analytics" element={<FinanceCharts />} />
@@ -98,6 +98,7 @@ function App() {
           <Route path="test-analytics" element={<TestsCharts />} />
 
           <Route path="inventory" element={<InventoryManagement />} />
+          <Route path="expenses" element={<ExpenseManagement />} />
         </Route>
 
         {/* User Routes */}

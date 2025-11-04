@@ -30,6 +30,8 @@ import {
   Archive
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useRef } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import { LabInfoContext } from '@/context/LabnfoContext';
 
 
@@ -53,6 +55,7 @@ export default function InventoryManagement() {
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [itemForm, setItemForm] = useState({ itemId: '', itemName: '', description: '' });
+  const reportRef = useRef();
   const { info } = useContext(LabInfoContext)
 
 
@@ -191,134 +194,15 @@ export default function InventoryManagement() {
     }
   };
 
-//   const handlePrintReport = () => {
-//     window.print();
-//   };
+  //   const handlePrintReport = () => {
+  //     window.print();
+  //   };
 
 
-const handlePrintReport = () => {
-  const printContent = document.getElementById('report-content');
-  const printWindow = window.open('', '_blank', 'width=800,height=600');
-  
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>Inventory Report</title>
-        <style>
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
-          body {
-            font-family: system-ui, -apple-system, sans-serif;
-            padding: 20px;
-            background: white;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-          }
-          th, td {
-            padding: 12px;
-            text-align: left;
-            border: 1px solid #ddd;
-          }
-          th {
-            background: #7c3aed;
-            color: white;
-            font-weight: bold;
-          }
-          tr:nth-child(even) {
-            background: #f9fafb;
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #ddd;
-          }
-          .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-            color: #1f2937;
-          }
-          .header p {
-            color: #6b7280;
-            margin: 5px 0;
-          }
-          .summary {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin: 30px 0;
-          }
-          .summary-card {
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #e5e7eb;
-          }
-          .summary-card h3 {
-            font-size: 14px;
-            color: #6b7280;
-            margin-bottom: 5px;
-          }
-          .summary-card p {
-            font-size: 32px;
-            font-weight: bold;
-            color: #1f2937;
-          }
-          .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #ddd;
-            color: #6b7280;
-            font-size: 14px;
-          }
-          .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-          }
-          .badge-addition {
-            background: #d1fae5;
-            color: #065f46;
-          }
-          .badge-removal {
-            background: #fed7aa;
-            color: #92400e;
-          }
-          @media print {
-            @page {
-              margin: 1cm;
-            }
-            body {
-              print-color-adjust: exact;
-              -webkit-print-color-adjust: exact;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        ${printContent.innerHTML}
-      </body>
-    </html>
-  `);
-  
-  printWindow.document.close();
-  
-  // Wait for content to load then print
-  setTimeout(() => {
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
-  }, 250);
-};
+  const handlePrintReport = useReactToPrint({
+    contentRef: reportRef,
+    documentTitle: `Inventory_Report_${reportDates.startDate}_to_${reportDates.endDate}`,
+  });
 
 
   // Calculate report totals
@@ -400,9 +284,9 @@ const handlePrintReport = () => {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="px-2 py-0">
                 {/* Search */}
-                <div className="mb-6">
+                <div className="mb-3">
                   <div className="relative">
                     <Input
                       placeholder="Search items by name or ID..."
@@ -889,179 +773,92 @@ const handlePrintReport = () => {
               </div>
             </DialogHeader>
 
-            {/* Report Content */}
-            <div className="py-6 print:py-0" id="report-content">
+            <div ref={reportRef} className="p-8">
               {/* Report Header */}
-              <div className="text-center mb-8 pb-6 border-b-2 border-gray-200">
-                <div className="flex items-center justify-center mb-4">
-                  {/* <Package className="h-16 w-16 text-purple-600 mr-4" /> */}
-                  <img src={info.logoUrl} alt="Lab Logo" className="h-16 w-16 mr-4" onError={(e) => e.target.style.display = 'none'} />
+              <div className="text-center mb-6 pb-4 border-b-2">
+                <div className="flex items-center justify-center mb-3">
+                  <img src={info.logoUrl} alt="Lab Logo" className="h-12 w-12 mr-3" onError={(e) => e.target.style.display = 'none'} />
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Medical Laboratory</h1>
-                    <p className="text-gray-600 mt-1">Inventory Management Report</p>
+                    <h1 className="text-2xl font-bold text-gray-900">{info.labName || 'Medical Laboratory'}</h1>
+                    <p className="text-sm text-gray-600">Inventory Management Report</p>
                   </div>
                 </div>
-                <div className="flex justify-center gap-8 text-sm text-gray-600 mt-4">
-                  <div>
-                    <span className="font-semibold">Report Period:</span>{' '}
-                    {new Date(reportDates.startDate).toLocaleDateString()} - {new Date(reportDates.endDate).toLocaleDateString()}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Generated:</span> {new Date().toLocaleString()}
-                  </div>
+                <div className="text-xs text-gray-500 mt-2">
+                  Period: {new Date(reportDates.startDate).toLocaleDateString()} - {new Date(reportDates.endDate).toLocaleDateString()} |
+                  Generated: {new Date().toLocaleString()}
                 </div>
               </div>
 
-              {/* Summary Cards */}
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-blue-600 font-semibold mb-1">Total Transactions</p>
-                      <p className="text-3xl font-bold text-blue-900">{reportData.length}</p>
-                    </div>
-                    <Archive className="h-10 w-10 text-blue-400" />
-                  </div>
-                </div>
-                <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl border border-green-200">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-green-600 font-semibold mb-1">Total Additions</p>
-                      <p className="text-3xl font-bold text-green-900">{reportTotals.totalAdditions}</p>
-                    </div>
-                    <TrendingUp className="h-10 w-10 text-green-400" />
-                  </div>
-                </div>
-                <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-6 rounded-xl border border-orange-200">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-orange-600 font-semibold mb-1">Total Removals</p>
-                      <p className="text-3xl font-bold text-orange-900">{reportTotals.totalRemovals}</p>
-                    </div>
-                    <TrendingDown className="h-10 w-10 text-orange-400" />
-                  </div>
-                </div>
+              {/* Summary Section - Simple Table Format */}
+              <div className="mb-6">
+                <table className="w-full border-collapse">
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="py-2 font-semibold">Total Transactions:</td>
+                      <td className="py-2 text-right font-bold">{reportData.length}</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="py-2 font-semibold text-green-700">Total Additions:</td>
+                      <td className="py-2 text-right font-bold text-green-700">{reportTotals.totalAdditions}</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="py-2 font-semibold text-orange-700">Total Removals:</td>
+                      <td className="py-2 text-right font-bold text-orange-700">{reportTotals.totalRemovals}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
 
               {/* Transactions Table */}
-              <div className="rounded-xl overflow-hidden border-2 border-gray-200">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gradient-to-r from-purple-600 to-indigo-600">
-                      <TableHead className="font-bold text-white">Date</TableHead>
-                      <TableHead className="font-bold text-white">Item ID</TableHead>
-                      <TableHead className="font-bold text-white">Item Name</TableHead>
-                      <TableHead className="font-bold text-white">Type</TableHead>
-                      <TableHead className="font-bold text-white">Quantity</TableHead>
-                      <TableHead className="font-bold text-white">Remarks</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {reportData.length > 0 ? (
-                      reportData.map((txn, index) => (
-                        <TableRow key={txn._id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                          <TableCell className="font-medium">{new Date(txn.date).toLocaleDateString()}</TableCell>
-                          <TableCell className="font-semibold text-purple-700">{txn.itemId?.itemId || 'N/A'}</TableCell>
-                          <TableCell className="font-medium">{txn.itemName}</TableCell>
-                          <TableCell>
-                            {txn.transactionType === 'addition' ? (
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                <TrendingUp className="h-3 w-3 mr-1" />
-                                Addition
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-orange-100 text-orange-700 border-orange-200">
-                                <TrendingDown className="h-3 w-3 mr-1" />
-                                Removal
-                              </Badge>
-                            )}
-                          </TableCell>
-                          <TableCell className="font-bold">{txn.quantity}</TableCell>
-                          <TableCell className="text-gray-600">{txn.remarks || '—'}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                          No transactions found for the selected date range
+              <h2 className="text-lg font-bold mb-3 text-gray-900">Transaction Details</h2>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-100">
+                    <TableHead className="font-bold text-gray-900 border">Date</TableHead>
+                    <TableHead className="font-bold text-gray-900 border">Item ID</TableHead>
+                    <TableHead className="font-bold text-gray-900 border">Item Name</TableHead>
+                    <TableHead className="font-bold text-gray-900 border">Type</TableHead>
+                    <TableHead className="font-bold text-gray-900 border">Quantity</TableHead>
+                    <TableHead className="font-bold text-gray-900 border">Remarks</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {reportData.length > 0 ? (
+                    reportData.map((txn, index) => (
+                      <TableRow key={txn._id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <TableCell className="border">{new Date(txn.date).toLocaleDateString()}</TableCell>
+                        <TableCell className="border font-semibold">{txn.itemId?.itemId || 'N/A'}</TableCell>
+                        <TableCell className="border">{txn.itemName}</TableCell>
+                        <TableCell className="border">
+                          {txn.transactionType === 'addition' ? (
+                            <span className="text-green-700 font-semibold">Addition ↑</span>
+                          ) : (
+                            <span className="text-orange-700 font-semibold">Removal ↓</span>
+                          )}
                         </TableCell>
+                        <TableCell className="border font-bold text-center">{txn.quantity}</TableCell>
+                        <TableCell className="border text-gray-600">{txn.remarks || '—'}</TableCell>
                       </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-gray-500 border">
+                        No transactions found for the selected date range
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
 
-              {/* Report Footer */}
-              <div className="mt-8 pt-6 border-t-2 border-gray-200 text-center text-sm text-gray-600">
-                <p className="font-semibold">Medical Laboratory - Inventory Management System</p>
-                <p className="mt-1">This is a computer-generated report</p>
+              {/* Footer */}
+              <div className="mt-6 pt-4 border-t text-center text-xs text-gray-500">
+                <p>Medical Laboratory - Inventory Management System</p>
+                <p>This is a computer-generated report</p>
               </div>
             </div>
           </DialogContent>
         </Dialog>
       </div>
-
-      {/* Print Styles */}
-      {/* <style jsx global>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          #report-content,
-          #report-content * {
-            visibility: visible;
-          }
-          #report-content {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 20px;
-          }
-          .print\\:hidden {
-            display: none !important;
-          }
-          .print\\:py-0 {
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-          }
-        }
-      `}</style> */}
-
-
-      {/* Print Styles */}
-<style dangerouslySetInnerHTML={{
-  __html: `
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-      #report-content,
-      #report-content * {
-        visibility: visible;
-      }
-      #report-content {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        padding: 20px;
-      }
-      .print\\:hidden {
-        display: none !important;
-      }
-      .print\\:py-0 {
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-      }
-      @page {
-        margin: 1cm;
-      }
-    }
-  `
-}} />
-
-
     </div>
   );
 }

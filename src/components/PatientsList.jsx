@@ -248,14 +248,15 @@ export default function PatientsList() {
                                     <TableHeader>
                                         <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150">
                                             <TableHead className="font-bold text-gray-800 py-4">
-                                                <FileText className="inline h-4 w-4 mr-2" />
-                                                Ref No
+                                                Ref/Patient No
+                                            </TableHead>
+                                            <TableHead className="font-bold text-gray-800 py-4">
+                                                Case No
                                             </TableHead>
                                             <TableHead className="font-bold text-gray-800">
                                                 <Users className="inline h-4 w-4 mr-2" />
                                                 Name
                                             </TableHead>
-                                            <TableHead className="font-bold text-gray-800">Gender</TableHead>
                                             <TableHead className="font-bold text-gray-800">
                                                 <Calendar className="inline h-4 w-4 mr-2" />
                                                 Date
@@ -285,11 +286,11 @@ export default function PatientsList() {
                                                     <TableCell className="font-semibold text-blue-700 py-4">
                                                         {patient.refNo}
                                                     </TableCell>
+                                                    <TableCell className="font-semibold text-blue-700 py-4">
+                                                        {patient.caseNo}
+                                                    </TableCell>
                                                     <TableCell className="font-medium text-gray-900">
                                                         {patient.name}
-                                                    </TableCell>
-                                                    <TableCell className="text-gray-700">
-                                                        {patient.gender}
                                                     </TableCell>
                                                     <TableCell className="text-gray-600 text-sm">
                                                         {new Date(patient.createdAt).toLocaleString()}
@@ -344,9 +345,12 @@ export default function PatientsList() {
                                                                     <div className="grid grid-cols-2 gap-4">
                                                                         <div className="space-y-3">
                                                                             <p className="flex items-center text-sm">
-                                                                                <FileText className="h-4 w-4 mr-2 text-gray-500" />
-                                                                                <strong className="text-gray-700">Ref No:</strong>
+                                                                                <strong className="text-gray-700">Ref/Patient No:</strong>
                                                                                 <span className="ml-2 text-blue-600 font-semibold">{patient.refNo}</span>
+                                                                            </p>
+                                                                            <p className="flex items-center text-sm">
+                                                                                <strong className="text-gray-700">Case No:</strong>
+                                                                                <span className="ml-2 text-blue-600 font-semibold">{patient.caseNo}</span>
                                                                             </p>
                                                                             <p className="flex items-center text-sm">
                                                                                 <Users className="h-4 w-4 mr-2 text-gray-500" />

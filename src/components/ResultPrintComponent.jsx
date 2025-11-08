@@ -634,6 +634,10 @@ export default function ResultPrintComponent() {
                                                     <p className="text-base font-medium text-blue-700">{selectedPatient.refNo || "—"}</p>
                                                 </div>
                                                 <div>
+                                                    <label className="font-semibold text-sm text-gray-600">Case No:</label>
+                                                    <p className="text-base font-medium text-blue-700">{selectedPatient.caseNo || "—"}</p>
+                                                </div>
+                                                <div>
                                                     <label className="font-semibold text-sm text-gray-600">Age:</label>
                                                     <p className="text-base text-gray-900">{selectedPatient.age || "—"}</p>
                                                 </div>

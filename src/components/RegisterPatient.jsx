@@ -402,7 +402,7 @@ export default function RegisterPatient() {
                         <form onSubmit={handleSubmit} className="space-y-5">
                             {/* Patient Information Section */}
                             <div className="space-y-6">
-                                <div className="flex items-center mb-6">
+                                <div className="flex items-center mb-4">
                                     <div className="flex items-center justify-center w-7 h-7 bg-blue-100 rounded-lg mr-3">
                                         <User className="h-4 w-4 text-blue-600" />
                                     </div>
@@ -589,7 +589,7 @@ export default function RegisterPatient() {
 
                             <div className="space-y-6">
                                 <div className="space-y-4">
-                                    <div className="flex items-center mb-3">
+                                    <div className="flex items-center mb-4">
                                         <div className="flex items-center justify-center w-7 h-7 bg-green-100 rounded-lg mr-3">
                                             <TestTube className="h-4 w-4 text-green-600" />
                                         </div>

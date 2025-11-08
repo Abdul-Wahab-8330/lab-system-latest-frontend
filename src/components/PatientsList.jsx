@@ -1,4 +1,5 @@
-import { useState, useMemo, useContext } from "react";
+import { useState, useMemo, useContext, useRef } from "react";
+import { useReactToPrint } from 'react-to-print';
 import { PatientsContext } from "@/context/PatientsContext"; // your context
 import { Input } from "@/components/ui/input";
 import {
@@ -61,6 +62,8 @@ export default function PatientsList() {
 
     // State for date search
     const [dateSearch, setDateSearch] = useState("");
+    const [printPatient, setPrintPatient] = useState(null);
+    const reportRef = useRef();
 
     // Filtering with both text and date search
     const filteredPatients = useMemo(() => {
@@ -141,6 +144,22 @@ export default function PatientsList() {
             toast.error('Failed to delete patient. Please try again.');
         }
     };
+
+    // Print handler using react-to-print
+    const handlePrintRegistration = useReactToPrint({
+        contentRef: reportRef,
+        documentTitle: `Registration_Report_${new Date().toISOString().split('T')[0]}`,
+    });
+
+    // Trigger print with patient data
+    const handlePrintClick = (patient) => {
+        setPrintPatient(patient);
+        setTimeout(() => {
+            handlePrintRegistration();
+        }, 100);
+    };
+
+
 
     const openDeleteDialog = (patient) => {
         setPatientToDelete(patient);
@@ -551,86 +570,12 @@ export default function PatientsList() {
                                                         </Dialog>
                                                     </TableCell>
 
-                                                    {/* Enhanced Print Button */}
                                                     <TableCell>
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
                                                             className='bg-green-50 border-green-200 hover:bg-green-100 hover:border-green-300 text-green-700 rounded-lg transition-all duration-200'
-                                                            onClick={() => {
-                                                                const win = window.open("", "_blank");
-
-                                                                const reportHTML = `
-        <html>
-        <head>
-            <title>Patient Report</title>
-            <style>
-                body { font-family: Arial, sans-serif; padding: 20px; }
-                h1, h2, h3 { margin: 0; text-align: center; }
-                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-                .header { text-align: center; margin-bottom: 20px; }
-                .image{width:70px}
-                .total{text-align:end; margin-top:15px;}
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <img class='image' src="${info.logoUrl}" id="lab-logo"/>
-                <h3>${info.labName}</h3>
-                <p>📍 ${info.address} | 📞 ${info.phoneNumber} | ✉ ${info.email}</p>
-                <h2>Patient Registration Report</h2>
-            </div>
-            <p><strong>Ref No:</strong> ${patient.refNo}</p>
-            <p><strong>Name:</strong> ${patient.name}</p>
-            <p><strong>Age:</strong> ${patient.age}</p>
-            <p><strong>Gender:</strong> ${patient.gender}</p>
-            <p><strong>Phone:</strong> ${patient.phone}</p>
-            <p><strong>Payment Status:</strong> ${patient?.paymentStatus}</p>
-
-            <p><strong>Date:</strong> ${new Date(patient.createdAt).toLocaleString()}</p>
-            ${patient.tests && patient.tests.length > 0
-                                                                        ? `<h3>Tests</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th class='head'>Test Name</th>
-                            <th class='head'>Price</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${patient.tests
-                                                                            .map(
-                                                                                (t) => `
-                            <tr>
-                                <td>${t.testName}</td>
-                                <td>Rs.${t.price}</td>
-                            </tr>
-                        `
-                                                                            )
-                                                                            .join("")}
-                    </tbody>
-                </table>`
-                                                                        : ""
-                                                                    }
-            <p class="total"><strong>Total: </strong>Rs.${patient.total}</p>
-        </body>
-        </html>
-    `;
-
-                                                                win.document.write(reportHTML);
-                                                                win.document.close();
-
-                                                                // Wait for image to load before printing
-                                                                const img = win.document.getElementById("lab-logo");
-                                                                img.onload = () => {
-                                                                    win.print();
-                                                                };
-                                                                img.onerror = () => {
-                                                                    console.warn("Logo failed to load, printing without it.");
-                                                                    win.print();
-                                                                };
-                                                            }}
+                                                            onClick={() => handlePrintClick(patient)}
                                                         >
                                                             <Printer className="h-4 w-4 mr-1" />
                                                             Print
@@ -713,6 +658,224 @@ export default function PatientsList() {
                     </div>
                 </DialogContent>
             </Dialog>
+            {/* ========================================
+    HIDDEN PRINT TEMPLATE FOR REGISTRATION
+    ======================================== */}
+            {printPatient && (
+                <div style={{ display: 'none' }}>
+                    <div ref={reportRef} className="bg-white">
+                        <style>
+                            {`
+@media print {
+    @page { 
+        margin: 20mm 20mm; 
+        size: A4 portrait;
+    }
+    body { 
+        print-color-adjust: exact; 
+        -webkit-print-color-adjust: exact; 
+    }
+}
+`}
+                        </style>
+
+                        {/* ========================================
+                            LAB COPY
+                        ======================================== */}
+                        <div className="mb-8 pb-6 border-b-2 border-dashed border-gray-600">
+                            {/* LAB COPY Header */}
+                            <div className="text-center mb-4">
+                                <div className=" inline-block px-6 py-1   mb-3">
+                                    <p className="text-sm font-bold text-blue-900">LAB COPY</p>
+                                </div>
+                                
+                                <div className="flex items-center justify-center mb-2">
+                                    {info.logoUrl && (
+                                        <img
+                                            src={info.logoUrl}
+                                            alt="Lab Logo"
+                                            className="h-24 w-24 mr-3 object-contain"
+                                            onError={(e) => e.target.style.display = 'none'}
+                                        />
+                                    )}
+                                    <div>
+                                        <h1 className="text-xl font-bold mb-0.5">
+                                            {info.labName || 'Medical Laboratory'}
+                                        </h1>
+                                        <p className="text-xs">
+                                            {info.address || 'Laboratory Address'}
+                                        </p>
+                                        <p className="text-xs">
+                                            Tel: {info.phoneNumber || 'Phone'}
+                                        </p>
+                                        <p className="text-xs font-semibold mt-1">
+                                            Quality Assurance Through Advanced Technology
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Patient Info in ONE Box */}
+                            <div className="border border-gray-400 p-3 mb-3">
+                                <div className="grid grid-cols-3 gap-4 text-xs">
+                                    <div><span className="font-semibold">Patient #:</span> {printPatient?.refNo}</div>
+                                    <div><span className="font-semibold">Case #:</span> {printPatient?.caseNo}</div>
+                                    <div><span className="font-semibold">Date/Time:</span> {new Date(printPatient.createdAt).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} {new Date(printPatient.createdAt).toLocaleDateString('en-GB')}</div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-4 text-xs mt-2">
+                                    <div><span className="font-semibold">Patient:</span> {printPatient.name}</div>
+                                    <div><span className="font-semibold">Age/Sex:</span> {printPatient.age} Years / {printPatient.gender}</div>
+                                    <div><span className="font-semibold">Phone:</span> {printPatient.phone}</div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-4 text-xs mt-2">
+                                    <div><span className="font-semibold">Consultant:</span> {printPatient.referencedBy}</div>
+                                    <div><span className="font-semibold">Specimen:</span> {printPatient.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</div>
+                                </div>
+                            </div>
+
+                            {/* Tests Table */}
+                            {printPatient.tests && printPatient.tests.length > 0 && (
+                                <div className="mb-3">
+                                    <table className="w-full text-xs border-collapse">
+                                        <thead>
+                                            <tr className="border-b border-gray-400">
+                                                <th className="text-left py-1 font-semibold">S.No</th>
+                                                <th className="text-left py-1 font-semibold">Test Descriptions</th>
+                                                <th className="text-right py-1 font-semibold">Charges</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {printPatient.tests.map((test, idx) => (
+                                                <tr key={idx} className="border-b border-gray-300">
+                                                    <td className="py-1.5">{idx + 1}</td>
+                                                    <td className="py-1.5">{test.testName}</td>
+                                                    <td className="text-right py-1.5">Rs.{test.price}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            {/* Totals */}
+                            <div className="flex justify-end">
+                                <div className="text-xs space-y-0.5 min-w-[200px]">
+                                    <div className="flex justify-between font-semibold">
+                                        <span>Net Amount:</span>
+                                        <span>Rs.{printPatient.total}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ========================================
+                            PATIENT COPY
+                        ======================================== */}
+                        <div className="pt-4">
+                            {/* PATIENT COPY Header */}
+                            <div className="text-center mb-4">
+                                <div className=" inline-block px-6 py-1  mb-3">
+                                    <p className="text-sm font-bold text-green-900">PATIENT COPY</p>
+                                </div>
+                                
+                                <div className="flex items-center justify-center mb-2">
+                                    {info.logoUrl && (
+                                        <img
+                                            src={info.logoUrl}
+                                            alt="Lab Logo"
+                                            className="h-24 w-24 mr-3 object-contain"
+                                            onError={(e) => e.target.style.display = 'none'}
+                                        />
+                                    )}
+                                    <div>
+                                        <h1 className="text-xl font-bold mb-0.5">
+                                            {info.labName || 'Medical Laboratory'}
+                                        </h1>
+                                        <p className="text-xs">
+                                            {info.address || 'Laboratory Address'}
+                                        </p>
+                                        <p className="text-xs">
+                                            Tel: {info.phoneNumber || 'Phone'}
+                                        </p>
+                                        <p className="text-xs font-semibold mt-1">
+                                            Quality Assurance Through Advanced Technology
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Patient Info in ONE Box */}
+                            <div className="border border-gray-400 p-3 mb-3">
+                                <div className="grid grid-cols-3 gap-4 text-xs">
+                                    <div><span className="font-semibold">Patient #:</span> {printPatient?.refNo}</div>
+                                    <div><span className="font-semibold">Case #:</span> {printPatient?.caseNo}</div>
+                                    <div><span className="font-semibold">Date/Time:</span> {new Date(printPatient.createdAt).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} {new Date(printPatient.createdAt).toLocaleDateString('en-GB')}</div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-4 text-xs mt-2">
+                                    <div><span className="font-semibold">Patient:</span> {printPatient.name}</div>
+                                    <div><span className="font-semibold">Age/Sex:</span> {printPatient.age} Years / {printPatient.gender}</div>
+                                    <div><span className="font-semibold">Phone:</span> {printPatient.phone}</div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-4 text-xs mt-2">
+                                    <div><span className="font-semibold">Consultant:</span> {printPatient.referencedBy}</div>
+                                    <div><span className="font-semibold">Specimen:</span> {printPatient.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</div>
+                                </div>
+                            </div>
+
+                            {/* Tests Table */}
+                            {printPatient.tests && printPatient.tests.length > 0 && (
+                                <div className="mb-3">
+                                    <table className="w-full text-xs border-collapse">
+                                        <thead>
+                                            <tr className="border-b border-gray-400">
+                                                <th className="text-left py-1 font-semibold">S.No</th>
+                                                <th className="text-left py-1 font-semibold">Test Descriptions</th>
+                                                <th className="text-right py-1 font-semibold">Charges</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {printPatient.tests.map((test, idx) => (
+                                                <tr key={idx} className="border-b border-gray-300">
+                                                    <td className="py-1.5">{idx + 1}</td>
+                                                    <td className="py-1.5">{test.testName}</td>
+                                                    <td className="text-right py-1.5">Rs.{test.price}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            {/* Totals Section */}
+                            <div className="flex justify-end mb-3">
+                                <div className="text-xs space-y-0.5 min-w-[200px]">
+                                    <div className="flex justify-between border-b border-gray-300 pb-0.5">
+                                        <span>Subtotal:</span>
+                                        <span>Rs.{printPatient.total}</span>
+                                    </div>
+                                    <div className="flex justify-between font-semibold border-b border-gray-300 pb-0.5">
+                                        <span>Net Amount:</span>
+                                        <span>Rs.{printPatient.total}</span>
+                                    </div>
+                                    <div className="flex justify-between border-b border-gray-300 pb-0.5">
+                                        <span>Paid:</span>
+                                        <span>Rs.{printPatient.paymentStatus === 'Paid' ? printPatient.total : '0.00'}</span>
+                                    </div>
+                                    <div className="flex justify-between font-semibold">
+                                        <span>Due Amount:</span>
+                                        <span>Rs.{printPatient.paymentStatus === 'Paid' ? '0.00' : printPatient.total}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="text-center text-xs border-t border-gray-400 pt-2">
+                                <p className="font-semibold">Computerized Receipt, No Signature(s) Required</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

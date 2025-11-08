@@ -96,6 +96,7 @@ function App() {
           <Route path="finance-analytics" element={<FinanceCharts />} />
           <Route path="user-analytics" element={<UserManagementCharts />} />
           <Route path="test-analytics" element={<TestsCharts />} />
+          <Route path="patient-analytics" element={<PatientCharts />} />
 
           <Route path="inventory" element={<InventoryManagement />} />
           <Route path="expenses" element={<ExpenseManagement />} />
@@ -117,7 +118,6 @@ function App() {
           <Route path="payments" element={<PaymentComponent />} />
           <Route path="results" element={<ResultAddingComponent />} />
           <Route path="result-print" element={<ResultPrintComponent />} />
-          <Route path="patient-analytics" element={<PatientCharts />} />
         </Route>
 
         {/* Other Routes */}

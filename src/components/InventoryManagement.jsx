@@ -241,29 +241,29 @@ export default function InventoryManagement() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 p-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
+        {/* <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl shadow-lg mb-4">
             <Package className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Inventory Management</h1>
-        </div>
+        </div> */}
 
         {/* Main Tabs */}
         <Tabs defaultValue="items" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-gray-100 backdrop-blur-sm  rounded-xl shadow-sm">
-            <TabsTrigger value="items" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600  data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg">
+          <TabsList className="grid w-full grid-cols-4 bg-gray-100 backdrop-blur-sm  rounded-xl shadow-sm gap-1">
+            <TabsTrigger value="items" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600  data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg border-purple-200">
               <Box className="h-4 w-4 mr-2" />
               Item Master
             </TabsTrigger>
-            <TabsTrigger value="transactions" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg">
+            <TabsTrigger value="transactions" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg border border-purple-200">
               <Archive className="h-4 w-4 mr-2" />
               Transactions
             </TabsTrigger>
-            <TabsTrigger value="stock" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg">
+            <TabsTrigger value="stock" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg border-purple-200">
               <Package className="h-4 w-4 mr-2" />
               Current Stock
             </TabsTrigger>
-            <TabsTrigger value="reports" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg">
+            <TabsTrigger value="reports" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg border-purple-200">
               <FileText className="h-4 w-4 mr-2" />
               Reports
             </TabsTrigger>
@@ -375,9 +375,9 @@ export default function InventoryManagement() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="px-6 py-1">
                 {/* Search */}
-                <div className="mb-6">
+                <div className="mb-4">
                   <div className="relative">
                     <Input
                       placeholder="Search transactions by item name or type..."
@@ -462,9 +462,9 @@ export default function InventoryManagement() {
                   Current Stock Levels
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="px-6 py-0">
                 {/* Search */}
-                <div className="mb-6">
+                <div className="mb-3">
                   <div className="relative">
                     <Input
                       placeholder="Search stock by item name or ID..."

@@ -187,9 +187,9 @@ export default function PatientsList() {
                         </div>
                     </CardHeader>
 
-                    <CardContent className="p-8">
+                    <CardContent className="px-8 py-1">
                         {/* Enhanced Search Section */}
-                        <div className="mb-8">
+                        <div className="mb-5">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {/* Name/Ref Search */}
                                 <div className="relative group">

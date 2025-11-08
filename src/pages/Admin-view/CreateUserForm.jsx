@@ -241,17 +241,17 @@ function CreateUserForm() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header Section */}
-        <div className="text-center">
+        {/* <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl shadow-lg mb-4">
             <UserPlus className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
           <p className="text-gray-600">Create new users and manage existing accounts</p>
-        </div>
+        </div> */}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Create User Form */}
-          <Card className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden">
+          <Card className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden p-0">
             <div className="bg-gradient-to-r from-purple-600 to-indigo-500 px-6 py-4">
               <h2 className="text-xl font-semibold text-white flex items-center">
                 <div className="p-2 bg-purple-500 rounded-lg mr-3">
@@ -356,7 +356,7 @@ function CreateUserForm() {
           </Card>
 
           {/* Users Table */}
-          <Card className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden">
+          <Card className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden p-0">
             <div className="bg-gradient-to-r from-indigo-600 to-purple-500 px-6 py-4">
               <h2 className="text-xl font-semibold text-white flex items-center justify-between">
                 <div className="flex items-center">

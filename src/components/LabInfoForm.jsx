@@ -44,7 +44,6 @@ export default function LabInfoForm() {
                 const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/lab-info`);
                 if (res.data) {
                     setLabInfo(res.data);
-                    console.log(res.data);
                 }
             } catch (error) {
                 console.error("Failed to fetch lab info:", error);
@@ -115,13 +114,13 @@ export default function LabInfoForm() {
         <div className="bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 p-6 min-h-screen">
             <div className="max-w-4xl mx-auto">
                 {/* Header Section */}
-                <div className="mb-8 text-center">
+                {/* <div className="mb-8 text-center">
                     <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-3xl shadow-lg mb-6">
                         <Building2 className="h-10 w-10 text-white" />
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Laboratory Information</h1>
                     <p className="text-gray-600">Manage your laboratory details and settings</p>
-                </div>
+                </div> */}
 
                 {/* Main Card */}
                 <Card className="bg-white/90 backdrop-blur-sm shadow-2xl rounded-3xl border-0 overflow-hidden p-0">

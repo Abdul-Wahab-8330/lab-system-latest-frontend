@@ -353,7 +353,7 @@ export default function PaymentComponent() {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-100 p-6">
             <div className="max-w-7xl mx-auto">
                 {/* Statistics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-3">
+                {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-3">
                     <Card className="bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl border-0 overflow-hidden">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
@@ -409,7 +409,7 @@ export default function PaymentComponent() {
                             </div>
                         </CardContent>
                     </Card>
-                </div>
+                </div> */}
 
                 {/* Main Content Card */}
                 <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden p-0">
@@ -432,9 +432,9 @@ export default function PaymentComponent() {
                         </div>
                     </CardHeader>
 
-                    <CardContent className="p-8">
+                    <CardContent className="px-8 py-3">
                         {/* Enhanced Filter Section */}
-                        <div className="mb-8">
+                        <div className="mb-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 {/* Name/Ref Search */}
                                 <div className="relative group">

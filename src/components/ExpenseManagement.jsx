@@ -153,7 +153,7 @@ export default function ExpenseManagement() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-amber-100 p-4">
             <div className="max-w-7xl mx-auto">
-                <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0">
+                <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 p-0">
                     <CardHeader className="bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-t-2xl py-3 px-6">
                         <div className="flex items-center justify-between">
                             <CardTitle className="flex items-center text-xl">

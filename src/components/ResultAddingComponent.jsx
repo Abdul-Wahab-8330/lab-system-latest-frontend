@@ -223,9 +223,9 @@ export default function ResultAddingComponent() {
                         </div>
                     </CardHeader>
 
-                    <CardContent className="p-8">
+                    <CardContent className="px-8 py-2">
                         {/* Enhanced Filter Section */}
-                        <div className="mb-8">
+                        <div className="mb-5">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Name/Ref Search */}
                                 <div className="relative group">
@@ -263,7 +263,7 @@ export default function ResultAddingComponent() {
                             </div>
                         </div>
 
-                        <Separator className="mb-8 bg-gray-200" />
+                        <Separator className="mb-5 bg-gray-200" />
 
                         {/* Enhanced Table */}
                         <div className="rounded-2xl overflow-hidden border-2 border-gray-100 shadow-lg bg-white">

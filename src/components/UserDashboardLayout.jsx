@@ -72,6 +72,7 @@ const UserDashboardLayout = () => {
     { id: 'finance analytics', icon: BarChart2, label: 'Finance Analytics', link: '/admin/finance-analytics', icon2: Crown },
     { id: 'user analytics', icon: UserCog, label: 'User Analytics', link: '/admin/user-analytics', icon2: Crown },
     { id: 'test analytics', icon: FileChartColumn, label: 'Test Analytics', link: '/admin/test-analytics', icon2: Crown },
+    { id: 'analytics', icon: BarChart3, label: 'Patient Analytics', link: '/admin/patient-analytics', icon2: Crown },
     { id: 'inventory', icon: LucideBoxes, label: 'Inventory Mngmnt', link: '/admin/inventory', icon2: Crown },
     { id: 'expenses', icon: CalculatorIcon, label: 'Expense Mngmnt', link: '/admin/expenses', icon2: Crown },
 
@@ -81,7 +82,6 @@ const UserDashboardLayout = () => {
     { id: 'payments', icon: DollarSign, label: 'Payments', link: '/user/payments' },
     { id: 'results', icon: Microscope, label: 'Manage Results', link: '/user/results' },
     { id: 'final reports', icon: LineChart , label: 'Final Reports', link: '/user/result-print' },
-    { id: 'analytics', icon: BarChart3, label: 'Patient Analytics', link: '/user/patient-analytics' },
   ];
 
   const menuItems = [
@@ -92,7 +92,6 @@ const UserDashboardLayout = () => {
     { id: 'payments', icon: DollarSign, label: 'Payments', link: '/user/payments' },
     { id: 'results', icon: Microscope, label: 'Manage Results', link: '/user/results' },
     { id: 'final reports', icon: LineChart , label: 'Final Reports', link: '/user/result-print' },
-    { id: 'analytics', icon: BarChart3, label: 'Patient Analytics', link: '/user/patient-analytics' },
   ];
 
   // Function to determine active tab based on current route

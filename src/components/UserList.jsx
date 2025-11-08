@@ -165,12 +165,12 @@ const UserList = () => {
   const confirmDelete = async () => {
     try {
       if (selectedUser) {
-      setDeleting(true);
-      await deleteUser(selectedUser._id);
-      setDeleteDialogOpen(false);
-      setDeleting(false);
-      toast.success('User Deleted successfully')
-    }
+        setDeleting(true);
+        await deleteUser(selectedUser._id);
+        setDeleteDialogOpen(false);
+        setDeleting(false);
+        toast.success('User Deleted successfully')
+      }
     } catch (error) {
       console.log(error)
       toast.error('Failed to delete user!')
@@ -207,7 +207,7 @@ const UserList = () => {
     <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 min-h-screen">
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <div className="flex items-center justify-center mb-6">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-lg">
               <Users className="h-8 w-8 text-white" />
@@ -216,16 +216,11 @@ const UserList = () => {
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
             <p className="text-gray-600">Manage and monitor system users</p>
-            {!loading && users && (
-              <div className="mt-4 inline-flex items-center px-4 py-2 bg-white rounded-xl shadow-sm border border-gray-200">
-                <Users className="h-4 w-4 text-gray-500 mr-2" />
-                <span className="text-sm font-medium text-gray-700">
-                  {users.length} {users.length === 1 ? 'User' : 'Users'} Total
-                </span>
-              </div>
-            )}
+
           </div>
-        </div>
+        </div> */}
+
+
 
         {/* Main Content Card */}
         <div className="bg-white/80 backdrop-blur-sm shadow-2xl rounded-3xl border-0 overflow-hidden">
@@ -238,13 +233,24 @@ const UserList = () => {
                 </div>
                 User Directory
               </h2>
+              <div className="flex gap-4">
               {!loading && users && users.length > 0 && (
                 <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl">
                   <span className="text-white font-medium text-sm">
-                      {totalAdmins} { totalAdmins == 1 ? 'Admin' :  'Admins'} • {users.filter(u => u.role === 'user').length} Users
+                    {totalAdmins} {totalAdmins == 1 ? 'Admin' : 'Admins'} • {users.filter(u => u.role === 'user').length} Users
                   </span>
                 </div>
               )}
+              {!loading && users && (
+                <div className="inline-flex items-center px-4 py-2 bg-purple-500 rounded-xl shadow-sm text-white">
+                  <Users className="h-4 w-4  mr-2" />
+                  <span className="text-sm font-medium">
+                    {users.length} {users.length === 1 ? 'User' : 'Users'} Total
+                  </span>
+                </div>
+              )}
+
+              </div>
             </div>
           </div>
 

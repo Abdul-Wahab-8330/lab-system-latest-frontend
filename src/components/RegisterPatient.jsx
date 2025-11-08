@@ -18,6 +18,7 @@ import { Categories } from "@/utils/testCategories";
 import { AuthContext } from "@/context/AuthProvider";
 import { Separator } from "./ui/separator";
 import toast from "react-hot-toast";
+import { useNavigate } from 'react-router-dom';
 
 export default function RegisterPatient() {
     const { createPatient, setPatients, patients, fetchPatients } = useContext(PatientsContext);
@@ -26,6 +27,7 @@ export default function RegisterPatient() {
     const [isLoadingTests, setIsLoadingTests] = useState(true);
     const [testsError, setTestsError] = useState(null);
     const [loading, SetLoading] = useState(false)
+    const navigate = useNavigate();
 
 
     const [doctors, setDoctors] = useState([]);
@@ -34,12 +36,23 @@ export default function RegisterPatient() {
     // Patient search functionality
     const [searchQuery, setSearchQuery] = useState("");
     const [testSearchQuery, setTestSearchQuery] = useState("");
+    // Quick test add functionality
+    const [quickTestSearch, setQuickTestSearch] = useState("");
+    const [quickTestResults, setQuickTestResults] = useState([]);
+    const [showQuickTestResults, setShowQuickTestResults] = useState(false);
+    const [isSearchingTests, setIsSearchingTests] = useState(false);
+    const quickTestTimeoutRef = useRef(null);
+    const [isQuickTestFocused, setIsQuickTestFocused] = useState(false);
 
     const [searchResults, setSearchResults] = useState([]);
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
     const [categoryFilter, setCategoryFilter] = useState("All");
     const searchTimeoutRef = useRef(null);
+    const [hideTests, setHideTests] = useState(() => {
+        const saved = localStorage.getItem('hideTestsGrid');
+        return saved ? JSON.parse(saved) : false;
+    });
 
     const [form, setForm] = useState({
         name: "",
@@ -47,7 +60,7 @@ export default function RegisterPatient() {
         gender: "Male",
         phone: "",
         referencedBy: "Self",
-        paymentStatus: 'Not Paid',
+        paymentStatus: 'Paid',
         resultStatus: 'Pending',
         paymentStatusUpdatedBy: user?.name || "System",
         patientRegisteredBy: user?.name || "System",
@@ -84,6 +97,34 @@ export default function RegisterPatient() {
         };
     }, [searchQuery]);
 
+
+
+    // Quick test search with debounce
+    useEffect(() => {
+        if (quickTestTimeoutRef.current) {
+            clearTimeout(quickTestTimeoutRef.current);
+        }
+
+        if (quickTestSearch.trim().length >= 1) {
+            setIsSearchingTests(true);
+            quickTestTimeoutRef.current = setTimeout(() => {
+                searchTestsQuick(quickTestSearch);
+            }, 200);
+        } else {
+            setQuickTestResults([]);
+            setShowQuickTestResults(false);
+            setIsSearchingTests(false);
+        }
+
+        return () => {
+            if (quickTestTimeoutRef.current) {
+                clearTimeout(quickTestTimeoutRef.current);
+            }
+        };
+    }, [quickTestSearch]);
+
+
+
     const searchPatients = async (query) => {
         try {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/patients/search?q=${encodeURIComponent(query)}`);
@@ -96,6 +137,68 @@ export default function RegisterPatient() {
             setShowSearchResults(false);
             setIsSearching(false);
         }
+    };
+
+
+    const searchTestsQuick = async (query) => {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/tests/search?q=${encodeURIComponent(query)}`);
+            const results = response.data || [];
+            setQuickTestResults(results);
+            setShowQuickTestResults(true);
+            setIsSearchingTests(false);
+            return results; // Return results for immediate use
+        } catch (error) {
+            console.error("Test search error:", error);
+            setQuickTestResults([]);
+            setShowQuickTestResults(false);
+            setIsSearchingTests(false);
+            return [];
+        }
+    };
+
+    const handleQuickTestSelect = (test) => {
+        const exists = selectedTests.find(t => String(t.testId) === String(test._id));
+        if (!exists) {
+            setSelectedTests(prev => [...prev, {
+                testId: test._id,
+                testName: test.testName,
+                price: test.testPrice
+            }]);
+            toast.success(`Added: ${test.testName}`);
+        } else {
+            toast.info('Test already selected');
+        }
+
+        setQuickTestSearch("");
+        setShowQuickTestResults(false);
+        setQuickTestResults([]);
+    };
+
+    const handleQuickTestKeyDown = async (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+
+            // If we have results, select the first one
+            if (quickTestResults.length > 0) {
+                handleQuickTestSelect(quickTestResults[0]);
+            }
+            // If still searching or no results yet, trigger immediate search
+            else if (quickTestSearch.trim().length >= 1) {
+                // Cancel any pending search
+                if (quickTestTimeoutRef.current) {
+                    clearTimeout(quickTestTimeoutRef.current);
+                }
+                // Perform immediate search
+                await searchTestsQuick(quickTestSearch);
+            }
+        }
+    };
+
+    const clearQuickTestSearch = () => {
+        setQuickTestSearch("");
+        setQuickTestResults([]);
+        setShowQuickTestResults(false);
     };
 
 
@@ -149,7 +252,6 @@ export default function RegisterPatient() {
             setIsLoadingTests(true);
             setTestsError(null);
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tests/all`);
-            console.log('Full API response:', res.data);
 
             // Handle different possible response structures
             let testsData = [];
@@ -160,8 +262,6 @@ export default function RegisterPatient() {
             } else if (res.data.data) {
                 testsData = res.data.data;
             }
-
-            console.log('Extracted tests:', testsData);
             setTests(testsData || []);
         } catch (err) {
             console.error('Error fetching tests:', err);
@@ -225,7 +325,7 @@ export default function RegisterPatient() {
                 gender: "Male",
                 phone: "",
                 referencedBy: "Self",
-                paymentStatus: 'Not Paid',
+                paymentStatus: 'Paid',
                 resultStatus: 'Pending',
                 paymentStatusUpdatedBy: user?.name || "System",
                 patientRegisteredBy: user?.name || "System",
@@ -237,6 +337,7 @@ export default function RegisterPatient() {
             await fetchPatients();
             console.log("Patient created:", newPatient);
             toast.success('Registered Successfully!')
+            navigate('/user/patients');
 
         } catch (err) {
             console.error("submit err:", err);
@@ -246,14 +347,10 @@ export default function RegisterPatient() {
         }
     };
 
-    // const filteredTests = tests.filter(test =>
-    //     test.testName?.toLowerCase().includes(testSearchQuery.toLowerCase()) ||
-    //     test.category?.toLowerCase().includes(testSearchQuery.toLowerCase())
-    // );
-
     const filteredTests = tests.filter(test => {
         const matchesSearch = test.testName?.toLowerCase().includes(testSearchQuery.toLowerCase()) ||
-            test.category?.toLowerCase().includes(testSearchQuery.toLowerCase());
+            test.category?.toLowerCase().includes(testSearchQuery.toLowerCase()) ||
+            String(test.testCode)?.toLowerCase().includes(testSearchQuery.toLowerCase());
 
         const matchesCategory = categoryFilter === "All" || test.category === categoryFilter;
 
@@ -264,67 +361,65 @@ export default function RegisterPatient() {
         const visibleTestIds = filteredTests.map(test => test._id);
         const alreadySelectedIds = selectedTests.map(t => t.testId);
 
-        const newSelections = filteredTests
-            .filter(test => !alreadySelectedIds.includes(test._id))
-            .map(test => ({
-                testId: test._id,
-                testName: test.testName,
-                price: test.testPrice
-            }));
+        // Check if ALL visible tests are already selected
+        const allVisibleSelected = visibleTestIds.every(id => alreadySelectedIds.includes(id));
 
-        if (newSelections.length > 0) {
+        if (allVisibleSelected) {
+            // Deselect all visible tests
+            setSelectedTests(prev => prev.filter(t => !visibleTestIds.includes(t.testId)));
+            toast.success(`Deselected ${visibleTestIds.length} test(s)`);
+        } else {
+            // Select only the tests that aren't already selected
+            const newSelections = filteredTests
+                .filter(test => !alreadySelectedIds.includes(test._id))
+                .map(test => ({
+                    testId: test._id,
+                    testName: test.testName,
+                    price: test.testPrice
+                }));
+
             setSelectedTests(prev => [...prev, ...newSelections]);
             toast.success(`Selected ${newSelections.length} test(s)`);
-        } else {
-            toast.info('All visible tests are already selected');
         }
     };
 
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-            <div className=" m-2">
-                {/* Header Section */}
-                <div className="text-center mt-4">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg mb-4">
-                        <UserPlus className="h-8 w-8 text-white" />
-                    </div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Patient Registration</h1>
-                    <p className="text-gray-600">Complete patient information and select required tests</p>
-                </div>
+            <div className="m-2">
 
-                <Card className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl p-0 border-0 overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-500 px-8 py-5">
+                <Card className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl p-0 border-0 overflow-hidden pb-2">
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-500 px-8 py-3">
                         <h2 className="text-2xl font-semibold text-white flex items-center">
-                            <div className="px-3 py-3 flex justify-center items-center rounded-xl mr-2 bg-blue-500">
-                                <FileText className="h-6 w-6" />
+                            <div className="px-2 py-2 flex justify-center items-center rounded-xl mr-2 bg-blue-500">
+                                <FileText className="h-5 w-5" />
                             </div>
                             Patient Registration
                         </h2>
                     </div>
 
-                    <CardContent className="p-8">
-                        <form onSubmit={handleSubmit} className="space-y-10">
+                    <CardContent className="px-8 py-1">
+                        <form onSubmit={handleSubmit} className="space-y-5">
                             {/* Patient Information Section */}
                             <div className="space-y-6">
                                 <div className="flex items-center mb-6">
-                                    <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg mr-3">
-                                        <User className="h-5 w-5 text-blue-600" />
+                                    <div className="flex items-center justify-center w-7 h-7 bg-blue-100 rounded-lg mr-3">
+                                        <User className="h-4 w-4 text-blue-600" />
                                     </div>
-                                    <h3 className="text-xl font-semibold text-gray-800">Patient Information</h3>
+                                    <h3 className="text-lg font-semibold text-gray-800">Patient Information</h3>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                     {/* Enhanced Name Input with Search */}
                                     <div className="relative">
-                                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
                                             Patient Name <span className="text-red-500">*</span>
-                                            <span className="ml-2 text-xs font-normal text-gray-500 bg-blue-50 px-2 py-1 rounded-md">
-                                                <Lightbulb size='16' className="inline"/> Search by name or phone number
-                                            </span>
+                                            {/* <span className="ml-2 text-xs font-normal text-gray-500 bg-blue-50 px-2 py-1 rounded-md">
+                                                <Lightbulb size='16' className="inline" /> Search by name or phone
+                                            </span> */}
                                         </label>
                                         <div className="relative">
-                    
+
                                             <Input
                                                 placeholder="Search by name or phone number..."
                                                 value={form.name}
@@ -356,43 +451,19 @@ export default function RegisterPatient() {
                                             </div>
                                         </div>
 
-                                        {/* Helper text below input */}
-                                        <p className="mt-2 text-xs text-gray-500 flex items-center gap-1">
-                                            <Search className="h-3 w-3" />
-                                            Type at least 2 characters to search existing patients by name or phone
-                                        </p>
-
                                         {/* Search Results Dropdown */}
                                         {isFocused && showSearchResults && searchResults.length > 0 && (
                                             <div className="absolute top-full left-0 right-0 z-50 bg-white border-2 border-gray-100 rounded-xl shadow-2xl max-h-48 overflow-y-auto mt-2">
                                                 <div className="p-3 text-xs font-medium text-gray-500 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
                                                     Found {searchResults.length} existing patient(s)
                                                 </div>
-                                                {/* {searchResults.map((patient) => (
-                                                    <div
-                                                        key={patient._id}
-                                                        className="p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 cursor-pointer border-b last:border-b-0 transition-all duration-200"
-                                                        onClick={() => handlePatientSelect(patient)}
-                                                    >
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                                                <User className="h-4 w-4 text-blue-600" />
-                                                            </div>
-                                                            <div>
-                                                                <div className="font-semibold text-gray-900">{patient.name}</div>
-                                                                <div className="text-sm text-gray-500">
-                                                                    Age: {patient.age} • Phone: {patient.phone} • Gender: {patient.gender}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))} */}
+
                                                 {searchResults.map((patient, index) => (
                                                     <div
                                                         key={patient._id}
                                                         className={`p-4 cursor-pointer border-b last:border-b-0 transition-all duration-200 ${index === 0
-                                                                ? 'bg-gradient-to-r from-blue-100 to-indigo-100 hover:from-blue-150 hover:to-indigo-150'
-                                                                : 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50'
+                                                            ? 'bg-gradient-to-r from-blue-100 to-indigo-100 hover:from-blue-150 hover:to-indigo-150'
+                                                            : 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50'
                                                             }`}
                                                         onClick={() => handlePatientSelect(patient)}
                                                     >
@@ -425,7 +496,7 @@ export default function RegisterPatient() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
                                             Age <span className="text-red-500">*</span>
                                         </label>
                                         <Input
@@ -439,7 +510,7 @@ export default function RegisterPatient() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
                                             Gender <span className="text-red-500">*</span>
                                         </label>
                                         <Select
@@ -458,7 +529,7 @@ export default function RegisterPatient() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
                                             Phone Number <span className="text-red-500">*</span>
                                         </label>
                                         <Input
@@ -469,11 +540,8 @@ export default function RegisterPatient() {
                                             className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                         />
                                     </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-3">Referenced By</label>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Referenced By</label>
                                         <Select
                                             value={form.referencedBy}
                                             onValueChange={(value) => setForm({ ...form, referencedBy: value })}
@@ -493,7 +561,7 @@ export default function RegisterPatient() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
                                             <CreditCard className="inline h-4 w-4 mr-1" />
                                             Payment Status
                                         </label>
@@ -505,12 +573,14 @@ export default function RegisterPatient() {
                                                 <SelectValue placeholder="Payment Status" />
                                             </SelectTrigger>
                                             <SelectContent className='bg-white border-0 shadow-xl rounded-xl'>
-                                                <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value="Not Paid">Not Paid</SelectItem>
                                                 <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value="Paid">Paid</SelectItem>
+                                                <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value="Not Paid">Not Paid</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                 </div>
+
+
                             </div>
 
                             <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
@@ -518,29 +588,131 @@ export default function RegisterPatient() {
 
 
                             <div className="space-y-6">
-                                <div className="flex items-center mb-6">
-                                    <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg mr-3">
-                                        <TestTube className="h-5 w-5 text-green-600" />
-                                    </div>
-                                    <h3 className="text-xl font-semibold text-gray-800">Test Selection</h3>
-                                    {isLoadingTests && (
-                                        <div className="ml-3 flex items-center text-sm text-gray-500">
-                                            <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-600 rounded-full mr-2"></div>
-                                            Loading tests...
+                                <div className="space-y-4">
+                                    <div className="flex items-center mb-3">
+                                        <div className="flex items-center justify-center w-7 h-7 bg-green-100 rounded-lg mr-3">
+                                            <TestTube className="h-4 w-4 text-green-600" />
                                         </div>
-                                    )}
-                                </div>
+                                        <h3 className="text-lg font-semibold text-gray-800">Test Selection</h3>
+                                        {isLoadingTests && (
+                                            <div className="ml-3 flex items-center text-sm text-gray-500">
+                                                <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-600 rounded-full mr-2"></div>
+                                                Loading tests...
+                                            </div>
+                                        )}
+                                    </div>
 
-                                {/* Test Search Bar */}
-                                {/* Test Search Bar */}
-                                {!isLoadingTests && !testsError && tests.length > 0 && (
-                                    <div className="space-y-4 mb-6">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {/* Search Input */}
+                                    {/* Quick Add Test Input */}
+                                    {/* Search Inputs Row */}
+                                    <div className="space-y-4 mb-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            {/* Quick Add Test Input */}
                                             <div className="relative">
+                                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                                    <TestTube className="inline h-4 w-4 mr-1" />
+                                                    Quick Add Test
+                                                </label>
                                                 <div className="relative">
                                                     <Input
-                                                        placeholder="Search tests by name or category..."
+                                                        placeholder="Type code/name, press Enter..."
+                                                        value={quickTestSearch}
+                                                        onChange={(e) => setQuickTestSearch(e.target.value)}
+                                                        onKeyDown={handleQuickTestKeyDown}
+                                                        onFocus={() => setIsQuickTestFocused(true)}
+                                                        onBlur={() => {
+                                                            setTimeout(() => setIsQuickTestFocused(false), 200);
+                                                        }}
+                                                        className="h-12 pl-4 pr-12 border-2 border-green-300 focus:border-green-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                                    />
+                                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex gap-2">
+                                                        {isSearchingTests && (
+                                                            <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-green-600 rounded-full" />
+                                                        )}
+                                                        {quickTestSearch && (
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-6 w-6 p-0 hover:bg-gray-100 rounded-full"
+                                                                onClick={clearQuickTestSearch}
+                                                            >
+                                                                ×
+                                                            </Button>
+                                                        )}
+                                                        <TestTube className="h-5 w-5 text-green-500" />
+                                                    </div>
+                                                </div>
+
+                                                {/* Quick Test Results Dropdown */}
+                                                {isQuickTestFocused && showQuickTestResults && quickTestResults.length > 0 && (
+                                                    <div className="absolute top-full left-0 right-0 z-50 bg-white border-2 border-green-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto mt-2">
+                                                        <div className="p-3 text-xs font-medium text-gray-500 border-b bg-gradient-to-r from-green-50 to-emerald-50">
+                                                            Found {quickTestResults.length} test(s) - Press Enter to add first result
+                                                        </div>
+
+                                                        {quickTestResults.map((test, index) => {
+                                                            const alreadySelected = selectedTests.find(t => String(t.testId) === String(test._id));
+                                                            return (
+                                                                <div
+                                                                    key={test._id}
+                                                                    className={`p-4 cursor-pointer border-b last:border-b-0 transition-all duration-200 ${alreadySelected
+                                                                        ? 'bg-gray-100 opacity-60 cursor-not-allowed'
+                                                                        : index === 0
+                                                                            ? 'bg-gradient-to-r from-green-100 to-emerald-100 hover:from-green-150 hover:to-emerald-150'
+                                                                            : 'hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50'
+                                                                        }`}
+                                                                    onClick={() => !alreadySelected && handleQuickTestSelect(test)}
+                                                                >
+                                                                    <div className="flex items-center justify-between gap-3">
+                                                                        <div className="flex items-center gap-3 flex-1">
+                                                                            {index === 0 && !alreadySelected && (
+                                                                                <div className="text-xs text-green-600 font-semibold">↵ Enter</div>
+                                                                            )}
+                                                                            <div className="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center">
+                                                                                <TestTube className="h-4 w-4 text-green-600" />
+                                                                            </div>
+                                                                            <div className="flex-1">
+                                                                                <div className="font-semibold text-sm text-gray-900">
+                                                                                    {test.testName}
+                                                                                    {alreadySelected && (
+                                                                                        <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
+                                                                                            Already Selected
+                                                                                        </span>
+                                                                                    )}
+                                                                                </div>
+                                                                                <div className="text-xs text-gray-500">
+                                                                                    Code: <span className=" text-green-600">{test.testCode}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <div className="text-base font-bold text-green-600">Rs.{test.testPrice}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+
+                                                {isQuickTestFocused && showQuickTestResults && quickTestResults.length === 0 && quickTestSearch.trim().length >= 1 && !isSearchingTests && (
+                                                    <div className="absolute top-full left-0 right-0 z-50 bg-white border-2 border-green-200 rounded-xl shadow-2xl mt-2">
+                                                        <div className="p-4 text-sm text-gray-500 text-center">
+                                                            No tests found for "{quickTestSearch}"
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Search Input */}
+                                            <div className="relative">
+                                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                                    <Search className="inline h-4 w-4 mr-1" />
+                                                    Search Tests
+                                                </label>
+                                                <div className="relative">
+                                                    <Input
+                                                        placeholder="Search by name, code or category..."
                                                         value={testSearchQuery}
                                                         onChange={(e) => setTestSearchQuery(e.target.value)}
                                                         className="h-12 pl-12 pr-12 border-2 border-green-200 focus:border-green-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
@@ -562,6 +734,9 @@ export default function RegisterPatient() {
 
                                             {/* Category Filter */}
                                             <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                                    Filter by Category
+                                                </label>
                                                 <Select
                                                     value={categoryFilter}
                                                     onValueChange={(value) => setCategoryFilter(value)}
@@ -587,7 +762,7 @@ export default function RegisterPatient() {
                                             </div>
                                         </div>
 
-                                        {/* Filter Results Info and Select All Button */}
+                                        {/* Filter Results Info, Hide Tests Checkbox, and Select All Button */}
                                         <div className="flex items-center justify-between">
                                             {(testSearchQuery || categoryFilter !== "All") && (
                                                 <div className="text-sm text-green-600 font-medium">
@@ -597,20 +772,51 @@ export default function RegisterPatient() {
                                                 </div>
                                             )}
 
-                                            {filteredTests.length > 0 && (
-                                                <Button
-                                                    type="button"
-                                                    onClick={handleSelectAllVisibleTests}
-                                                    variant="outline"
-                                                    className="ml-auto border-2 border-green-500 text-green-700 hover:bg-green-50 hover:border-green-600 rounded-xl font-semibold transition-all duration-200"
-                                                >
-                                                    <CheckCircle className="h-4 w-4 mr-2" />
-                                                    Select All Visible Tests
-                                                </Button>
-                                            )}
+                                            <div className="flex w-full items-center justify-between gap-4 ml-auto">
+                                                {/* Hide Tests Checkbox */}
+                                                <div>
+                                                    <label className="flex items-center gap-2 cursor-pointer group">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={hideTests}
+                                                            onChange={(e) => {
+                                                                const newValue = e.target.checked;
+                                                                setHideTests(newValue);
+                                                                localStorage.setItem('hideTestsGrid', JSON.stringify(newValue));
+                                                            }}
+                                                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                                        />
+                                                        <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                                                            Hide Tests
+                                                        </span>
+                                                    </label>
+                                                </div>
+
+                                                {/* Select All Button */}
+                                                <div>
+                                                    {!hideTests && filteredTests.length > 0 && (
+                                                        <Button
+                                                            type="button"
+                                                            onClick={handleSelectAllVisibleTests}
+                                                            variant="outline"
+                                                            className="border-2 border-green-500 text-green-700 hover:bg-green-50 hover:border-green-600 rounded-xl font-semibold transition-all duration-200"
+                                                        >
+                                                            <CheckCircle className="h-4 w-4 mr-2" />
+                                                            {(() => {
+                                                                const visibleTestIds = filteredTests.map(test => test._id);
+                                                                const alreadySelectedIds = selectedTests.map(t => t.testId);
+                                                                const allVisibleSelected = visibleTestIds.every(id => alreadySelectedIds.includes(id));
+                                                                return allVisibleSelected ? 'Deselect All Visible Tests' : 'Select All Visible Tests';
+                                                            })()}
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                )}
+                                </div>
+
+
 
                                 {testsError ? (
                                     <div className="p-6 rounded-2xl bg-red-50 border-2 border-red-200 text-center">
@@ -659,8 +865,8 @@ export default function RegisterPatient() {
                                             Clear Search
                                         </Button>
                                     </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-6 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100">
+                                ) : !hideTests ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-6 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100">
                                         {filteredTests.map(test => {
                                             const checked = !!selectedTests.find(t => String(t.testId) === String(test._id));
                                             return (
@@ -686,13 +892,8 @@ export default function RegisterPatient() {
                                             );
                                         })}
                                     </div>
-                                )}
+                                ) : null}
                             </div>
-
-
-
-
-
 
                             {/* Selected Tests Section */}
                             {selectedTests.length > 0 && (
@@ -701,14 +902,14 @@ export default function RegisterPatient() {
                                     <div className="space-y-6">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center">
-                                                <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg mr-3">
-                                                    <FileText className="h-5 w-5 text-indigo-600" />
+                                                <div className="flex items-center justify-center w-7 h-7 bg-indigo-100 rounded-lg mr-3">
+                                                    <FileText className="h-4 w-4 text-indigo-600" />
                                                 </div>
-                                                <h3 className="text-xl font-semibold text-gray-800">Selected Tests</h3>
+                                                <h3 className="text-lg font-semibold text-gray-800">Selected Tests</h3>
                                             </div>
-                                            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-2 rounded-xl shadow-lg">
+                                            <div className=" text-purple-600 bg-transparent px-6 py-0 rounded-xl border border-purple-500">
                                                 <span className="text-sm font-medium">Total Tests: </span>
-                                                <span className="text-lg font-bold">{selectedTests.length}</span>
+                                                <span className="text-sm font-bold">{selectedTests.length}</span>
                                             </div>
                                         </div>
 
@@ -753,10 +954,10 @@ export default function RegisterPatient() {
                                         </div>
 
                                         <div className="flex justify-end">
-                                            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-2xl shadow-xl">
-                                                <div className="text-center">
-                                                    <div className="text-sm font-medium opacity-90">Grand Total</div>
-                                                    <div className="text-2xl font-bold">Rs.{total.toLocaleString()}</div>
+                                            <div className="bg-transparent text-emerald-500 py-1 px-6 rounded-2xl border border-emerald-400">
+                                                <div className="text-center flex">
+                                                    <div className="text-sm font-medium opacity-90">Total: Rs.{total.toLocaleString()}</div>
+                                                    <div className="text-xl font-bold"></div>
                                                 </div>
                                             </div>
                                         </div>
@@ -767,11 +968,11 @@ export default function RegisterPatient() {
                             <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
 
                             {/* Form Actions */}
-                            <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6">
+                            <div className="flex flex-col sm:flex-row gap-4 justify-end">
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    className="w-full sm:w-auto h-12 px-8 border-2 border-gray-300 hover:border-gray-400 rounded-xl font-semibold transition-all duration-200"
+                                    className="w-full sm:w-auto py-1 px-8 border-2 border-gray-300 hover:border-gray-400 rounded-xl font-semibold transition-all duration-200"
                                     onClick={() => {
                                         setForm({
                                             name: "",
@@ -779,7 +980,7 @@ export default function RegisterPatient() {
                                             gender: "Male",
                                             phone: "",
                                             referencedBy: "Self",
-                                            paymentStatus: 'Not Paid',
+                                            paymentStatus: 'Paid',
                                             resultStatus: 'Pending',
                                             paymentStatusUpdatedBy: user?.name || "System",
                                             patientRegisteredBy: user?.name || "System",
@@ -794,7 +995,7 @@ export default function RegisterPatient() {
                                 </Button>
                                 <Button disabled={loading}
                                     type="submit"
-                                    className="w-full sm:w-auto h-12 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                    className="w-full sm:w-auto py-1 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                                 >
                                     <UserPlus className="h-5 w-5 mr-2" />
                                     {loading ? 'Registering...' : 'Register Patient'}

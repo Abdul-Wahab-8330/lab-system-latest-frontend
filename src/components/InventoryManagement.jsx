@@ -900,11 +900,11 @@ export default function InventoryManagement() {
         </Dialog>
         {/* DIALOG: Daily Summary */}
         <Dialog open={dailySummaryDialogOpen} onOpenChange={setDailySummaryDialogOpen}>
-          <DialogContent className="min-w-5xl max-h-[90vh] overflow-auto bg-white rounded-2xl">
+          <DialogContent className="min-w-[80vw] max-h-[90vh] overflow-auto bg-white rounded-2xl">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold flex items-center">
                 <Calendar className="h-6 w-6 mr-2 text-blue-600" />
-                Daily Summary - Additions & Issues
+                Daily Summary - Additions & Issues by Item
               </DialogTitle>
             </DialogHeader>
 
@@ -912,7 +912,7 @@ export default function InventoryManagement() {
               {dailySummaryData.length > 0 ? (
                 <>
                   {/* Summary Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
@@ -925,13 +925,27 @@ export default function InventoryManagement() {
                       </CardContent>
                     </Card>
 
+                    <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-purple-600 font-semibold">Total Transactions</p>
+                            <p className="text-3xl font-bold text-purple-900">
+                              {dailySummaryData.reduce((sum, day) => sum + day.dayTransactionCount, 0)}
+                            </p>
+                          </div>
+                          <Archive className="h-10 w-10 text-purple-400" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
                     <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-sm text-green-600 font-semibold">Total Additions</p>
                             <p className="text-3xl font-bold text-green-900">
-                              {dailySummaryData.reduce((sum, day) => sum + day.totalAdditions, 0)}
+                              {dailySummaryData.reduce((sum, day) => sum + day.dayTotalAdditions, 0)}
                             </p>
                           </div>
                           <TrendingUp className="h-10 w-10 text-green-400" />
@@ -945,7 +959,7 @@ export default function InventoryManagement() {
                           <div>
                             <p className="text-sm text-orange-600 font-semibold">Total Issues</p>
                             <p className="text-3xl font-bold text-orange-900">
-                              {dailySummaryData.reduce((sum, day) => sum + day.totalIssues, 0)}
+                              {dailySummaryData.reduce((sum, day) => sum + day.dayTotalIssues, 0)}
                             </p>
                           </div>
                           <TrendingDown className="h-10 w-10 text-orange-400" />
@@ -954,60 +968,109 @@ export default function InventoryManagement() {
                     </Card>
                   </div>
 
-                  {/* Daily Summary Table */}
-                  <div className="rounded-xl overflow-hidden border-2 border-gray-200">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100">
-                          <TableHead className="font-bold text-gray-800">Date</TableHead>
-                          <TableHead className="font-bold text-gray-800 text-center">Transactions</TableHead>
-                          <TableHead className="font-bold text-gray-800 text-center">Total Additions</TableHead>
-                          <TableHead className="font-bold text-gray-800 text-center">Total Issues</TableHead>
-                          <TableHead className="font-bold text-gray-800 text-center">Net Change</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {dailySummaryData.map((day, index) => (
-                          <TableRow key={day.date} className={`hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                            <TableCell className="font-semibold text-gray-900">
-                              {new Date(day.date).toLocaleDateString('en-US', {
-                                weekday: 'short',
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                                {day.transactionCount}
+                  {/* Daily Breakdown with Items */}
+                  <div className="space-y-6">
+                    {dailySummaryData.map((day, dayIndex) => (
+                      <Card key={day.date} className="border-2 border-gray-200 shadow-sm p-0">
+                        <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 py-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Calendar className="h-5 w-5 text-purple-600" />
+                              <div>
+                                <h3 className="text-lg font-bold text-gray-900">
+                                  {new Date(day.date).toLocaleDateString('en-US', {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  })}
+                                </h3>
+                                <p className="text-sm text-gray-600">
+                                  {day.dayTransactionCount} transaction{day.dayTransactionCount !== 1 ? 's' : ''}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex gap-3">
+                              <Badge className="bg-green-100 text-green-700 border-green-200 px-3 py-1">
+                                <TrendingUp className="h-3 w-3 mr-1" />
+                                +{day.dayTotalAdditions}
                               </Badge>
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <Badge className="bg-green-100 text-green-700 border-green-200 font-bold">
-                                +{day.totalAdditions}
+                              <Badge className="bg-orange-100 text-orange-700 border-orange-200 px-3 py-1">
+                                <TrendingDown className="h-3 w-3 mr-1" />
+                                -{day.dayTotalIssues}
                               </Badge>
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <Badge className="bg-orange-100 text-orange-700 border-orange-200 font-bold">
-                                -{day.totalIssues}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-center">
                               <Badge
-                                className={`font-bold ${day.netChange > 0
+                                className={`px-3 py-1 font-bold ${day.dayNetChange > 0
                                     ? 'bg-green-100 text-green-700 border-green-200'
-                                    : day.netChange < 0
+                                    : day.dayNetChange < 0
                                       ? 'bg-red-100 text-red-700 border-red-200'
                                       : 'bg-gray-100 text-gray-700 border-gray-200'
                                   }`}
                               >
-                                {day.netChange > 0 ? '+' : ''}{day.netChange}
+                                Net: {day.dayNetChange > 0 ? '+' : ''}{day.dayNetChange}
                               </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          <Table>
+                            <TableHeader>
+                              <TableRow className="bg-gray-50">
+                                <TableHead className="font-bold text-gray-800">Item Name</TableHead>
+                                <TableHead className="font-bold text-gray-800 text-center">Additions</TableHead>
+                                <TableHead className="font-bold text-gray-800 text-center">Issues</TableHead>
+                                <TableHead className="font-bold text-gray-800 text-center">Net Change</TableHead>
+                                <TableHead className="font-bold text-gray-800 text-center">Transactions</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {day.items.map((item, itemIndex) => (
+                                <TableRow key={itemIndex} className={`${itemIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                                  <TableCell className="font-semibold text-purple-700">
+                                    {item.itemName}
+                                  </TableCell>
+                                  <TableCell className="text-center">
+                                    {item.totalAdditions > 0 ? (
+                                      <Badge className="bg-green-100 text-green-700 border-green-200 font-bold">
+                                        +{item.totalAdditions}
+                                      </Badge>
+                                    ) : (
+                                      <span className="text-gray-400">—</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="text-center">
+                                    {item.totalIssues > 0 ? (
+                                      <Badge className="bg-orange-100 text-orange-700 border-orange-200 font-bold">
+                                        -{item.totalIssues}
+                                      </Badge>
+                                    ) : (
+                                      <span className="text-gray-400">—</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="text-center">
+                                    <Badge
+                                      className={`font-bold ${item.netChange > 0
+                                          ? 'bg-green-100 text-green-700 border-green-200'
+                                          : item.netChange < 0
+                                            ? 'bg-red-100 text-red-700 border-red-200'
+                                            : 'bg-gray-100 text-gray-700 border-gray-200'
+                                        }`}
+                                    >
+                                      {item.netChange > 0 ? '+' : ''}{item.netChange}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="text-center">
+                                    <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                                      {item.transactionCount}
+                                    </Badge>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
                 </>
               ) : (

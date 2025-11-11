@@ -139,16 +139,42 @@ export function InventoryProvider({ children }) {
   // ============================================
 
   const fetchStockLevels = async () => {
-    setLoading(true);
+  setLoading(true);
+  try {
+    // Use the new endpoint that includes totals
+    const res = await axios.get(`${API_URL}/api/inventory/stock-levels-with-totals`);
+    setStockLevels(res.data.stockLevels || []);
+  } catch (err) {
+    console.error("fetchStockLevels error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  const fetchStockLevelsWithTotals = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/inventory/stock`);
-      setStockLevels(res.data.stockLevels || []);
-    } catch (err) {
-      console.error("fetchStockLevels error:", err);
-    } finally {
-      setLoading(false);
+      const response = await axios.get(`${API_URL}/api/inventory/stock-levels-with-totals`);
+      return response.data.stockLevels;
+    } catch (error) {
+      console.error('Error fetching stock levels with totals:', error);
+      throw error;
     }
   };
+
+  const fetchDailySummary = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/inventory/daily-summary`);
+      return response.data.dailySummary;
+    } catch (error) {
+      console.error('Error fetching daily summary:', error);
+      throw error;
+    }
+  };
+
+
+
+
 
   useEffect(() => {
     fetchItems();
@@ -172,7 +198,9 @@ export function InventoryProvider({ children }) {
         removeStock,
         deleteTransaction,
         fetchTransactionsByDateRange,
-        fetchStockLevels
+        fetchStockLevels,
+        fetchStockLevelsWithTotals,
+        fetchDailySummary
       }}
     >
       {children}

@@ -2,6 +2,8 @@ import { useState, useMemo, useContext, useRef } from "react";
 import { useReactToPrint } from 'react-to-print';
 import { PatientsContext } from "@/context/PatientsContext"; // your context
 import { Input } from "@/components/ui/input";
+import JsBarcode from 'jsbarcode';
+import { QRCodeSVG } from 'qrcode.react';
 import {
     Table,
     TableBody,
@@ -668,7 +670,7 @@ export default function PatientsList() {
                             {`
 @media print {
     @page { 
-        margin: 20mm 20mm; 
+        margin: 0mm 20mm; 
         size: A4 portrait;
     }
     body { 
@@ -682,55 +684,137 @@ export default function PatientsList() {
                         {/* ========================================
                             LAB COPY
                         ======================================== */}
-                        <div className="mb-8 pb-6 border-b-2 border-dashed border-gray-600">
+                        <div className="mb-2 pb-6 border-b-2 border-dashed border-gray-600">
+
+
                             {/* LAB COPY Header */}
-                            <div className="text-center mb-4">
-                                <div className=" inline-block px-6 py-1   mb-3">
-                                    <p className="text-sm font-bold text-blue-900">LAB COPY</p>
+                            <div className="mb-4">
+                                <div className="text-center mb-3">
+                                    <div className="inline-block px-6 py-1">
+                                        <p className="text-sm font-bold text-blue-900">LAB COPY</p>
+                                    </div>
                                 </div>
-                                
-                                <div className="flex items-center justify-center mb-2">
-                                    {info.logoUrl && (
-                                        <img
-                                            src={info.logoUrl}
-                                            alt="Lab Logo"
-                                            className="h-24 w-24 mr-3 object-contain"
-                                            onError={(e) => e.target.style.display = 'none'}
+
+                                <div className="flex items-start justify-between">
+                                    {/* Left: Logo and Lab Info */}
+                                    <div className="flex items-start">
+                                        {info.logoUrl && (
+                                            <img
+                                                src={info.logoUrl}
+                                                alt="Lab Logo"
+                                                className="h-16 w-16 mr-4 object-contain"
+                                                onError={(e) => e.target.style.display = 'none'}
+                                            />
+                                        )}
+                                        <div className="text-left">
+                                            <h1 className="text-2xl font-bold mb-0">
+                                                <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
+                                                <span style={{ letterSpacing: '0.25em' }}>LAB</span>
+                                            </h1>
+                                            <p className="text-sm mb-1">
+                                                <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
+                                                <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
+                                            </p>
+                                            <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
+                                                Better Diagnosis - Better Treatment
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Right: QR Code */}
+                                    <div className="flex flex-col items-center">
+                                        <QRCodeSVG
+                                            value={JSON.stringify({
+                                                labName: info.labName || 'DOCTOR LAB & Imaging Center Sahiwal',
+                                                address: info.address || 'Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha',
+                                                phone: info.phoneNumber || '0325-0020111'
+                                            })}
+                                            size={60}
+                                            level="M"
                                         />
-                                    )}
-                                    <div>
-                                        <h1 className="text-xl font-bold mb-0.5">
-                                            {info.labName || 'Medical Laboratory'}
-                                        </h1>
-                                        <p className="text-xs">
-                                            {info.address || 'Laboratory Address'}
-                                        </p>
-                                        <p className="text-xs">
-                                            Tel: {info.phoneNumber || 'Phone'}
-                                        </p>
-                                        <p className="text-xs font-semibold mt-1">
-                                            Quality Assurance Through Advanced Technology
-                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Patient No and Case No with Barcodes */}
+                            <div className="border-t-2 border-b-2 border-gray-800 py-2">
+                                <div className="flex justify-between items-center">
+                                    {/* Patient No */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-bold">MR #:</span>
+                                        <div className="text-center">
+                                            <svg ref={el => {
+                                                if (el && printPatient?.refNo) {
+                                                    JsBarcode(el, printPatient.refNo, {
+                                                        format: "CODE128",
+                                                        width: 1,
+                                                        height: 20,
+                                                        displayValue: false,
+                                                        margin: 0
+                                                    });
+                                                }
+                                            }}></svg>
+                                            <p className="text-xs mt-0.5">{printPatient?.refNo}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Case No */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-bold">Case #:</span>
+                                        <div className="text-center">
+                                            <svg ref={el => {
+                                                if (el && printPatient?.caseNo) {
+                                                    JsBarcode(el, printPatient.caseNo, {
+                                                        format: "CODE128",
+                                                        width: 1,
+                                                        height: 20,
+                                                        displayValue: false,
+                                                        margin: 0
+                                                    });
+                                                }
+                                            }}></svg>
+                                            <p className="text-xs mt-0.5">{printPatient?.caseNo}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Patient Info in ONE Box */}
-                            <div className="border border-gray-400 p-3 mb-3">
-                                <div className="grid grid-cols-3 gap-4 text-xs">
-                                    <div><span className="font-semibold">Patient #:</span> {printPatient?.refNo}</div>
-                                    <div><span className="font-semibold">Case #:</span> {printPatient?.caseNo}</div>
-                                    <div><span className="font-semibold">Date/Time:</span> {new Date(printPatient.createdAt).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} {new Date(printPatient.createdAt).toLocaleDateString('en-GB')}</div>
-                                </div>
-                                <div className="grid grid-cols-3 gap-4 text-xs mt-2">
-                                    <div><span className="font-semibold">Patient:</span> {printPatient.name}</div>
-                                    <div><span className="font-semibold">Age/Sex:</span> {printPatient.age} Years / {printPatient.gender}</div>
-                                    <div><span className="font-semibold">Phone:</span> {printPatient.phone}</div>
-                                </div>
-                                <div className="grid grid-cols-3 gap-4 text-xs mt-2">
-                                    <div><span className="font-semibold">Consultant:</span> {printPatient.referencedBy}</div>
-                                    <div><span className="font-semibold">Specimen:</span> {printPatient.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</div>
-                                </div>
+                            <div className="border border-gray-800 p-2 mb-3 bg-gray-50">
+                                <table className="w-full text-xs">
+                                    <tbody>
+                                        <tr>
+                                            <td className="font-semibold py-0.5 w-1/4">Patient's Name</td>
+                                            <td className="py-0.5 w-1/4">{printPatient.name}</td>
+                                            <td className="font-semibold py-0.5 w-1/4">Reg. Date</td>
+                                            <td className="py-0.5 w-1/4">{new Date(printPatient.createdAt).toLocaleDateString('en-GB')} {new Date(printPatient.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="font-semibold py-0.5">Father/Husband</td>
+                                            <td className="py-0.5">-</td>
+                                            <td className="font-semibold py-0.5">Reg. Centre</td>
+                                            <td className="py-0.5">Doctors Healthcare</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="font-semibold py-0.5">Age/Sex</td>
+                                            <td className="py-0.5">{printPatient.age} Years / {printPatient.gender}</td>
+                                            <td className="font-semibold py-0.5">Specimen</td>
+                                            <td className="py-0.5">{printPatient.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="font-semibold py-0.5">NIC No</td>
+                                            <td className="py-0.5">-</td>
+                                            <td className="font-semibold py-0.5">Consultant</td>
+                                            <td className="py-0.5">SELF</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="font-semibold py-0.5">Hosp/ MR #</td>
+                                            <td className="py-0.5">-</td>
+                                            <td className="font-semibold py-0.5">Contact No</td>
+                                            <td className="py-0.5">{printPatient.phone}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
 
                             {/* Tests Table */}
@@ -773,53 +857,134 @@ export default function PatientsList() {
                         ======================================== */}
                         <div className="pt-4">
                             {/* PATIENT COPY Header */}
-                            <div className="text-center mb-4">
-                                <div className=" inline-block px-6 py-1  mb-3">
-                                    <p className="text-sm font-bold text-green-900">PATIENT COPY</p>
+                            <div className="mb-4">
+                                <div className="text-center mb-3">
+                                    <div className="inline-block px-6 py-1">
+                                        <p className="text-sm font-bold text-blue-900">PATIENT COPY</p>
+                                    </div>
                                 </div>
-                                
-                                <div className="flex items-center justify-center mb-2">
-                                    {info.logoUrl && (
-                                        <img
-                                            src={info.logoUrl}
-                                            alt="Lab Logo"
-                                            className="h-24 w-24 mr-3 object-contain"
-                                            onError={(e) => e.target.style.display = 'none'}
+
+                                <div className="flex items-start justify-between">
+                                    {/* Left: Logo and Lab Info */}
+                                    <div className="flex items-start">
+                                        {info.logoUrl && (
+                                            <img
+                                                src={info.logoUrl}
+                                                alt="Lab Logo"
+                                                className="h-16 w-16 mr-4 object-contain"
+                                                onError={(e) => e.target.style.display = 'none'}
+                                            />
+                                        )}
+                                        <div className="text-left">
+                                            <h1 className="text-2xl font-bold mb-0">
+                                                <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
+                                                <span style={{ letterSpacing: '0.25em' }}>LAB</span>
+                                            </h1>
+                                            <p className="text-sm mb-1">
+                                                <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
+                                                <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
+                                            </p>
+                                            <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
+                                                Better Diagnosis - Better Treatment
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Right: QR Code */}
+                                    <div className="flex flex-col items-center">
+                                        <QRCodeSVG
+                                            value={JSON.stringify({
+                                                labName: info.labName || 'DOCTOR LAB & Imaging Center Sahiwal',
+                                                address: info.address || 'Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha',
+                                                phone: info.phoneNumber || '0325-0020111'
+                                            })}
+                                            size={60}
+                                            level="M"
                                         />
-                                    )}
-                                    <div>
-                                        <h1 className="text-xl font-bold mb-0.5">
-                                            {info.labName || 'Medical Laboratory'}
-                                        </h1>
-                                        <p className="text-xs">
-                                            {info.address || 'Laboratory Address'}
-                                        </p>
-                                        <p className="text-xs">
-                                            Tel: {info.phoneNumber || 'Phone'}
-                                        </p>
-                                        <p className="text-xs font-semibold mt-1">
-                                            Quality Assurance Through Advanced Technology
-                                        </p>
                                     </div>
                                 </div>
                             </div>
 
+                            {/* Patient No and Case No with Barcodes */}
+                            <div className="border-t-2 border-b-2 border-gray-800 py-2">
+                                <div className="flex justify-between items-center">
+                                    {/* Patient No */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-bold">MR #:</span>
+                                        <div className="text-center">
+                                            <svg ref={el => {
+                                                if (el && printPatient?.refNo) {
+                                                    JsBarcode(el, printPatient.refNo, {
+                                                        format: "CODE128",
+                                                        width: 1,
+                                                        height: 20,
+                                                        displayValue: false,
+                                                        margin: 0
+                                                    });
+                                                }
+                                            }}></svg>
+                                            <p className="text-xs mt-0.5">{printPatient?.refNo}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Case No */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-bold">Case #:</span>
+                                        <div className="text-center">
+                                            <svg ref={el => {
+                                                if (el && printPatient?.caseNo) {
+                                                    JsBarcode(el, printPatient.caseNo, {
+                                                        format: "CODE128",
+                                                        width: 1,
+                                                        height: 20,
+                                                        displayValue: false,
+                                                        margin: 0
+                                                    });
+                                                }
+                                            }}></svg>
+                                            <p className="text-xs mt-0.5">{printPatient?.caseNo}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
                             {/* Patient Info in ONE Box */}
-                            <div className="border border-gray-400 p-3 mb-3">
-                                <div className="grid grid-cols-3 gap-4 text-xs">
-                                    <div><span className="font-semibold">Patient #:</span> {printPatient?.refNo}</div>
-                                    <div><span className="font-semibold">Case #:</span> {printPatient?.caseNo}</div>
-                                    <div><span className="font-semibold">Date/Time:</span> {new Date(printPatient.createdAt).toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true})} {new Date(printPatient.createdAt).toLocaleDateString('en-GB')}</div>
-                                </div>
-                                <div className="grid grid-cols-3 gap-4 text-xs mt-2">
-                                    <div><span className="font-semibold">Patient:</span> {printPatient.name}</div>
-                                    <div><span className="font-semibold">Age/Sex:</span> {printPatient.age} Years / {printPatient.gender}</div>
-                                    <div><span className="font-semibold">Phone:</span> {printPatient.phone}</div>
-                                </div>
-                                <div className="grid grid-cols-3 gap-4 text-xs mt-2">
-                                    <div><span className="font-semibold">Consultant:</span> {printPatient.referencedBy}</div>
-                                    <div><span className="font-semibold">Specimen:</span> {printPatient.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</div>
-                                </div>
+                            <div className="border border-gray-800 p-2 mb-3 bg-gray-50">
+                                <table className="w-full text-xs">
+                                    <tbody>
+                                        <tr>
+                                            <td className="font-semibold py-0.5 w-1/4">Patient's Name</td>
+                                            <td className="py-0.5 w-1/4">{printPatient.name}</td>
+                                            <td className="font-semibold py-0.5 w-1/4">Reg. Date</td>
+                                            <td className="py-0.5 w-1/4">{new Date(printPatient.createdAt).toLocaleDateString('en-GB')} {new Date(printPatient.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="font-semibold py-0.5">Father/Husband</td>
+                                            <td className="py-0.5">-</td>
+                                            <td className="font-semibold py-0.5">Reg. Centre</td>
+                                            <td className="py-0.5">Main Lab</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="font-semibold py-0.5">Age/Sex</td>
+                                            <td className="py-0.5">{printPatient.age} Years / {printPatient.gender}</td>
+                                            <td className="font-semibold py-0.5">Specimen</td>
+                                            <td className="py-0.5">{printPatient.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="font-semibold py-0.5">NIC No</td>
+                                            <td className="py-0.5">-</td>
+                                            <td className="font-semibold py-0.5">Consultant</td>
+                                            <td className="py-0.5">SELF</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="font-semibold py-0.5">Hosp/ MR #</td>
+                                            <td className="py-0.5">-</td>
+                                            <td className="font-semibold py-0.5">Contact No</td>
+                                            <td className="py-0.5">{printPatient.phone}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
 
                             {/* Tests Table */}

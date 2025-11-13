@@ -19,6 +19,11 @@ import { Separator } from "@/components/ui/separator";
 import { Search, Printer, Info, FileText, User, Calendar, Phone, TestTube, Activity } from "lucide-react";
 import { AddedPatientsContext } from "@/context/AddedPatientsContext";
 
+import { useRef } from "react";
+import { useReactToPrint } from 'react-to-print';
+import JsBarcode from 'jsbarcode';
+import { QRCodeSVG } from 'qrcode.react';
+
 export default function ResultPrintComponent() {
     const { fetchPatients, patients, setPatients } = useContext(PatientsContext);
     const { addedPatients, setAddedPatients } = useContext(AddedPatientsContext);
@@ -26,7 +31,6 @@ export default function ResultPrintComponent() {
     const [filteredPatients, setFilteredPatients] = useState([]);
     const [search, setSearch] = useState("");
     const [testSearch, setTestSearch] = useState("");
-    const [previewOpen, setPreviewOpen] = useState(false);
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [printPatient, setPrintPatient] = useState(null);
     const [selectedPatient, setSelectedPatient] = useState(null);
@@ -36,6 +40,9 @@ export default function ResultPrintComponent() {
     // Dialog state for delete confirmation
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [patientToDelete, setPatientToDelete] = useState(null);
+
+    const reportRef = useRef();
+    
 
     useEffect(() => {
         loadLabInfo();
@@ -111,18 +118,7 @@ export default function ResultPrintComponent() {
         }
     }
 
-    async function openPrintPreview(patient) {
-        try {
-            const res = await axios.get(
-                `${import.meta.env.VITE_API_URL}/api/results/${patient._id}/tests`
-            );
-            setPrintPatient(res.data);
-            await loadLabInfo();
-            setPreviewOpen(true);
-        } catch (err) {
-            console.error("openPrintPreview:", err);
-        }
-    }
+
 
     async function openPatientDetails(patient) {
         try {
@@ -135,222 +131,27 @@ export default function ResultPrintComponent() {
             console.error("openPatientDetails:", err);
         }
     }
-
-    const handlePrint = async () => {
-        const content = document.getElementById("printable-report").innerHTML;
-        const printWindow = window.open("", "", "width=900,height=650");
-
-        printWindow.document.write(`
-      <html>
-        <head>
-          <title>Lab Report - ${printPatient?.name || 'Patient'} (${printPatient?.refNo || 'N/A'})</title>
-          <style>
-            @page { 
-              size: A4; 
-              margin: 15mm 20mm 20mm 20mm;
-            }
-            body { 
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-              font-size: 13px; 
-              line-height: 1; 
-              color: #1a1a1a;
-              margin: 0;
-              padding: 0;
-            }
-            table { 
-              width: 100%; 
-              border-collapse: collapse; 
-              margin: 8px 0;
-              box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            th, td { 
-              border: 1px solid #d1d5db; 
-              padding: 10px 8px; 
-              text-align: left; 
-            }
-            th { 
-              background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-              font-weight: 600;
-              color: #374151;
-            }
-            .rp-letterhead { 
-              background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-              color: #fff; 
-              padding: 20px 24px; 
-              display: flex; 
-              justify-content: space-between; 
-              align-items: center;
-              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            }
-            .rp-logo { 
-              width: 75px; 
-              height: 75px; 
-              object-fit: contain; 
-              background: white; 
-              padding: 10px; 
-              border-radius: 8px;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .rp-lab-info h1 {
-              font-size: 24px;
-              font-weight: 700;
-              margin: 0 0 4px 0;
-              text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            }
-            .rp-lab-info p {
-              margin: 2px 0;
-              font-size: 13px;
-              opacity: 0.9;
-            }
-            .rp-contact-info {
-              text-align: right;
-              font-size: 12px;
-            }
-            .rp-contact-info div {
-              margin: 2px 0;
-              opacity: 0.9;
-            }
-            .rp-patient { 
-              display: flex; 
-              justify-content: space-between; 
-              padding: 16px 8px; 
-              border-bottom: 3px solid #3b82f6;
-              margin: 12px 0;
-              background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            }
-            .rp-patient-info h2 {
-              font-size: 18px;
-              font-weight: 600;
-              color: #1e40af;
-              margin: 0 0 6px 0;
-            }
-            .rp-patient-info p {
-              margin: 3px 0;
-              color: #4b5563;
-              font-size: 13px;
-            }
-            .rp-dates {
-              text-align: right;
-              color: #6b7280;
-              font-size: 12px;
-            }
-            .rp-dates div {
-              margin: 3px 0;
-            }
-            .rp-results th, .rp-results td { 
-              border: 1px solid #cbd5e1; 
-              padding: 10px 8px;
-            }
-            .rp-results th { 
-              background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-              font-weight: 600;
-              color: #374151;
-            }
-            .rp-results tbody tr:nth-child(even) {
-              background-color: #f8fafc;
-            }
-            .rp-results tbody tr:hover {
-              background-color: #f1f5f9;
-            }
-            .rp-test-block { 
-              margin: 16px 0; 
-              border: 1px solid #e5e7eb;
-              border-radius: 6px;
-              overflow: hidden;
-              page-break-inside: avoid;
-              box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            .rp-test-header {
-              background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-              padding: 12px 16px;
-              font-weight: 700;
-              color: #1e40af;
-              border-bottom: 2px solid #3b82f6;
-            }
-            .rp-footer-note { 
-              margin-top: 20px; 
-              background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
-              padding: 16px; 
-              font-size: 12px;
-              border: 1px solid #fbbf24;
-              border-radius: 6px;
-              box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            .rp-footer-note strong {
-              color: #92400e;
-            }
-            .rp-signs { 
-              display: flex; 
-              justify-content: space-between; 
-              margin-top: 24px; 
-              font-size: 12px;
-              border-top: 1px solid #e5e7eb;
-              padding-top: 16px;
-            }
-            .rp-signature-block {
-              text-align: center;
-              padding: 8px 16px;
-            }
-            .rp-signature-line {
-              border-top: 1px solid #9ca3af;
-              margin-top: 40px;
-              padding-top: 8px;
-              font-weight: 600;
-              color: #374151;
-            }
-            .value-cell {
-              font-weight: 600;
-              color: #059669;
-            }
-            @media print {
-              .rp-test-block {
-                break-inside: avoid;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          ${content}
-        </body>
-      </html>
-    `);
-
-        printWindow.document.close();
-
-        // Wait for images to load before printing
-        if (labInfo?.logoUrl) {
-            const images = printWindow.document.getElementsByTagName('img');
-            if (images.length > 0) {
-                const imagePromises = Array.from(images).map(img => {
-                    return new Promise((resolve) => {
-                        if (img.complete) {
-                            resolve();
-                        } else {
-                            img.onload = resolve;
-                            img.onerror = resolve; // Still resolve on error to not block printing
-                        }
-                    });
-                });
-
-                try {
-                    await Promise.all(imagePromises);
-                    // Small additional delay to ensure rendering
-                    setTimeout(() => {
-                        printWindow.focus();
-                        printWindow.print();
-                    }, 100);
-                } catch (error) {
-                    console.error('Error loading images for print:', error);
-                    printWindow.focus();
-                    printWindow.print();
-                }
-            } else {
-                printWindow.focus();
-                printWindow.print();
-            }
-        } else {
-            printWindow.focus();
-            printWindow.print();
+    // Print handler using react-to-print
+    const handlePrintResults = useReactToPrint({
+        contentRef: reportRef,
+        documentTitle: `Lab_Results_${printPatient?.name}_${new Date().toISOString().split('T')[0]}`,
+    });
+    
+    // Trigger print with patient data
+    const handlePrintClick = async (patient) => {
+        try {
+            const res = await axios.get(
+                `${import.meta.env.VITE_API_URL}/api/results/${patient._id}/tests`
+            );
+            setPrintPatient(res.data);
+            console.log(printPatient?.tests?.[0]?.testId?.specimen) 
+            // Small delay to ensure state updates before printing
+            setTimeout(() => {
+                handlePrintResults();
+            }, 100);
+        } catch (err) {
+            console.error("Error loading patient data:", err);
+            toast.error("Failed to load patient data for printing");
         }
     };
 
@@ -363,6 +164,7 @@ export default function ResultPrintComponent() {
             return iso;
         }
     };
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-2">
@@ -513,11 +315,11 @@ export default function ResultPrintComponent() {
                                                         <TableCell>
                                                             <Button
                                                                 size="sm"
-                                                                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                                                                onClick={() => openPrintPreview(p)}
+                                                                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                                                onClick={() => handlePrintClick(p)}
                                                             >
                                                                 <Printer className="w-4 h-4 mr-1" />
-                                                                Preview
+                                                                Print
                                                             </Button>
                                                         </TableCell>
                                                         <TableCell>
@@ -718,281 +520,219 @@ export default function ResultPrintComponent() {
                     </DialogContent>
                 </Dialog>
 
-                {/* Print Preview Dialog */}
-                <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-                    <DialogContent className="max-w-5xl max-h-[95vh] overflow-auto bg-white p-6 rounded-2xl border-0 shadow-2xl">
-                        <DialogHeader className="pb-4">
-                            <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
-                                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                                    <Printer className="h-4 w-4 text-green-600" />
-                                </div>
-                                Print Preview — {printPatient?.name || ""}
-                            </DialogTitle>
-                        </DialogHeader>
-                        <Separator className="bg-gray-300" />
+                {/* ========================================
+    HIDDEN PRINT TEMPLATE FOR RESULTS
+======================================== */}
+                {printPatient && (
+                    <div style={{ display: 'none' }}>
+                        <div ref={reportRef} className="bg-white">
+                            <style>
+                                {`
+@media print {
+    @page { 
+        margin: 5mm 10mm; 
+        size: A4 portrait;
+    }
+    body { 
+        print-color-adjust: exact; 
+        -webkit-print-color-adjust: exact; 
+    }
+}
+                `}
+                            </style>
 
-                        <div className="flex gap-3 justify-end mb-4 mt-4">
-                            <Button
-                                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                                onClick={handlePrint}
-                            >
-                                <Printer className="mr-2 h-4 w-4" />
-                                Print Report
-                            </Button>
-                        </div>
-
-                        <div
-                            id="printable-report"
-                            className="mx-auto max-h-[75vh] overflow-y-auto bg-white shadow-2xl border border-gray-200 rounded-lg"
-                            style={{ maxWidth: '794px' }}
-                        >
-                            <style jsx>{`
-                .preview-content {
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    font-size: 13px;
-                    line-height: 1.5;
-                    color: #1a1a1a;
-                }
-                .preview-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin: 8px 0;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                }
-                .preview-table th,
-                .preview-table td {
-                    border: 1px solid #d1d5db;
-                    padding: 10px 8px;
-                    text-align: left;
-                }
-                .preview-table th {
-                    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-                    font-weight: 600;
-                    color: #374151;
-                }
-                .preview-table tbody tr:nth-child(even) {
-                    background-color: #f8fafc;
-                }
-                .preview-letterhead {
-                    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-                    color: #fff;
-                    padding: 20px 24px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                }
-                .preview-logo {
-                    width: 75px;
-                    height: 75px;
-                    object-fit: contain;
-                    background: white;
-                    padding: 10px;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                }
-                .preview-lab-info h1 {
-                    font-size: 24px;
-                    font-weight: 700;
-                    margin: 0 0 4px 0;
-                    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-                }
-                .preview-lab-info p {
-                    margin: 2px 0;
-                    font-size: 13px;
-                    opacity: 0.9;
-                }
-                .preview-contact-info {
-                    text-align: right;
-                    font-size: 12px;
-                }
-                .preview-contact-info div {
-                    margin: 2px 0;
-                    opacity: 0.9;
-                }
-                .preview-patient {
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 16px 8px;
-                    border-bottom: 3px solid #3b82f6;
-                    margin: 12px 0;
-                    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-                }
-                .preview-patient-info h2 {
-                    font-size: 18px;
-                    font-weight: 600;
-                    color: #1e40af;
-                    margin: 0 0 6px 0;
-                }
-                .preview-patient-info p {
-                    margin: 3px 0;
-                    color: #4b5563;
-                    font-size: 13px;
-                }
-                .preview-dates {
-                    text-align: right;
-                    color: #6b7280;
-                    font-size: 12px;
-                }
-                .preview-dates div {
-                    margin: 3px 0;
-                }
-                .preview-test-block {
-                    margin: 16px 0;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 6px;
-                    overflow: hidden;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                }
-                .preview-test-header {
-                    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-                    padding: 12px 16px;
-                    font-weight: 700;
-                    color: #1e40af;
-                    border-bottom: 2px solid #3b82f6;
-                }
-                .preview-footer-note {
-                    margin-top: 20px;
-                    background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
-                    padding: 16px;
-                    font-size: 12px;
-                    border: 1px solid #fbbf24;
-                    border-radius: 6px;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                }
-                .preview-footer-note strong {
-                    color: #92400e;
-                }
-                .preview-signs {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-top: 24px;
-                    font-size: 12px;
-                    border-top: 1px solid #e5e7eb;
-                    padding-top: 16px;
-                }
-                .preview-signature-block {
-                    text-align: center;
-                    padding: 8px 16px;
-                }
-                .preview-signature-line {
-                    border-top: 1px solid #9ca3af;
-                    margin-top: 40px;
-                    padding-top: 8px;
-                    font-weight: 600;
-                    color: #374151;
-                }
-                .preview-value-cell {
-                    font-weight: 600;
-                    color: #059669;
-                    text-align: center;
-                }
-            `}</style>
-
-                            <div className="preview-content">
-                                {/* ENHANCED HEADER */}
-                                <div className="preview-letterhead">
-                                    <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-                                        {labInfo?.logoUrl ? (
+                            {/* LAB HEADER - Same as Registration Report */}
+                            <div className="mb-4">
+                                <div className="flex items-start justify-between border-b-2 border-gray-800 pb-3">
+                                    {/* Left: Logo and Lab Info */}
+                                    <div className="flex items-start">
+                                        {labInfo?.logoUrl && (
                                             <img
                                                 src={labInfo.logoUrl}
-                                                alt="lab logo"
-                                                className="preview-logo"
+                                                alt="Lab Logo"
+                                                className="h-20 w-20 mr-4 object-contain"
+                                                onError={(e) => e.target.style.display = 'none'}
                                             />
-                                        ) : (
-                                            <div className="preview-logo" style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: '#1e40af',
-                                                fontWeight: 'bold',
-                                                fontSize: '14px'
-                                            }}>
-                                                LAB
-                                            </div>
                                         )}
-                                        <div className="preview-lab-info">
-                                            <h1>{labInfo?.labName || "Your Lab Name"}</h1>
-                                            <p>{labInfo?.address || "Lab Address"}</p>
+                                        <div className="text-left">
+                                            <h1 className="text-2xl font-bold mb-0">
+                                                <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
+                                                <span style={{ letterSpacing: '0.25em' }}>LAB</span>
+                                            </h1>
+                                            <p className="text-sm mb-1">
+                                                <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
+                                                <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
+                                            </p>
+                                            <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
+                                                Better Diagnosis - Better Treatment
+                                            </p>
                                         </div>
                                     </div>
-                                    <div className="preview-contact-info">
-                                        <div><strong>📞</strong> {labInfo?.phoneNumber || "Phone Number"}</div>
-                                        <div><strong>📧</strong> {labInfo?.email || "email@lab.com"}</div>
-                                        <div><strong>🌐</strong> {labInfo?.website || "www.lab.com"}</div>
-                                    </div>
-                                </div>
 
-                                {/* ENHANCED PATIENT INFO */}
-                                <div className="preview-patient">
-                                    <div className="preview-patient-info">
-                                        <h2>{printPatient?.name || "—"}</h2>
-                                        <p><strong>Age / Sex:</strong> {printPatient?.age || "—"} / {printPatient?.gender || "—"}</p>
-                                        <p><strong>Referred by:</strong> {printPatient?.referencedBy || "—"}</p>
-                                        <p><strong>Registration No:</strong> {printPatient?.refNo || "—"}</p>
-                                    </div>
-                                    <div className="preview-dates">
-                                        <div><strong>Registered:</strong><br />{fmt(printPatient?.createdAt)}</div>
-                                        <div><strong>Reported:</strong><br />{fmt(printPatient?.updatedAt)}</div>
-                                    </div>
-                                </div>
-
-                                {/* ENHANCED RESULTS */}
-                                <div>
-                                    {printPatient?.tests?.map((test, ti) => (
-                                        <div key={ti} className="preview-test-block">
-                                            <div className="preview-test-header">
-                                                {test.testName}
-                                            </div>
-                                            <table className="preview-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th style={{ width: '35%' }}>TEST PARAMETER</th>
-                                                        <th style={{ width: '20%' }}>RESULT</th>
-                                                        <th style={{ width: '15%' }}>UNIT</th>
-                                                        <th style={{ width: '30%' }}>REFERENCE RANGE</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {test.fields?.map((f, fi) => (
-                                                        <tr key={fi}>
-                                                            <td style={{ fontWeight: '500' }}>{f.fieldName}</td>
-                                                            <td className="preview-value-cell">{f.defaultValue || "—"}</td>
-                                                            <td style={{
-                                                                textAlign: "center",
-                                                                fontSize: '12px',
-                                                                color: '#6b7280'
-                                                            }}>{f.unit || "—"}</td>
-                                                            <td style={{
-                                                                textAlign: "center",
-                                                                fontSize: '12px',
-                                                                color: '#6b7280'
-                                                            }}>{f.range || "—"}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* ENHANCED FOOTER */}
-                                <div className="preview-footer-note">
-                                    <strong>📋 Clinical Notes:</strong> {labInfo?.description || "Standard laboratory procedures followed. Results are based on the sample provided."}
-                                </div>
-
-                                <div className="preview-signs">
-                                    <div className="preview-signature-block">
-                                        <div className="preview-signature-line">Lab Incharge</div>
-                                    </div>
-                                    <div className="preview-signature-block">
-                                        <div className="preview-signature-line">Pathologist</div>
+                                    {/* Right: QR Code */}
+                                    <div className="flex flex-col items-center">
+                                        <QRCodeSVG
+                                            value={JSON.stringify({
+                                                labName: labInfo?.labName || 'DOCTOR LAB & Imaging Center Sahiwal',
+                                                address: labInfo?.address || 'Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha',
+                                                phone: labInfo?.phoneNumber || '0325-0020111'
+                                            })}
+                                            size={60}
+                                            level="M"
+                                        />
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Lab # and Case # with Barcodes */}
+                            <div className="border-t border-b border-gray-800 py-2 mb-3">
+                                <div className="flex justify-between items-center">
+                                    {/* Lab No */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-bold">Patient #:</span>
+                                        <div className="text-center">
+                                            <svg ref={el => {
+                                                if (el && printPatient?.refNo) {
+                                                    JsBarcode(el, printPatient.refNo, {
+                                                        format: "CODE128",
+                                                        width: 1,
+                                                        height: 20,
+                                                        displayValue: false,
+                                                        margin: 0
+                                                    });
+                                                }
+                                            }}></svg>
+                                            <p className="text-xs mt-0.5">{printPatient?.refNo}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Case No */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-bold">Case #:</span>
+                                        <div className="text-center">
+                                            <svg ref={el => {
+                                                if (el && printPatient?.caseNo) {
+                                                    JsBarcode(el, printPatient.caseNo, {
+                                                        format: "CODE128",
+                                                        width: 1,
+                                                        height: 20,
+                                                        displayValue: false,
+                                                        margin: 0
+                                                    });
+                                                }
+                                            }}></svg>
+                                            <p className="text-xs mt-0.5">{printPatient?.caseNo}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Patient Info Box - Matching PDF Format */}
+                            <div className="border border-gray-800 p-2 mb-3 bg-white">
+                                <table className="w-full text-xs">
+                                    <tbody>
+                                        <tr>
+                                            <td className="font-semibold py-0.5 w-1/4">Patient's Name</td>
+                                            <td className="py-0.5 w-1/4 font-semibold text-md">{printPatient?.name}</td>
+                                            <td className="font-semibold py-0.5 w-1/4">Reg. Date</td>
+                                            <td className="py-0.5 w-1/4">
+                                                {new Date(printPatient?.createdAt).toLocaleDateString('en-GB')} {new Date(printPatient?.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="font-semibold py-0.5">Age/Sex</td>
+                                            <td className="py-0.5">{printPatient?.age} Years / {printPatient?.gender}</td>
+                                            <td className="font-semibold py-0.5">Specimen</td>
+                                            <td className="py-0.5">{printPatient?.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="font-semibold py-0.5">Father/Husband</td>
+                                            <td className="py-0.5">-</td>
+                                            <td className="font-semibold py-0.5">Contact No</td>
+                                            <td className="py-0.5">{printPatient?.phone}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="font-semibold py-0.5">NIC No</td>
+                                            <td className="py-0.5">-</td>
+                                            <td className="font-semibold py-0.5">Consultant</td>
+                                            <td className="py-0.5">{printPatient?.referencedBy || 'SELF'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="font-semibold py-0.5">Hosp/ MR #</td>
+                                            <td className="py-0.5">-</td>
+                                            <td className="font-semibold py-0.5">Reg. Centre</td>
+                                            <td className="py-0.5">Main Lab</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* TEST RESULTS - Matching PDF Format */}
+                            {printPatient?.tests?.map((test, ti) => {
+                                const filledFields = test.fields?.filter(f =>
+                                    f.defaultValue &&
+                                    f.defaultValue.trim() !== "" &&
+                                    f.defaultValue !== "—"
+                                ) || [];
+
+                                if (filledFields.length === 0) return null;
+
+                                return (
+                                    <div key={ti} className="mb-4">
+                                        <div className="bg-gray-100 border border-gray-800 px-2 py-1 mb-2">
+                                            <h3 className="text-sm font-bold uppercase">{test.testName}</h3>
+                                        </div>
+
+                                        <table className="w-full text-xs border-collapse">
+                                            <thead>
+                                                <tr className="border-b border-gray-800">
+                                                    <th className="text-left py-1 font-semibold">TEST</th>
+                                                    <th className="text-center py-1 font-semibold">RESULT</th>
+                                                    <th className="text-center py-1 font-semibold">UNIT</th>
+                                                    <th className="text-center py-1 font-semibold">REFERENCE RANGE</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {filledFields.map((f, fi) => (
+                                                    <tr key={fi} className="border-b border-gray-300">
+                                                        <td className="py-1.5">{f.fieldName}</td>
+                                                        <td className="text-center py-1.5 font-semibold">{f.defaultValue}</td>
+                                                        <td className="text-center py-1.5">{f.unit || '.'}</td>
+                                                        <td className="text-center py-1.5">{f.range || '-'}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                );
+                            })}
+
+                            {/* FOOTER - Matching PDF Format */}
+                            <div className="mt-6 pt-4 border-t border-gray-800">
+                                <div className="flex justify-between items-end text-xs">
+                                    <div>
+                                        <p className="font-semibold mb-1">Lab Technician</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-semibold">Dr. Mudaser Hussain Abbasi</p>
+                                        <p>MBBS, DMJ. Mphil</p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 text-center">
+                                    <p className="text-xs font-semibold">Electronically Verified Report, No Signature(s) Required.</p>
+                                    <p className="text-[10px] mt-2 text-gray-600">
+                                        NOTE: All the tests are performed on the most advanced, highly sophisticated, appropriate, and state of the art instruments with highly sensitive chemicals under strict conditions and with all care and diligence. However, the above results are NOT the DIAGNOSIS and should be correlated with clinical findings, patient's history, signs and symptoms and other diagnostic tests. Lab to lab variation may occur. This document is NEVER challengeable at any PLACE/COURT and in any CONDITION.
+                                    </p>
+                                </div>
+
+                                <div className="text-center mt-2 text-xs">
+                                    <p>Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha - Contact # 0325-0020111</p>
+                                </div>
+                            </div>
                         </div>
-                    </DialogContent>
-                </Dialog>
+                    </div>
+                )}
             </div>
         </div>
     );

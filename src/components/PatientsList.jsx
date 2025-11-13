@@ -855,7 +855,7 @@ export default function PatientsList() {
                         {/* ========================================
                             PATIENT COPY
                         ======================================== */}
-                        <div className="pt-4">
+                        <div className="pt-4" style={{ pageBreakInside: 'avoid' }}>
                             {/* PATIENT COPY Header */}
                             <div className="mb-4">
                                 <div className="text-center mb-3">

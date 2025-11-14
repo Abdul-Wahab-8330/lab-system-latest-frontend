@@ -743,20 +743,21 @@ export default function ResultPrintComponent() {
                                                         <tr>
                                                             <td className="font-semibold py-0.5">Father/Husband</td>
                                                             <td className="py-0.5">-</td>
-                                                            <td className="font-semibold py-0.5">Contact No</td>
-                                                            <td className="py-0.5">{printPatient?.phone}</td>
+                                                            <td className="font-semibold py-0.5">Reg. Centre</td>
+                                                            <td className="py-0.5">Main Lab</td>
                                                         </tr>
                                                         <tr>
-                                                            <td className="font-semibold py-0.5">NIC No</td>
-                                                            <td className="py-0.5">-</td>
+                                                            <td className="font-semibold py-0.5">Contact No</td>
+                                                            <td className="py-0.5">{printPatient?.phone}</td>
                                                             <td className="font-semibold py-0.5">Consultant</td>
                                                             <td className="py-0.5">{printPatient?.referencedBy || "SELF"}</td>
                                                         </tr>
                                                         <tr>
                                                             <td className="font-semibold py-0.5">Hosp/ MR #</td>
                                                             <td className="py-0.5">-</td>
-                                                            <td className="font-semibold py-0.5">Reg. Centre</td>
-                                                            <td className="py-0.5">Main Lab</td>
+                                                            <td className="font-semibold py-0.5">NIC No</td>
+                                                            <td className="py-0.5">-</td>
+                                                            
                                                         </tr>
                                                     </tbody>
                                                 </table>

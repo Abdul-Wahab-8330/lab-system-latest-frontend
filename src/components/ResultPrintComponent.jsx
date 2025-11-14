@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import {
@@ -42,7 +40,7 @@ export default function ResultPrintComponent() {
     const [patientToDelete, setPatientToDelete] = useState(null);
 
     const reportRef = useRef();
-    
+
 
     useEffect(() => {
         loadLabInfo();
@@ -136,7 +134,7 @@ export default function ResultPrintComponent() {
         contentRef: reportRef,
         documentTitle: `Lab_Results_${printPatient?.name}_${new Date().toISOString().split('T')[0]}`,
     });
-    
+
     // Trigger print with patient data
     const handlePrintClick = async (patient) => {
         try {
@@ -144,7 +142,9 @@ export default function ResultPrintComponent() {
                 `${import.meta.env.VITE_API_URL}/api/results/${patient._id}/tests`
             );
             setPrintPatient(res.data);
-            console.log(printPatient?.tests?.[0]?.testId?.specimen) 
+            console.log('Printing results for patient:', res.data);
+            console.log(printPatient?.tests?.[0]?.testId?.specimen)
+            console.log(printPatient?.tests?.[0]?.testId?.category)
             // Small delay to ensure state updates before printing
             setTimeout(() => {
                 handlePrintResults();
@@ -154,6 +154,23 @@ export default function ResultPrintComponent() {
             toast.error("Failed to load patient data for printing");
         }
     };
+
+    // const handlePrintClick = async (patient) => {
+    //     try {
+    //         const res = await axios.get(
+    //             `${import.meta.env.VITE_API_URL}/api/patients/${patient._id}`  
+    //         );
+    //         setPrintPatient(res.data);
+    //         console.log('Specimen:', res.data?.tests?.[0]?.testId?.specimen);
+
+    //         setTimeout(() => {
+    //             handlePrintResults();
+    //         }, 100);
+    //     } catch (err) {
+    //         console.error("Error loading patient data:", err);
+    //         toast.error("Failed to load patient data for printing");
+    //     }
+    // };
 
     const fmt = (iso) => {
         if (!iso) return "—";
@@ -524,215 +541,389 @@ export default function ResultPrintComponent() {
     HIDDEN PRINT TEMPLATE FOR RESULTS
 ======================================== */}
                 {printPatient && (
-                    <div style={{ display: 'none' }}>
+                    <div style={{ display: "none" }}>
                         <div ref={reportRef} className="bg-white">
-                            <style>
-                                {`
+                            <style>{`
 @media print {
-    @page { 
-        margin: 5mm 10mm; 
-        size: A4 portrait;
-    }
-    body { 
-        print-color-adjust: exact; 
-        -webkit-print-color-adjust: exact; 
-    }
+  @page {
+    size: A4 portrait;
+    margin: 5mm 8mm;
+  }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Main table takes full page height */
+  table.main-wrapper {
+    width: 100%;
+    border-collapse: collapse;
+    min-height: 100vh;
+    display: table;
+  }
+
+  /* Header stays at top */
+  thead.print-header {
+    display: table-header-group;
+  }
+
+  /* Content fills available space */
+  tbody.print-content {
+    display: table-row-group;
+    height: 100%;
+  }
+
+  tbody.print-content tr {
+    height: 100%;
+  }
+
+  tbody.print-content td {
+    vertical-align: top;
+    height: 100%;
+  }
+
+  /* Footer sticks to bottom */
+  tfoot.print-footer {
+    display: table-footer-group;
+    vertical-align: bottom;
+  }
+
+  .print-footer td {
+    vertical-align: bottom;
+  }
+
+  /* Avoid content breaking */
+  .test-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .no-margin {
+    margin: 0;
+    padding: 0;
+  }
 }
-                `}
-                            </style>
+`}</style>
 
-                            {/* LAB HEADER - Same as Registration Report */}
-                            <div className="mb-4">
-                                <div className="flex items-start justify-between border-b-2 border-gray-800 pb-3">
-                                    {/* Left: Logo and Lab Info */}
-                                    <div className="flex items-start">
-                                        {labInfo?.logoUrl && (
-                                            <img
-                                                src={labInfo.logoUrl}
-                                                alt="Lab Logo"
-                                                className="h-20 w-20 mr-4 object-contain"
-                                                onError={(e) => e.target.style.display = 'none'}
-                                            />
-                                        )}
-                                        <div className="text-left">
-                                            <h1 className="text-2xl font-bold mb-0">
-                                                <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
-                                                <span style={{ letterSpacing: '0.25em' }}>LAB</span>
-                                            </h1>
-                                            <p className="text-sm mb-1">
-                                                <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
-                                                <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
-                                            </p>
-                                            <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
-                                                Better Diagnosis - Better Treatment
-                                            </p>
-                                        </div>
-                                    </div>
+                            {/* ✅ TABLE WRAPPER FOR PROPER PRINTING */}
+                            <table className="main-wrapper w-full border-collapse no-margin">
+                                {/* ========================================
+            HEADER (Repeats Automatically)
+        ======================================== */}
+                                <thead className="print-header">
+                                    <tr>
+                                        <td>
+                                            <div className="flex items-start justify-between border-b-2 border-gray-800 pb-2 mb-2">
+                                                {/* Left: Logo and Lab Info */}
+                                                <div className="flex items-start">
+                                                    {labInfo?.logoUrl && (
+                                                        <img
+                                                            src={labInfo.logoUrl}
+                                                            alt="Lab Logo"
+                                                            className="h-24 w-24 mr-4 object-contain"
+                                                            onError={(e) => (e.target.style.display = "none")}
+                                                        />
+                                                    )}
+                                                    <div className="text-left">
+                                                        <h1 className="text-3xl font-bold mb-1">
+                                                            <span style={{ letterSpacing: "0.3em" }}>DOCTOR</span>{" "}
+                                                            <span style={{ letterSpacing: "0.25em" }}>LAB</span>
+                                                        </h1>
+                                                        <p className="text-md font-semibold mb-2">
+                                                            <span style={{ letterSpacing: "0.02em" }}>&</span>{" "}
+                                                            <span style={{ letterSpacing: "0.08em" }}>
+                                                                Imaging Center Sahiwal
+                                                            </span>
+                                                        </p>
+                                                        <p className="text-xs italic" style={{ letterSpacing: "0.03em" }}>
+                                                            Better Diagnosis - Better Treatment
+                                                        </p>
+                                                    </div>
+                                                </div>
 
-                                    {/* Right: QR Code */}
-                                    <div className="flex flex-col items-center">
-                                        <QRCodeSVG
-                                            value={JSON.stringify({
-                                                labName: labInfo?.labName || 'DOCTOR LAB & Imaging Center Sahiwal',
-                                                address: labInfo?.address || 'Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha',
-                                                phone: labInfo?.phoneNumber || '0325-0020111'
-                                            })}
-                                            size={60}
-                                            level="M"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
+                                                {/* Right: QR Code and Barcodes */}
+                                                <div className="flex items-center justify-center">
+                                                    <div className="mr-6 pt-3">
+                                                        <div className="flex flex-col items-center">
+                                                            {/* Patient No */}
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs font-bold">Patient #:</span>
+                                                                <div className="text-center">
+                                                                    <svg
+                                                                        ref={(el) => {
+                                                                            if (el && printPatient?.refNo) {
+                                                                                JsBarcode(el, printPatient.refNo, {
+                                                                                    format: "CODE128",
+                                                                                    width: 1,
+                                                                                    height: 20,
+                                                                                    displayValue: false,
+                                                                                    margin: 0,
+                                                                                });
+                                                                            }
+                                                                        }}
+                                                                    ></svg>
+                                                                    <p className="text-xs mt-0.5">{printPatient?.refNo}</p>
+                                                                </div>
+                                                            </div>
 
-                            {/* Lab # and Case # with Barcodes */}
-                            <div className="border-t border-b border-gray-800 py-2 mb-3">
-                                <div className="flex justify-between items-center">
-                                    {/* Lab No */}
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold">Patient #:</span>
-                                        <div className="text-center">
-                                            <svg ref={el => {
-                                                if (el && printPatient?.refNo) {
-                                                    JsBarcode(el, printPatient.refNo, {
-                                                        format: "CODE128",
-                                                        width: 1,
-                                                        height: 20,
-                                                        displayValue: false,
-                                                        margin: 0
-                                                    });
-                                                }
-                                            }}></svg>
-                                            <p className="text-xs mt-0.5">{printPatient?.refNo}</p>
-                                        </div>
-                                    </div>
+                                                            {/* Case No */}
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs font-bold">Case #:</span>
+                                                                <div className="text-center">
+                                                                    <svg
+                                                                        ref={(el) => {
+                                                                            if (el && printPatient?.caseNo) {
+                                                                                JsBarcode(el, printPatient.caseNo, {
+                                                                                    format: "CODE128",
+                                                                                    width: 1,
+                                                                                    height: 20,
+                                                                                    displayValue: false,
+                                                                                    margin: 0,
+                                                                                });
+                                                                            }
+                                                                        }}
+                                                                    ></svg>
+                                                                    <p className="text-xs mt-0.5">{printPatient?.caseNo}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <QRCodeSVG
+                                                        value={JSON.stringify({
+                                                            labName:
+                                                                labInfo?.labName ||
+                                                                "DOCTOR LAB & Imaging Center Sahiwal",
+                                                            address:
+                                                                labInfo?.address ||
+                                                                "Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha",
+                                                            phone: labInfo?.phoneNumber || "0325-0020111",
+                                                        })}
+                                                        size={70}
+                                                        level="M"
+                                                    />
+                                                </div>
+                                            </div>
 
-                                    {/* Case No */}
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold">Case #:</span>
-                                        <div className="text-center">
-                                            <svg ref={el => {
-                                                if (el && printPatient?.caseNo) {
-                                                    JsBarcode(el, printPatient.caseNo, {
-                                                        format: "CODE128",
-                                                        width: 1,
-                                                        height: 20,
-                                                        displayValue: false,
-                                                        margin: 0
-                                                    });
-                                                }
-                                            }}></svg>
-                                            <p className="text-xs mt-0.5">{printPatient?.caseNo}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                            {/* Patient Info Box */}
+                                            <div className="border-b border-gray-800 pb-3  bg-white">
+                                                <table className="w-full text-xs">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td className="font-semibold py-0.5 w-1/4">Patient's Name</td>
+                                                            <td className="py-0.5 w-1/4 font-semibold text-md uppercase">
+                                                                {printPatient?.name}
+                                                            </td>
+                                                            <td className="font-semibold py-0.5 w-1/4">Reg. Date</td>
+                                                            <td className="py-0.5 w-1/4">
+                                                                {new Date(printPatient?.createdAt).toLocaleDateString("en-GB")}{" "}
+                                                                {new Date(printPatient?.createdAt).toLocaleTimeString("en-US", {
+                                                                    hour: "2-digit",
+                                                                    minute: "2-digit",
+                                                                    hour12: true,
+                                                                })}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className="font-semibold py-0.5">Age/Sex</td>
+                                                            <td className="py-0.5">
+                                                                {printPatient?.age} Years / {printPatient?.gender}
+                                                            </td>
+                                                            <td className="font-semibold py-0.5">Specimen</td>
+                                                            <td className="py-0.5">
+                                                                {printPatient?.tests?.[0]?.testId?.specimen || "Taken in Lab"}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className="font-semibold py-0.5">Father/Husband</td>
+                                                            <td className="py-0.5">-</td>
+                                                            <td className="font-semibold py-0.5">Contact No</td>
+                                                            <td className="py-0.5">{printPatient?.phone}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className="font-semibold py-0.5">NIC No</td>
+                                                            <td className="py-0.5">-</td>
+                                                            <td className="font-semibold py-0.5">Consultant</td>
+                                                            <td className="py-0.5">{printPatient?.referencedBy || "SELF"}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className="font-semibold py-0.5">Hosp/ MR #</td>
+                                                            <td className="py-0.5">-</td>
+                                                            <td className="font-semibold py-0.5">Reg. Centre</td>
+                                                            <td className="py-0.5">Main Lab</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </thead>
 
-                            {/* Patient Info Box - Matching PDF Format */}
-                            <div className="border border-gray-800 p-2 mb-3 bg-white">
-                                <table className="w-full text-xs">
-                                    <tbody>
-                                        <tr>
-                                            <td className="font-semibold py-0.5 w-1/4">Patient's Name</td>
-                                            <td className="py-0.5 w-1/4 font-semibold text-md">{printPatient?.name}</td>
-                                            <td className="font-semibold py-0.5 w-1/4">Reg. Date</td>
-                                            <td className="py-0.5 w-1/4">
-                                                {new Date(printPatient?.createdAt).toLocaleDateString('en-GB')} {new Date(printPatient?.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="font-semibold py-0.5">Age/Sex</td>
-                                            <td className="py-0.5">{printPatient?.age} Years / {printPatient?.gender}</td>
-                                            <td className="font-semibold py-0.5">Specimen</td>
-                                            <td className="py-0.5">{printPatient?.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="font-semibold py-0.5">Father/Husband</td>
-                                            <td className="py-0.5">-</td>
-                                            <td className="font-semibold py-0.5">Contact No</td>
-                                            <td className="py-0.5">{printPatient?.phone}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="font-semibold py-0.5">NIC No</td>
-                                            <td className="py-0.5">-</td>
-                                            <td className="font-semibold py-0.5">Consultant</td>
-                                            <td className="py-0.5">{printPatient?.referencedBy || 'SELF'}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="font-semibold py-0.5">Hosp/ MR #</td>
-                                            <td className="py-0.5">-</td>
-                                            <td className="font-semibold py-0.5">Reg. Centre</td>
-                                            <td className="py-0.5">Main Lab</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                {/* ========================================
+            MAIN CONTENT
+        ======================================== */}
+                                <tbody className="print-content">
+                                    <tr>
+                                        <td>
+                                            {/* Group tests by category */}
+                                            {(() => {
+                                                // Group tests by category
+                                                const testsByCategory = {};
+                                                printPatient?.tests?.forEach(test => {
+                                                    const category = test.testId?.category || "OTHER TESTS";
+                                                    if (!testsByCategory[category]) {
+                                                        testsByCategory[category] = [];
+                                                    }
+                                                    testsByCategory[category].push(test);
+                                                });
 
-                            {/* TEST RESULTS - Matching PDF Format */}
-                            {printPatient?.tests?.map((test, ti) => {
-                                const filledFields = test.fields?.filter(f =>
-                                    f.defaultValue &&
-                                    f.defaultValue.trim() !== "" &&
-                                    f.defaultValue !== "—"
-                                ) || [];
+                                                // Render each category
+                                                return Object.entries(testsByCategory).map(([category, categoryTests], catIndex) => {
+                                                    // Filter tests that have filled fields
+                                                    const testsWithData = categoryTests.filter(test =>
+                                                        test.fields?.some(f =>
+                                                            f.defaultValue &&
+                                                            f.defaultValue.trim() !== "" &&
+                                                            f.defaultValue !== "—"
+                                                        )
+                                                    );
 
-                                if (filledFields.length === 0) return null;
+                                                    if (testsWithData.length === 0) return null;
 
-                                return (
-                                    <div key={ti} className="mb-4">
-                                        <div className="bg-gray-100 border border-gray-800 px-2 py-1 mb-2">
-                                            <h3 className="text-sm font-bold uppercase">{test.testName}</h3>
-                                        </div>
+                                                    return (
+                                                        <div key={catIndex} className="test-section mb-3 pt-8">
+                                                            {/* Category Header */}
+                                                            <div className="my-2 -mb-5">
+                                                                <h3 className="text-md font-bold uppercase">{category} REPORT</h3>
+                                                            </div>
 
-                                        <table className="w-full text-xs border-collapse">
-                                            <thead>
-                                                <tr className="border-b border-gray-800">
-                                                    <th className="text-left py-1 font-semibold">TEST</th>
-                                                    <th className="text-center py-1 font-semibold">RESULT</th>
-                                                    <th className="text-center py-1 font-semibold">UNIT</th>
-                                                    <th className="text-center py-1 font-semibold">REFERENCE RANGE</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {filledFields.map((f, fi) => (
-                                                    <tr key={fi} className="border-b border-gray-300">
-                                                        <td className="py-1.5">{f.fieldName}</td>
-                                                        <td className="text-center py-1.5 font-semibold">{f.defaultValue}</td>
-                                                        <td className="text-center py-1.5">{f.unit || '.'}</td>
-                                                        <td className="text-center py-1.5">{f.range || '-'}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                );
-                            })}
+                                                            {/* Table with headers (once per category) */}
+                                                            <table className=" text-xs border-collapse mb-2 "  style={{ width: "83%" }}>
+                                                                <thead>
+                                                                    <tr className="border-b border-gray-800">
+                                                                        <th className="text-left pl-2 font-semibold align-bottom">TEST</th>
+                                                                        <th className="text-center font-semibold align-bottom">
+                                                                            REFERENCE RANGE
+                                                                        </th>
+                                                                        <th className="text-center font-semibold align-bottom">UNIT</th>
+                                                                        <th className="text-center font-semibold align-top">
+                                                                            <div>RESULT</div>
+                                                                            <div className="text-[10px] font-semibold">
+                                                                                {printPatient?.refNo}
+                                                                            </div>
+                                                                            <div className="text-[10px] font-normal mt-0.5">
+                                                                                {new Date().toLocaleDateString("en-GB", {
+                                                                                    day: "2-digit",
+                                                                                    month: "short",
+                                                                                    year: "numeric"
+                                                                                }).replace(/ /g, "-")} {" "}
+                                                                                {new Date().toLocaleTimeString("en-US", {
+                                                                                    hour: "2-digit",
+                                                                                    minute: "2-digit",
+                                                                                    hour12: true,
+                                                                                })}
+                                                                            </div>
+                                                                        </th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {/* Render all tests under this category */}
+                                                                    {testsWithData.map((test, testIndex) => {
+                                                                        const filledFields = test.fields?.filter(
+                                                                            f => f.defaultValue &&
+                                                                                f.defaultValue.trim() !== "" &&
+                                                                                f.defaultValue !== "—"
+                                                                        ) || [];
 
-                            {/* FOOTER - Matching PDF Format */}
-                            <div className="mt-6 pt-4 border-t border-gray-800">
-                                <div className="flex justify-between items-end text-xs">
-                                    <div>
-                                        <p className="font-semibold mb-1">Lab Technician</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="font-semibold">Dr. Mudaser Hussain Abbasi</p>
-                                        <p>MBBS, DMJ. Mphil</p>
-                                    </div>
-                                </div>
+                                                                        return (
+                                                                            <React.Fragment key={testIndex}>
+                                                                                {/* Test Name Row (if test has name) */}
+                                                                                {test.testName && test.testName.trim() && (
+                                                                                    <tr>
+                                                                                        <td colSpan="4" className="py-2 font-semibold uppercase text-sm">
+                                                                                            {test.testName}
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                )}
 
-                                <div className="mt-4 text-center">
-                                    <p className="text-xs font-semibold">Electronically Verified Report, No Signature(s) Required.</p>
-                                    <p className="text-[10px] mt-2 text-gray-600">
-                                        NOTE: All the tests are performed on the most advanced, highly sophisticated, appropriate, and state of the art instruments with highly sensitive chemicals under strict conditions and with all care and diligence. However, the above results are NOT the DIAGNOSIS and should be correlated with clinical findings, patient's history, signs and symptoms and other diagnostic tests. Lab to lab variation may occur. This document is NEVER challengeable at any PLACE/COURT and in any CONDITION.
-                                    </p>
-                                </div>
+                                                                                {/* Field Rows */}
+                                                                                {filledFields.map((f, fi) => (
+                                                                                    <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
+                                                                                        <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                                                        <td className="text-center py-0.5">{f.range || "-"}</td>
+                                                                                        <td className="text-center py-0.5">{f.unit || "."}</td>
+                                                                                        <td className="text-center font-semibold py-0.5">
+                                                                                            {f.defaultValue}
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                ))}
+                                                                            </React.Fragment>
+                                                                        );
+                                                                    })}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    );
+                                                });
+                                            })()}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                {/* ========================================
+            FOOTER (Repeats Automatically)
+        ======================================== */}
+                                <tfoot className="print-footer">
+                                    <tr>
+                                        <td>
+                                            <div className="text-center mb-1 mt-10">
+                                                <p className="text-xs font-semibold">
+                                                    Electronically Verified Report, No Signature(s) Required.
+                                                </p>
+                                            </div>
 
-                                <div className="text-center mt-2 text-xs">
-                                    <p>Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha - Contact # 0325-0020111</p>
-                                </div>
-                            </div>
+                                            <div className="border-t border-gray-800 pt-1">
+                                                <div className="flex justify-start items-end text-xs mb-2">
+                                                    <div className="text-right">
+                                                        <p className="font-semibold">Dr. Mudaser Hussain Abbasi</p>
+                                                        <p>MBBS, DMJ. Mphil</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="text-center">
+                                                    <p className="text-[10px] text-gray-600 mb-1">
+                                                        NOTE: All the tests are performed on the most advanced,
+                                                        highly sophisticated, appropriate, and state of the art
+                                                        instruments with highly sensitive chemicals under strict
+                                                        conditions and with all care and diligence. However, the
+                                                        above results are NOT the DIAGNOSIS and should be correlated
+                                                        with clinical findings, patient's history, signs and
+                                                        symptoms and other diagnostic tests. Lab to lab variation
+                                                        may occur. This document is NEVER challengeable at any
+                                                        PLACE/COURT and in any CONDITION.
+                                                    </p>
+                                                </div>
+
+                                                <div className="text-center text-xs">
+                                                    <p>
+                                                        Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District
+                                                        Sargodha - Contact # 0325-0020111
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     </div>
                 )}
+
             </div>
         </div>
     );

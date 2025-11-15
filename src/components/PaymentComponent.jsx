@@ -320,7 +320,7 @@ export default function PaymentComponent() {
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
-                                                            {patient?.resultStatus === "Added" && patient?.paymentStatus.toLowerCase() !== "paid" ? (
+                                                            {patient?.paymentStatus.toLowerCase() !== "paid" ? (
                                                                 <Dialog>
                                                                     <DialogTrigger asChild>
                                                                         <Button

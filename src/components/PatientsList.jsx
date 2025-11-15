@@ -320,8 +320,10 @@ export default function PatientsList() {
                                                     <TableCell>
                                                         <Badge
                                                             className={`${patient?.paymentStatus?.toLowerCase() === "not paid"
-                                                                ? "bg-orange-100 text-orange-700 border-orange-200"
-                                                                : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                                    ? "bg-red-100 text-red-700 border-red-200"
+                                                                    : patient?.paymentStatus?.toLowerCase() === "partially paid"
+                                                                        ? "bg-orange-100 text-orange-700 border-orange-200"
+                                                                        : "bg-emerald-100 text-emerald-700 border-emerald-200"
                                                                 } rounded-full px-3 py-1 font-medium border`}
                                                         >
                                                             <DollarSign className="h-3 w-3 mr-1" />
@@ -409,8 +411,10 @@ export default function PatientsList() {
                                                                             <strong className="text-gray-700 mr-2">Payment Status:</strong>
                                                                             <Badge
                                                                                 className={`${patient?.paymentStatus?.toLowerCase() === "not paid"
-                                                                                    ? "bg-orange-100 text-orange-700 border-orange-200"
-                                                                                    : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                                                        ? "bg-red-100 text-red-700 border-red-200"
+                                                                                        : patient?.paymentStatus?.toLowerCase() === "partially paid"
+                                                                                            ? "bg-orange-100 text-orange-700 border-orange-200"
+                                                                                            : "bg-emerald-100 text-emerald-700 border-emerald-200"
                                                                                     } rounded-full px-3 py-1 font-medium border`}
                                                                             >
                                                                                 <DollarSign className="h-3 w-3 mr-1" />
@@ -802,16 +806,16 @@ export default function PatientsList() {
                                             <td className="py-0.5">{printPatient.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</td>
                                         </tr>
                                         <tr>
-                                            <td className="font-semibold py-0.5">NIC No</td>
-                                            <td className="py-0.5">{printPatient?.nicNo || "-"}</td>
+                                            <td className="font-semibold py-0.5">Contact No</td>
+                                            <td className="py-0.5">{printPatient.phone}</td>
                                             <td className="font-semibold py-0.5">Consultant</td>
                                             <td className="py-0.5">SELF</td>
                                         </tr>
                                         <tr>
-                                            <td className="font-semibold py-0.5">Hosp/ MR #</td>
-                                            <td className="py-0.5">-</td>
-                                            <td className="font-semibold py-0.5">Contact No</td>
-                                            <td className="py-0.5">{printPatient.phone}</td>
+
+                                            <td className="font-semibold py-0.5">NIC No</td>
+                                            <td className="py-0.5">{printPatient?.nicNo || "-"}</td>
+
                                         </tr>
                                     </tbody>
                                 </table>
@@ -972,16 +976,16 @@ export default function PatientsList() {
                                             <td className="py-0.5">{printPatient.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</td>
                                         </tr>
                                         <tr>
-                                            <td className="font-semibold py-0.5">NIC No</td>
-                                            <td className="py-0.5">{printPatient?.nicNo || "-"}</td>
+                                            <td className="font-semibold py-0.5">Contact No</td>
+                                            <td className="py-0.5">{printPatient.phone}</td>
                                             <td className="font-semibold py-0.5">Consultant</td>
                                             <td className="py-0.5">SELF</td>
                                         </tr>
                                         <tr>
-                                            <td className="font-semibold py-0.5">Hosp/ MR #</td>
-                                            <td className="py-0.5">-</td>
-                                            <td className="font-semibold py-0.5">Contact No</td>
-                                            <td className="py-0.5">{printPatient.phone}</td>
+
+                                            <td className="font-semibold py-0.5">NIC No</td>
+                                            <td className="py-0.5">{printPatient?.nicNo || "-"}</td>
+
                                         </tr>
                                     </tbody>
                                 </table>
@@ -1014,26 +1018,40 @@ export default function PatientsList() {
                             {/* Totals Section */}
                             <div className="flex justify-end mb-3">
                                 <div className="text-xs space-y-0.5 min-w-[200px]">
+                                    {/* Total Amount */}
                                     <div className="flex justify-between border-b border-gray-300 pb-0.5">
-                                        <span>Subtotal:</span>
-                                        <span>Rs.{printPatient.total}</span>
+                                        <span>Total Amount:</span>
+                                        <span>Rs.{printPatient.total || 0}</span>
                                     </div>
+
+                                    {/* Discount (if exists) */}
+                                    {printPatient.discountAmount > 0 && (
+                                        <div className="flex justify-between border-b border-gray-300 pb-0.5">
+                                            <span>Discount {printPatient.discountPercentage > 0 && `(${printPatient.discountPercentage}%)`}:</span>
+                                            <span>- Rs.{printPatient.discountAmount}</span>
+                                        </div>
+                                    )}
+
+                                    {/* Net Amount */}
                                     <div className="flex justify-between font-semibold border-b border-gray-300 pb-0.5">
                                         <span>Net Amount:</span>
-                                        <span>Rs.{printPatient.total}</span>
+                                        <span>Rs.{printPatient.netTotal || printPatient.total}</span>
                                     </div>
+
+                                    {/* Paid Amount */}
                                     <div className="flex justify-between border-b border-gray-300 pb-0.5">
                                         <span>Paid:</span>
-                                        <span>Rs.{printPatient.paymentStatus === 'Paid' ? printPatient.total : '0.00'}</span>
+                                        <span>Rs.{printPatient.paidAmount || (printPatient.paymentStatus === 'Paid' ? (printPatient.netTotal || printPatient.total) : 0)}</span>
                                     </div>
+
+                                    {/* Due Amount */}
                                     <div className="flex justify-between font-semibold">
                                         <span>Due Amount:</span>
-                                        <span>Rs.{printPatient.paymentStatus === 'Paid' ? '0.00' : printPatient.total}</span>
+                                        <span>Rs.{printPatient.dueAmount || (printPatient.paymentStatus === 'Paid' ? 0 : (printPatient.netTotal || printPatient.total))}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Footer */}
                             {/* Footer */}
                             <div className="border-t border-gray-400 pt-2">
                                 <p className="text-center text-xs font-semibold mb-2">Computerized Receipt, No Signature(s) Required</p>

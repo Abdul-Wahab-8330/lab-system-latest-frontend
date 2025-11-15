@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import axios from "axios";
 import { PatientsContext } from "@/context/PatientsContext";
 import ConfirmDialog from "./ConfirmDialog";
-import { Trash2, Search, User, UserPlus, FileText, CreditCard, TestTube, CheckCircle, Lightbulb } from "lucide-react";
+import { Trash2, Search, User, UserPlus, FileText, CreditCard, TestTube, CheckCircle, Lightbulb, DollarSign } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -69,7 +69,25 @@ export default function RegisterPatient() {
         patientRegisteredBy: user?.name || "System",
     });
 
+
     const [selectedTests, setSelectedTests] = useState([]);
+
+    // Discount state
+    const [showDiscountPanel, setShowDiscountPanel] = useState(false);
+    const [discountData, setDiscountData] = useState({
+        discountPercentage: 0,
+        discountByPKR: 0,
+        paidAmount: 0
+    });
+
+    // Calculate totals in real-time
+    const total = selectedTests.reduce((s, t) => s + (t.price || 0), 0);
+    const discountAmount = discountData.discountPercentage > 0
+        ? (total * discountData.discountPercentage) / 100
+        : discountData.discountByPKR;
+    const netTotal = total - discountAmount;
+    const dueAmount = netTotal - discountData.paidAmount;
+
 
     useEffect(() => {
         fetchDoctors();
@@ -294,7 +312,7 @@ export default function RegisterPatient() {
         setSelectedTests(prev => prev.filter(t => String(t.testId) !== String(testId)));
     };
 
-    const total = selectedTests.reduce((s, t) => s + (t.price || 0), 0);
+    // const total = selectedTests.reduce((s, t) => s + (t.price || 0), 0);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -307,8 +325,34 @@ export default function RegisterPatient() {
             toast.error("Please select at least one test");
             return;
         }
+        if (discountData.paidAmount > netTotal) {
+            toast.error("Paid amount cannot exceed net total!");
+            SetLoading(false);
+            return;
+        }
+
+        if (discountAmount > total) {
+            toast.error("Discount cannot exceed total amount!");
+            SetLoading(false);
+            return;
+        }
 
         try {
+            // Determine if discount panel was used
+            const discountPanelUsed = discountAmount > 0 || discountData.paidAmount > 0;
+
+            // Auto-calculate payment status if discount panel was used
+            let finalPaymentStatus = form.paymentStatus;
+            if (discountPanelUsed) {
+                if (discountData.paidAmount >= netTotal) {
+                    finalPaymentStatus = 'Paid';
+                } else if (discountData.paidAmount > 0) {
+                    finalPaymentStatus = 'Partially Paid';
+                } else {
+                    finalPaymentStatus = 'Not Paid';
+                }
+            }
+
             const payload = {
                 name: form.name,
                 age: Number(form.age),
@@ -318,11 +362,15 @@ export default function RegisterPatient() {
                 nicNo: form.nicNo,
                 specimen: form.specimen,
                 referencedBy: form.referencedBy,
-                paymentStatus: form.paymentStatus,
+                paymentStatus: finalPaymentStatus, // Use calculated status if discount used
                 paymentStatusUpdatedBy: user?.name || "System",
                 patientRegisteredBy: user?.name || "System",
                 resultStatus: form.resultStatus,
-                selectedTests: selectedTests.map(t => ({ testId: t.testId }))
+                selectedTests: selectedTests.map(t => ({ testId: t.testId })),
+                // Discount fields
+                discountPercentage: discountData.discountPercentage,
+                discountAmount: discountAmount,
+                paidAmount: discountData.paidAmount
             };
 
             const newPatient = await createPatient(payload);
@@ -346,6 +394,12 @@ export default function RegisterPatient() {
             setSearchQuery("");
             setSearchResults([]);
             setShowSearchResults(false);
+            setDiscountData({
+                discountPercentage: 0,
+                discountByPKR: 0,
+                paidAmount: 0
+            });
+            setShowDiscountPanel(false);
             await fetchPatients();
             console.log("Patient created:", newPatient);
             toast.success('Registered Successfully!')
@@ -619,23 +673,187 @@ export default function RegisterPatient() {
                                         </Select>
                                     </div>
 
+
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-1">
                                             <CreditCard className="inline h-4 w-4 mr-1" />
                                             Payment Status
+                                            {(discountAmount > 0 || discountData.paidAmount > 0) && (
+                                                <span className="ml-2 text-xs text-purple-600 font-normal">(Auto-calculated)</span>
+                                            )}
                                         </label>
                                         <Select
                                             value={form.paymentStatus}
                                             onValueChange={(value) => setForm({ ...form, paymentStatus: value })}
+                                            disabled={discountAmount > 0 || discountData.paidAmount > 0}
                                         >
-                                            <SelectTrigger className="h-12 w-full border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
+                                            <SelectTrigger className={`h-12 w-full border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70 ${(discountAmount > 0 || discountData.paidAmount > 0) ? 'opacity-60 cursor-not-allowed' : ''
+                                                }`}>
                                                 <SelectValue placeholder="Payment Status" />
                                             </SelectTrigger>
                                             <SelectContent className='bg-white border-0 shadow-xl rounded-xl'>
                                                 <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value="Paid">Paid</SelectItem>
+                                                <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value="Partially Paid">Partially Paid</SelectItem>
                                                 <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value="Not Paid">Not Paid</SelectItem>
                                             </SelectContent>
                                         </Select>
+                                    </div>
+
+                                    {/* NEW: Discount Field with Dropdown */}
+                                    <div className="relative md:col-span-2">
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                            <DollarSign className="inline h-4 w-4 mr-1" />
+                                            Discount & Payment
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (selectedTests.length === 0) {
+                                                    toast.error('Please select at least one test first');
+                                                    return;
+                                                }
+                                                setShowDiscountPanel(!showDiscountPanel);
+                                            }}
+                                            disabled={selectedTests.length === 0}
+                                            className={`h-12 w-full px-4 border-2 rounded-xl shadow-sm transition-all duration-200 bg-white/70 flex items-center justify-between focus:outline-none ${selectedTests.length === 0
+                                                ? 'border-gray-200 cursor-not-allowed opacity-60'
+                                                : 'border-gray-200 hover:border-blue-500 focus:border-blue-500'
+                                                }`}
+                                        >
+                                            <span className="text-gray-700 text-sm font-medium">
+                                                {selectedTests.length === 0
+                                                    ? 'Select tests first'
+                                                    : discountAmount > 0
+                                                        ? `Discount: Rs.${discountAmount.toFixed(0)} | Due: Rs.${dueAmount.toFixed(0)}`
+                                                        : 'No Discount'
+                                                }
+                                            </span>
+                                            <svg
+                                                className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${showDiscountPanel ? 'rotate-180' : ''}`}
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+
+                                        {/* Discount Panel Dropdown */}
+                                        {showDiscountPanel && (
+                                            <>
+                                                {/* Backdrop to close on outside click */}
+                                                <div
+                                                    className="fixed inset-0 z-40"
+                                                    onClick={() => setShowDiscountPanel(false)}
+                                                />
+
+                                                <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl p-4 z-50 space-y-3">
+                                                    {/* Total */}
+                                                    <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                                                        <span className="text-sm font-semibold text-gray-600">Total Amount:</span>
+                                                        <span className="text-lg font-bold text-gray-900">Rs.{total.toLocaleString()}</span>
+                                                    </div>
+
+                                                    {/* Discount by % */}
+                                                    <div>
+                                                        <div className="flex justify-between items-center mb-1.5">
+                                                            <label className="text-xs font-semibold text-gray-600">Discount (%)</label>
+                                                            <span className="text-xs font-medium text-gray-700">
+                                                                Rs.{((total * (discountData.discountPercentage || 0)) / 100).toFixed(0)}
+                                                            </span>
+                                                        </div>
+                                                        <Input
+                                                            type="number"
+                                                            placeholder="Enter percentage"
+                                                            min="0"
+                                                            max="100"
+                                                            value={discountData.discountPercentage || ''}
+                                                            onChange={(e) => {
+                                                                const percent = Number(e.target.value) || 0;
+                                                                setDiscountData({
+                                                                    ...discountData,
+                                                                    discountPercentage: percent,
+                                                                    discountByPKR: 0
+                                                                });
+                                                            }}
+                                                            className="h-9 text-sm border border-gray-300 focus:border-blue-500 rounded-lg w-full"
+                                                        />
+                                                    </div>
+
+                                                    <div className="text-center text-xs text-gray-400">OR</div>
+
+                                                    {/* Discount in PKR */}
+                                                    <div>
+                                                        <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Discount (PKR)</label>
+                                                        <Input
+                                                            type="number"
+                                                            placeholder="Enter amount"
+                                                            min="0"
+                                                            value={discountData.discountByPKR || ''}
+                                                            onChange={(e) => {
+                                                                const amount = Number(e.target.value) || 0;
+                                                                setDiscountData({
+                                                                    ...discountData,
+                                                                    discountByPKR: amount,
+                                                                    discountPercentage: 0
+                                                                });
+                                                            }}
+                                                            className="h-9 text-sm border border-gray-300 focus:border-blue-500 rounded-lg w-full"
+                                                        />
+                                                    </div>
+
+                                                    {/* Net Total */}
+                                                    <div className="flex justify-between items-center py-2 border-t border-b border-gray-200 bg-gray-50 px-3 rounded-lg">
+                                                        <span className="text-sm font-semibold text-gray-700">Net Total:</span>
+                                                        <span className="text-lg font-bold text-gray-900">Rs.{netTotal.toLocaleString()}</span>
+                                                    </div>
+
+                                                    {/* Paid Amount */}
+                                                    <div>
+                                                        <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Paid Amount</label>
+                                                        <Input
+                                                            type="number"
+                                                            placeholder="Enter paid amount"
+                                                            min="0"
+                                                            value={discountData.paidAmount || ''}
+                                                            onChange={(e) => {
+                                                                const paid = Number(e.target.value) || 0;
+                                                                setDiscountData({
+                                                                    ...discountData,
+                                                                    paidAmount: paid
+                                                                });
+                                                            }}
+                                                            className="h-9 text-sm border border-gray-300 focus:border-blue-500 rounded-lg w-full"
+                                                        />
+                                                    </div>
+
+                                                    {/* Due Amount */}
+                                                    <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                                                        <span className="text-sm font-semibold text-gray-600">Due Amount:</span>
+                                                        <span className="text-lg font-bold text-red-600">Rs.{dueAmount.toLocaleString()}</span>
+                                                    </div>
+                                                    {/* NEW: Show calculated payment status */}
+                                                    <div className="bg-blue-50 p-2 rounded-lg border border-blue-200">
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="text-xs font-semibold text-gray-700">Payment Status:</span>
+                                                            <span className={`text-xs font-bold ${discountData.paidAmount >= netTotal
+                                                                    ? 'text-green-600'
+                                                                    : discountData.paidAmount > 0
+                                                                        ? 'text-orange-600'
+                                                                        : 'text-red-600'
+                                                                }`}>
+                                                                {discountData.paidAmount >= netTotal
+                                                                    ? 'Paid'
+                                                                    : discountData.paidAmount > 0
+                                                                        ? 'Partially Paid'
+                                                                        : 'Not Paid'
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
@@ -643,8 +861,6 @@ export default function RegisterPatient() {
                             </div>
 
                             <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-
-
 
                             <div className="space-y-6">
                                 <div className="space-y-4">
@@ -1012,11 +1228,15 @@ export default function RegisterPatient() {
                                             </table>
                                         </div>
 
-                                        <div className="flex justify-end">
+                                        <div className="flex justify-end gap-4">
+                                            {discountAmount > 0 && (
+                                                <div className="bg-transparent text-purple-500 py-1 px-6 rounded-2xl border border-purple-400">
+                                                    <div className="text-sm font-medium">Discount: Rs.{discountAmount.toFixed(0)}</div>
+                                                </div>
+                                            )}
                                             <div className="bg-transparent text-emerald-500 py-1 px-6 rounded-2xl border border-emerald-400">
-                                                <div className="text-center flex">
-                                                    <div className="text-sm font-medium opacity-90">Total: Rs.{total.toLocaleString()}</div>
-                                                    <div className="text-xl font-bold"></div>
+                                                <div className="text-sm font-medium">
+                                                    {discountAmount > 0 ? `Net Total: Rs.${netTotal.toLocaleString()}` : `Total: Rs.${total.toLocaleString()}`}
                                                 </div>
                                             </div>
                                         </div>
@@ -1051,6 +1271,12 @@ export default function RegisterPatient() {
                                         setSearchQuery("");
                                         setSearchResults([]);
                                         setShowSearchResults(false);
+                                        setDiscountData({
+                                            discountPercentage: 0,
+                                            discountByPKR: 0,
+                                            paidAmount: 0
+                                        });
+                                        setShowDiscountPanel(false);
                                     }}
                                 >
                                     Reset Form

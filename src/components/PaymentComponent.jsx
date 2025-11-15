@@ -1,246 +1,3 @@
-// import { useState, useMemo, useContext, useEffect } from "react";
-// import { PatientsContext } from "@/context/PatientsContext";
-// import { AuthContext } from "@/context/AuthProvider";
-// import { Input } from "@/components/ui/input";
-// import {
-//     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
-// } from "@/components/ui/table";
-// import {
-//     Select,
-//     SelectContent,
-//     SelectItem,
-//     SelectTrigger,
-//     SelectValue,
-// } from "@/components/ui/select"
-// import { Card } from "@/components/ui/card";
-// import { Check, DollarSign, Info, NotebookPenIcon, Search } from "lucide-react";
-// import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-// import { Button } from "@/components/ui/button";
-// import { Badge } from "@/components/ui/badge";
-// import { Separator } from "@/components/ui/separator";
-// import axios from "axios";
-
-// export default function PaymentComponent() {
-//     const { patients, fetchPatients } = useContext(PatientsContext);
-//     const { user } = useContext(AuthContext);
-
-//     const [search, setSearch] = useState("");
-//     const [testSearch, setTestSearch] = useState("");
-//     const [dateSearch, setDateSearch] = useState("");
-//     const [paymentFilter, setPaymentFilter] = useState("All");
-
-//     useEffect(() => {
-//         fetchPatients();
-//     }, []);
-
-//     const filteredPatients = useMemo(() => {
-//         return patients.filter((p) => {
-//             const searchLower = search.toLowerCase();
-//             const testLower = testSearch.toLowerCase();
-//             const formattedDate = new Date(p.createdAt).toISOString().split("T")[0];
-
-//             const matchesText =
-//                 p.name?.toLowerCase().includes(searchLower) ||
-//                 p.refNo?.toLowerCase().includes(searchLower);
-
-//             const matchesDate =
-//                 dateSearch === "" || formattedDate === dateSearch;
-
-//             const matchesTest =
-//                 testSearch === "" ||
-//                 (p.tests && p.tests.some((t) => t.testName?.toLowerCase().includes(testLower)));
-
-//             const matchesPayment =
-//                 paymentFilter === "All" || p.paymentStatus === paymentFilter;
-
-//             return matchesText && matchesDate && matchesTest && matchesPayment;
-//         });
-//     }, [patients, search, testSearch, dateSearch, paymentFilter]);
-
-//     const handlePaymentUpdate = async (id) => {
-//         try {
-//             const res = await axios.patch(
-//                 `http://localhost:5000/api/patients/${id}/payment`,
-//                 {
-//                     paymentStatus: "Paid",
-//                     paymentStatusUpdatedBy: user.name
-//                 }
-//             );
-
-//             if (res.status === 200) {
-//                 fetchPatients();
-//             }
-//         } catch (error) {
-//             console.error(error);
-//             alert("Error updating payment status");
-//         }
-//     };
-
-//     return (
-//         <Card className="p-4 bg-white/80 backdrop-blur-md shadow-lg overflow-y-auto border border-gray-200 rounded-2xl m-3">
-//             {/* Filters */}
-//             <div className="mb-4 flex items-center justify-between ">
-//                 <div className="text-xl font-semibold">Manage Payments <span className="bg-gray-700 rounded-full px-2 py-1 text-[12px] text-gray-300">{filteredPatients?.length}</span></div>
-//                 <div className=" grid grid-cols-2 md:grid-cols-4 gap-2">
-//                     <div className="relative">
-//                         <Input placeholder="Search Name / Ref No..." value={search} onChange={(e) => setSearch(e.target.value)} className="rounded-2xl border-gray-500 pr-10" />
-//                         <Search className="absolute right-3 top-2 text-gray-500" size={18} />
-//                     </div>
-//                     <div className="relative">
-//                         <Input placeholder="Search Test Name..." value={testSearch} onChange={(e) => setTestSearch(e.target.value)} className="rounded-2xl border-gray-500 pr-10" />
-//                         <Search className="absolute right-3 top-2 text-gray-500" size={18} />
-//                     </div>
-//                     <input type="date" value={dateSearch} onChange={(e) => setDateSearch(e.target.value)} className="border border-gray-500 px-3 rounded-3xl" />
-//                     <Select
-//                         value={paymentFilter}
-//                         onValueChange={setPaymentFilter}
-//                     >
-//                         <SelectTrigger className="w-full border border-gray-500 rounded-3xl">
-//                             <SelectValue placeholder="All Status" />
-//                         </SelectTrigger>
-//                         <SelectContent className='bg-white'>
-//                             <SelectItem value="All">All Status</SelectItem>
-//                             <SelectItem value="Not Paid">Not Paid</SelectItem>
-//                             <SelectItem value="Paid">Paid</SelectItem>
-//                         </SelectContent>
-//                     </Select>
-//                 </div>
-//             </div>
-
-//             {/* Table */}
-//             <div className="overflow-x-auto">
-//                 <Table>
-//                     <TableHeader>
-//                         <TableRow className="bg-gray-200">
-//                             <TableHead>Ref No</TableHead>
-//                             <TableHead>Name</TableHead>
-//                             <TableHead>Age</TableHead>
-//                             <TableHead>Gender</TableHead>
-//                             <TableHead>Phone</TableHead>
-//                             <TableHead>Date</TableHead>
-//                             <TableHead>Payment Status</TableHead>
-//                             <TableHead>Result Status</TableHead>
-//                             <TableHead>Action</TableHead>
-//                             <TableHead>Details</TableHead>
-//                         </TableRow>
-//                     </TableHeader>
-//                     <TableBody>
-//                         {filteredPatients.length > 0 ? (
-//                             filteredPatients.slice().reverse().map((patient) => {
-//                                 const disableRow = patient.paymentStatus === "Completed" || patient.resultStatus !== "Added";
-//                                 return (
-//                                     <TableRow key={patient._id} className={disableRow ? "opacity-50 pointer-events-none" : ""}>
-//                                         <TableCell>{patient.refNo}</TableCell>
-//                                         <TableCell>{patient.name}</TableCell>
-//                                         <TableCell>{patient.age}</TableCell>
-//                                         <TableCell>{patient.gender}</TableCell>
-//                                         <TableCell>{patient.phone}</TableCell>
-//                                         <TableCell>{new Date(patient.createdAt).toLocaleString()}</TableCell>
-//                                         <TableCell>
-//                                             <Badge className={patient?.paymentStatus?.toLowerCase() === "not paid" ? "bg-amber-400 text-white" : "bg-green-500 text-white"}>
-//                                                 <DollarSign /> {patient.paymentStatus}
-//                                             </Badge>
-//                                         </TableCell>
-//                                         <TableCell>
-//                                             <Badge className={patient?.resultStatus?.toLowerCase() === "pending" ? "bg-amber-400 text-white" : "bg-green-500 text-white"}>
-//                                                 <NotebookPenIcon /> {patient.resultStatus}
-//                                             </Badge>
-//                                         </TableCell>
-//                                         <TableCell>
-//                                             {patient?.resultStatus === "Added" && patient?.paymentStatus.toLowerCase() === "not paid" ? (
-//                                                 <Dialog>
-//                                                     <DialogTrigger asChild>
-//                                                         <Button size="sm" className="button-animation">
-//                                                             Mark as Paid
-//                                                         </Button>
-//                                                     </DialogTrigger>
-//                                                     <DialogContent className="bg-white rounded-2xl border-none max-w-md">
-//                                                         <DialogHeader>
-//                                                             <DialogTitle>Confirm Payment Update</DialogTitle>
-//                                                         </DialogHeader>
-//                                                         <p>
-//                                                             Are you sure you want to mark the payment as complete for
-//                                                             <strong> {patient.name} </strong> as user
-//                                                             <strong> {user.name}</strong>?
-//                                                         </p>
-//                                                         <div className="flex justify-end gap-2 mt-4">
-//                                                             <Button
-//                                                                 className="bg-green-500 text-white"
-//                                                                 onClick={() => handlePaymentUpdate(patient._id)}
-//                                                             >
-//                                                                 Yes, Mark as Paid
-//                                                             </Button>
-//                                                         </div>
-//                                                     </DialogContent>
-//                                                 </Dialog>
-//                                             ) : (
-//                                                 <span className="text-gray-500 text-sm">{patient?.resultStatus?.toLowerCase()=='pending' && patient?.paymentStatus?.toLowerCase()=='not paid' ? 'Waiting for Results...' : 'Payment Done'}</span>
-//                                             )}
-//                                         </TableCell>
-
-//                                         <TableCell>
-//                                             <Dialog>
-//                                                 <DialogTrigger asChild>
-//                                                     <Button size="sm" variant="outline" className="border border-gray-400 bg-amber-100">
-//                                                         <Info className="text-gray-800" />
-//                                                     </Button>
-//                                                 </DialogTrigger>
-//                                                 <DialogContent className="max-w-lg bg-white rounded-2xl border-none">
-//                                                     <DialogHeader>
-//                                                         <DialogTitle>Patient Details</DialogTitle>
-//                                                     </DialogHeader>
-//                                                     <Separator className="bg-black" />
-//                                                     <div className="space-y-2">
-//                                                         <p><strong>Ref No:</strong> {patient.refNo}</p>
-//                                                         <p><strong>Name:</strong> {patient.name}</p>
-//                                                         <p><strong>Payment Status:</strong> {patient.paymentStatus}</p>
-//                                                         <p><strong>Payment Status Updated By:</strong> {patient.paymentStatusUpdatedBy}</p>
-//                                                         <p><strong>Result Status:</strong> {patient.resultStatus}</p>
-//                                                         <p><strong>Age:</strong> {patient.age}</p>
-//                                                         <p><strong>Gender:</strong> {patient.gender}</p>
-//                                                         <p><strong>Phone:</strong> {patient.phone}</p>
-//                                                         <p><strong>Date:</strong> {new Date(patient.createdAt).toLocaleString()}</p>
-//                                                         <p><strong>Total Amount:</strong> {patient?.total}</p>
-//                                                         {patient.tests?.length > 0 && (
-//                                                             <div>
-//                                                                 <strong>Tests:</strong>
-//                                                                 <ul className="list-disc ml-5">
-//                                                                     {patient.tests.map((t, i) => (
-//                                                                         <li key={i}>{t.testName} - Rs.{t.price}</li>
-//                                                                     ))}
-//                                                                 </ul>
-//                                                             </div>
-//                                                         )}
-//                                                     </div>
-//                                                 </DialogContent>
-//                                             </Dialog>
-//                                         </TableCell>
-//                                     </TableRow>
-//                                 );
-//                             })
-//                         ) : (
-//                             <TableRow>
-//                                 <TableCell colSpan="10" className="text-center py-6 text-gray-500">
-//                                     No patients found
-//                                 </TableCell>
-//                             </TableRow>
-//                         )}
-//                     </TableBody>
-//                 </Table>
-//             </div>
-//         </Card>
-//     );
-// }
-
-
-
-
-
-
-
-
-
-
 
 import { useState, useMemo, useContext, useEffect } from "react";
 import { PatientsContext } from "@/context/PatientsContext";
@@ -257,12 +14,12 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-    Check, 
-    DollarSign, 
-    Info, 
-    NotebookPenIcon, 
-    Search, 
+import {
+    Check,
+    DollarSign,
+    Info,
+    NotebookPenIcon,
+    Search,
     CreditCard,
     Users,
     Calendar,
@@ -271,7 +28,8 @@ import {
     CheckCircle,
     Clock,
     FileText,
-    Phone
+    Phone,
+    Percent
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -317,13 +75,18 @@ export default function PaymentComponent() {
         });
     }, [patients, search, testSearch, dateSearch, paymentFilter]);
 
-    const handlePaymentUpdate = async (id) => {
+    const handlePaymentUpdate = async (id, patient) => {
         try {
+            // Calculate the amount to be paid (net total if discount exists, otherwise total)
+            const amountToPay = patient.netTotal || patient.total;
+
             const res = await axios.patch(
                 `${import.meta.env.VITE_API_URL}/api/patients/${id}/payment`,
                 {
                     paymentStatus: "Paid",
-                    paymentStatusUpdatedBy: user.name
+                    paymentStatusUpdatedBy: user.name,
+                    paidAmount: amountToPay, // Set paid amount
+                    dueAmount: 0 // Clear due amount
                 }
             );
 
@@ -352,64 +115,7 @@ export default function PaymentComponent() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-100 p-6">
             <div className="max-w-7xl mx-auto">
-                {/* Statistics Cards */}
-                {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-3">
-                    <Card className="bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl border-0 overflow-hidden">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Total Patients</p>
-                                    <p className="text-3xl font-bold text-gray-900">{paymentStats.total}</p>
-                                </div>
-                                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                                    <Users className="h-6 w-6 text-blue-600" />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
 
-                    <Card className="bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl border-0 overflow-hidden">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Paid</p>
-                                    <p className="text-3xl font-bold text-green-600">{paymentStats.paid}</p>
-                                </div>
-                                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                                    <CheckCircle className="h-6 w-6 text-green-600" />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl border-0 overflow-hidden">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Unpaid</p>
-                                    <p className="text-3xl font-bold text-amber-600">{paymentStats.unpaid}</p>
-                                </div>
-                                <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                                    <Clock className="h-6 w-6 text-amber-600" />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-white/90 backdrop-blur-sm shadow-lg rounded-2xl border-0 overflow-hidden">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                                    <p className="text-2xl font-bold text-emerald-600">Rs.{paymentStats.totalAmount.toLocaleString()}</p>
-                                </div>
-                                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                                    <DollarSign className="h-6 w-6 text-emerald-600" />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div> */}
 
                 {/* Main Content Card */}
                 <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden p-0">
@@ -443,11 +149,11 @@ export default function PaymentComponent() {
                                         Search Patient
                                     </label>
                                     <div className="relative">
-                                        <Input 
-                                            placeholder="Name or Reference No..." 
-                                            value={search} 
-                                            onChange={(e) => setSearch(e.target.value)} 
-                                            className="h-12 pl-4 pr-10 border-2 border-gray-200 focus:border-emerald-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70" 
+                                        <Input
+                                            placeholder="Name or Reference No..."
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            className="h-12 pl-4 pr-10 border-2 border-gray-200 focus:border-emerald-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                         />
                                         <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                     </div>
@@ -460,11 +166,11 @@ export default function PaymentComponent() {
                                         Search Test
                                     </label>
                                     <div className="relative">
-                                        <Input 
-                                            placeholder="Test name..." 
-                                            value={testSearch} 
-                                            onChange={(e) => setTestSearch(e.target.value)} 
-                                            className="h-12 pl-4 pr-10 border-2 border-gray-200 focus:border-emerald-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70" 
+                                        <Input
+                                            placeholder="Test name..."
+                                            value={testSearch}
+                                            onChange={(e) => setTestSearch(e.target.value)}
+                                            className="h-12 pl-4 pr-10 border-2 border-gray-200 focus:border-emerald-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                         />
                                         <TestTube className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                     </div>
@@ -476,11 +182,11 @@ export default function PaymentComponent() {
                                         <Calendar className="inline h-4 w-4 mr-1" />
                                         Filter by Date
                                     </label>
-                                    <input 
-                                        type="date" 
-                                        value={dateSearch} 
-                                        onChange={(e) => setDateSearch(e.target.value)} 
-                                        className="h-12 w-full px-4 border-2 border-gray-200 focus:border-emerald-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70 focus:outline-none" 
+                                    <input
+                                        type="date"
+                                        value={dateSearch}
+                                        onChange={(e) => setDateSearch(e.target.value)}
+                                        className="h-12 w-full px-4 border-2 border-gray-200 focus:border-emerald-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70 focus:outline-none"
                                     />
                                 </div>
 
@@ -497,6 +203,7 @@ export default function PaymentComponent() {
                                         <SelectContent className='bg-white border-0 shadow-xl rounded-xl'>
                                             <SelectItem className='hover:bg-emerald-50 rounded-lg m-1' value="All">All Status</SelectItem>
                                             <SelectItem className='hover:bg-emerald-50 rounded-lg m-1' value="Not Paid">Not Paid</SelectItem>
+                                            <SelectItem className='hover:bg-emerald-50 rounded-lg m-1' value="Partially Paid">Partially Paid</SelectItem>
                                             <SelectItem className='hover:bg-emerald-50 rounded-lg m-1' value="Paid">Paid</SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -518,11 +225,18 @@ export default function PaymentComponent() {
                                                 <Users className="inline h-4 w-4 mr-2" />
                                                 Name
                                             </TableHead>
-                                            <TableHead className="font-bold text-gray-800">Gender</TableHead>
-                                            
+
                                             <TableHead className="font-bold text-gray-800">
                                                 <Calendar className="inline h-4 w-4 mr-2" />
                                                 Date
+                                            </TableHead>
+                                            <TableHead className="font-bold text-gray-800">
+                                                <DollarSign className="inline h-4 w-4 mr-2" />
+                                                Amount
+                                            </TableHead>
+                                            <TableHead className="font-bold text-gray-800">
+                                                <Percent className="inline h-4 w-4 mr-2" />
+                                                Discount
                                             </TableHead>
                                             <TableHead className="font-bold text-gray-800">
                                                 <DollarSign className="inline h-4 w-4 mr-2" />
@@ -539,13 +253,10 @@ export default function PaymentComponent() {
                                     <TableBody>
                                         {filteredPatients.length > 0 ? (
                                             filteredPatients.slice().reverse().map((patient, index) => {
-                                                const disableRow = patient.paymentStatus === "Completed" || patient.resultStatus !== "Added";
                                                 return (
-                                                    <TableRow 
-                                                        key={patient._id} 
-                                                        className={`transition-all duration-200 ${
-                                                            disableRow ? "opacity-50 pointer-events-none" : "hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50"
-                                                        } ${index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'}`}
+                                                    <TableRow
+                                                        key={patient._id}
+                                                        className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 ${index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'}`}
                                                     >
                                                         <TableCell className="font-semibold text-emerald-700 py-4">
                                                             {patient.refNo}
@@ -553,40 +264,67 @@ export default function PaymentComponent() {
                                                         <TableCell className="font-medium text-gray-900">
                                                             {patient.name}
                                                         </TableCell>
-                                                        <TableCell className="text-gray-700">{patient.gender}</TableCell>
                                                         <TableCell className="text-gray-600 text-sm">
                                                             {new Date(patient.createdAt).toLocaleString()}
                                                         </TableCell>
+
+                                                        {/* Amount Column */}
+                                                        <TableCell className="text-gray-900 font-semibold">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-sm">Total: Rs.{patient.total || 0}</span>
+                                                                {patient.discountAmount > 0 && (
+                                                                    <span className="text-xs text-green-600">Net: Rs.{patient.netTotal || 0}</span>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+
+                                                        {/* Discount Column */}
                                                         <TableCell>
-                                                            <Badge 
-                                                                className={`${
-                                                                    patient?.paymentStatus?.toLowerCase() === "not paid" 
-                                                                        ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white" 
+                                                            {patient.discountAmount > 0 ? (
+                                                                <Badge className="bg-purple-100 text-purple-800 rounded-full px-3 py-1 font-medium">
+                                                                    <Percent className="h-3 w-3 mr-1" />
+                                                                    Rs.{patient.discountAmount}
+                                                                </Badge>
+                                                            ) : (
+                                                                <span className="text-gray-400 text-sm">No Discount</span>
+                                                            )}
+                                                        </TableCell>
+
+                                                        {/* Payment Status Column */}
+                                                        {/* Payment Status Column */}
+                                                        <TableCell>
+                                                            <Badge
+                                                                className={`${patient?.paymentStatus?.toLowerCase() === "not paid"
+                                                                    ? "bg-gradient-to-r from-red-400 to-red-500 text-white"
+                                                                    : patient?.paymentStatus?.toLowerCase() === "partially paid"
+                                                                        ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
                                                                         : "bg-gradient-to-r from-green-400 to-emerald-500 text-white"
-                                                                } rounded-full px-3 py-1 font-medium shadow-sm`}
+                                                                    } rounded-full px-3 py-1 font-medium shadow-sm`}
                                                             >
                                                                 <DollarSign className="h-3 w-3 mr-1" />
                                                                 {patient.paymentStatus}
                                                             </Badge>
+                                                            {patient.dueAmount > 0 && patient?.paymentStatus?.toLowerCase() !== "paid" && (
+                                                                <div className="text-xs text-red-600 mt-1">Due: Rs.{patient.dueAmount}</div>
+                                                            )}
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Badge 
-                                                                className={`${
-                                                                    patient?.resultStatus?.toLowerCase() === "pending" 
-                                                                        ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white" 
-                                                                        : "bg-gradient-to-r from-green-400 to-emerald-500 text-white"
-                                                                } rounded-full px-3 py-1 font-medium shadow-sm`}
+                                                            <Badge
+                                                                className={`${patient?.resultStatus?.toLowerCase() === "pending"
+                                                                    ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
+                                                                    : "bg-gradient-to-r from-green-400 to-emerald-500 text-white"
+                                                                    } rounded-full px-3 py-1 font-medium shadow-sm`}
                                                             >
                                                                 <NotebookPenIcon className="h-3 w-3 mr-1" />
                                                                 {patient.resultStatus}
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
-                                                            {patient?.resultStatus === "Added" && patient?.paymentStatus.toLowerCase() === "not paid" ? (
+                                                            {patient?.resultStatus === "Added" && patient?.paymentStatus.toLowerCase() !== "paid" ? (
                                                                 <Dialog>
                                                                     <DialogTrigger asChild>
-                                                                        <Button 
-                                                                            size="sm" 
+                                                                        <Button
+                                                                            size="sm"
                                                                             className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                                                                         >
                                                                             <CheckCircle className="h-4 w-4 mr-1" />
@@ -609,22 +347,39 @@ export default function PaymentComponent() {
                                                                                 <span className="font-semibold text-gray-900"> {patient.name}</span> as user
                                                                                 <span className="font-semibold text-emerald-600"> {user.name}</span>?
                                                                             </p>
-                                                                            <div className="bg-emerald-50 p-4 rounded-xl mb-4">
+                                                                            <div className="bg-gray-50 p-4 rounded-xl mb-4 space-y-2">
                                                                                 <div className="flex justify-between items-center">
-                                                                                    <span className="text-sm font-medium text-emerald-800">Total Amount:</span>
-                                                                                    <span className="text-lg font-bold text-emerald-600">Rs.{patient.total}</span>
+                                                                                    <span className="text-sm font-medium text-gray-700">Total Amount:</span>
+                                                                                    <span className="text-base font-semibold text-gray-900">Rs.{patient.total || 0}</span>
                                                                                 </div>
+                                                                                {patient.discountAmount > 0 && (
+                                                                                    <>
+                                                                                        <div className="flex justify-between items-center">
+                                                                                            <span className="text-sm font-medium text-purple-700">Discount:</span>
+                                                                                            <span className="text-base font-semibold text-purple-600">
+                                                                                                - Rs.{patient.discountAmount}
+                                                                                                {patient.discountPercentage > 0 && ` (${patient.discountPercentage}%)`}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        <Separator className="bg-gray-300" />
+                                                                                        <div className="flex justify-between items-center">
+                                                                                            <span className="text-sm font-medium text-emerald-700">Net Amount to Pay:</span>
+                                                                                            <span className="text-xl font-bold text-emerald-600">Rs.{patient.netTotal || patient.total}</span>
+                                                                                        </div>
+                                                                                    </>
+                                                                                )}
+                                                                                {!patient.discountAmount && (
+                                                                                    <div className="flex justify-between items-center">
+                                                                                        <span className="text-sm font-medium text-emerald-700">Amount to Pay:</span>
+                                                                                        <span className="text-xl font-bold text-emerald-600">Rs.{patient.total}</span>
+                                                                                    </div>
+                                                                                )}
                                                                             </div>
                                                                             <div className="flex justify-end gap-3">
-                                                                                <Button
-                                                                                    variant="outline"
-                                                                                    className="rounded-lg"
-                                                                                >
-                                                                                    Cancel
-                                                                                </Button>
+
                                                                                 <Button
                                                                                     className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white rounded-lg"
-                                                                                    onClick={() => handlePaymentUpdate(patient._id)}
+                                                                                    onClick={() => handlePaymentUpdate(patient._id, patient)}
                                                                                 >
                                                                                     <CheckCircle className="h-4 w-4 mr-1" />
                                                                                     Yes, Mark as Paid
@@ -635,15 +390,20 @@ export default function PaymentComponent() {
                                                                 </Dialog>
                                                             ) : (
                                                                 <div className="flex items-center text-sm">
-                                                                    {patient?.resultStatus?.toLowerCase() == 'pending' && patient?.paymentStatus?.toLowerCase() == 'not paid' ? (
+                                                                    {patient?.resultStatus?.toLowerCase() === 'pending' ? (
                                                                         <div className="flex items-center text-amber-600">
                                                                             <Clock className="h-4 w-4 mr-1" />
                                                                             Waiting for Results...
                                                                         </div>
-                                                                    ) : (
+                                                                    ) : patient?.paymentStatus?.toLowerCase() === 'paid' ? (
                                                                         <div className="flex items-center text-green-600">
                                                                             <CheckCircle className="h-4 w-4 mr-1" />
                                                                             Payment Done
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="flex items-center text-gray-500">
+                                                                            <Info className="h-4 w-4 mr-1" />
+                                                                            No Action Needed
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -654,9 +414,9 @@ export default function PaymentComponent() {
                                                         <TableCell>
                                                             <Dialog>
                                                                 <DialogTrigger asChild>
-                                                                    <Button 
-                                                                        size="sm" 
-                                                                        variant="outline" 
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
                                                                         className="bg-blue-50 border-blue-200 hover:bg-blue-100 hover:border-blue-300 rounded-lg transition-all duration-200"
                                                                     >
                                                                         <Eye className="h-4 w-4 text-blue-600" />
@@ -678,39 +438,74 @@ export default function PaymentComponent() {
                                                                             <div className="space-y-3">
                                                                                 <p className="flex items-center text-sm">
                                                                                     <FileText className="h-4 w-4 mr-2 text-gray-500" />
-                                                                                    <strong className="text-gray-700">Ref No:</strong> 
+                                                                                    <strong className="text-gray-700">Ref No:</strong>
                                                                                     <span className="ml-2 text-emerald-600 font-semibold">{patient.refNo}</span>
                                                                                 </p>
                                                                                 <p className="flex items-center text-sm">
                                                                                     <Users className="h-4 w-4 mr-2 text-gray-500" />
-                                                                                    <strong className="text-gray-700">Name:</strong> 
+                                                                                    <strong className="text-gray-700">Name:</strong>
                                                                                     <span className="ml-2">{patient.name}</span>
                                                                                 </p>
                                                                                 <p className="flex items-center text-sm">
-                                                                                    <strong className="text-gray-700">Age:</strong> 
+                                                                                    <strong className="text-gray-700">Age:</strong>
                                                                                     <span className="ml-2">{patient.age}</span>
                                                                                 </p>
                                                                                 <p className="flex items-center text-sm">
-                                                                                    <strong className="text-gray-700">Gender:</strong> 
+                                                                                    <strong className="text-gray-700">Gender:</strong>
                                                                                     <span className="ml-2">{patient.gender}</span>
                                                                                 </p>
                                                                                 <p className="flex items-center text-sm">
                                                                                     <Phone className="h-4 w-4 mr-2 text-gray-500" />
-                                                                                    <strong className="text-gray-700">Phone:</strong> 
+                                                                                    <strong className="text-gray-700">Phone:</strong>
                                                                                     <span className="ml-2">{patient.phone}</span>
                                                                                 </p>
                                                                             </div>
                                                                             <div className="space-y-3">
                                                                                 <p className="flex items-center text-sm">
                                                                                     <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                                                                                    <strong className="text-gray-700">Date:</strong> 
+                                                                                    <strong className="text-gray-700">Date:</strong>
                                                                                     <span className="ml-2 text-sm">{new Date(patient.createdAt).toLocaleString()}</span>
                                                                                 </p>
-                                                                                <div className="bg-emerald-50 p-4 rounded-xl">
-                                                                                    <div className="flex justify-between items-center mb-2">
-                                                                                        <span className="text-sm font-medium text-emerald-800">Total Amount:</span>
-                                                                                        <span className="text-xl font-bold text-emerald-600">Rs.{patient?.total}</span>
+                                                                                <div className="bg-gray-50 p-4 rounded-xl space-y-2">
+                                                                                    <div className="flex justify-between items-center">
+                                                                                        <span className="text-sm font-medium text-gray-700">Total Amount:</span>
+                                                                                        <span className="text-lg font-bold text-gray-900">Rs.{patient?.total || 0}</span>
                                                                                     </div>
+                                                                                    {patient.discountAmount > 0 && (
+                                                                                        <>
+                                                                                            <div className="flex justify-between items-center">
+                                                                                                <span className="text-sm font-medium text-purple-700">Discount:</span>
+                                                                                                <span className="text-base font-semibold text-purple-600">
+                                                                                                    {patient.discountPercentage > 0 && `${patient.discountPercentage}% `}
+                                                                                                    (Rs.{patient.discountAmount})
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            <Separator className="bg-gray-300" />
+                                                                                            <div className="flex justify-between items-center">
+                                                                                                <span className="text-sm font-medium text-emerald-700">Net Total:</span>
+                                                                                                <span className="text-xl font-bold text-emerald-600">Rs.{patient?.netTotal || 0}</span>
+                                                                                            </div>
+                                                                                        </>
+                                                                                    )}
+                                                                                    {(patient.paidAmount > 0 || patient.dueAmount > 0) && (
+                                                                                        <>
+                                                                                            <Separator className="bg-gray-300" />
+                                                                                            <div className="flex justify-between items-center">
+                                                                                                <span className="text-sm font-medium text-green-700">Paid Amount:</span>
+                                                                                                <span className="text-base font-semibold text-green-600">
+                                                                                                    Rs.{patient?.paidAmount || (patient?.paymentStatus === 'Paid' ? (patient?.netTotal || patient?.total) : 0)}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            {patient?.paymentStatus !== 'Paid' && (patient.dueAmount > 0 || (patient?.paidAmount || 0) < (patient?.netTotal || patient?.total)) && (
+                                                                                                <div className="flex justify-between items-center">
+                                                                                                    <span className="text-sm font-medium text-red-700">Due Amount:</span>
+                                                                                                    <span className="text-lg font-bold text-red-600">
+                                                                                                        Rs.{patient?.dueAmount || ((patient?.netTotal || patient?.total) - (patient?.paidAmount || 0))}
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </>
+                                                                                    )}
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -744,7 +539,7 @@ export default function PaymentComponent() {
                                                                             <div>
                                                                                 <div className="flex items-center mb-3">
                                                                                     <TestTube className="h-4 w-4 mr-2 text-gray-500" />
-                                                                                    <strong className="text-gray-700">Tests:</strong> 
+                                                                                    <strong className="text-gray-700">Tests:</strong>
                                                                                     <Badge className='bg-blue-100 text-blue-800 rounded-full px-3 py-1 ml-2'>
                                                                                         {patient?.tests?.length}
                                                                                     </Badge>
@@ -770,7 +565,7 @@ export default function PaymentComponent() {
                                             })
                                         ) : (
                                             <TableRow>
-                                                <TableCell colSpan={10} className="text-center py-12">
+                                                <TableCell colSpan={11} className="text-center py-12">
                                                     <div className="flex flex-col items-center justify-center space-y-4">
                                                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
                                                             <Search className="h-8 w-8 text-gray-400" />

@@ -389,23 +389,9 @@ export default function PaymentComponent() {
                                                                     </DialogContent>
                                                                 </Dialog>
                                                             ) : (
-                                                                <div className="flex items-center text-sm">
-                                                                    {patient?.resultStatus?.toLowerCase() === 'pending' ? (
-                                                                        <div className="flex items-center text-amber-600">
-                                                                            <Clock className="h-4 w-4 mr-1" />
-                                                                            Waiting for Results...
-                                                                        </div>
-                                                                    ) : patient?.paymentStatus?.toLowerCase() === 'paid' ? (
-                                                                        <div className="flex items-center text-green-600">
-                                                                            <CheckCircle className="h-4 w-4 mr-1" />
-                                                                            Payment Done
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="flex items-center text-gray-500">
-                                                                            <Info className="h-4 w-4 mr-1" />
-                                                                            No Action Needed
-                                                                        </div>
-                                                                    )}
+                                                                <div className="flex items-center text-green-600 text-sm">
+                                                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                                                    Payment Done
                                                                 </div>
                                                             )}
                                                         </TableCell>

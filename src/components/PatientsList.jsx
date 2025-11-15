@@ -741,7 +741,7 @@ export default function PatientsList() {
                                 <div className="flex justify-between items-center">
                                     {/* Patient No */}
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold">MR #:</span>
+                                        <span className="text-xs font-bold">Patient #:</span>
                                         <div className="text-center">
                                             <svg ref={el => {
                                                 if (el && printPatient?.refNo) {
@@ -791,9 +791,9 @@ export default function PatientsList() {
                                         </tr>
                                         <tr>
                                             <td className="font-semibold py-0.5">Father/Husband</td>
-                                            <td className="py-0.5">-</td>
+                                            <td className="py-0.5">{printPatient?.fatherHusbandName || "-"}</td>
                                             <td className="font-semibold py-0.5">Reg. Centre</td>
-                                            <td className="py-0.5">Doctors Healthcare</td>
+                                            <td className="py-0.5">Main Lab</td>
                                         </tr>
                                         <tr>
                                             <td className="font-semibold py-0.5">Age/Sex</td>
@@ -803,7 +803,7 @@ export default function PatientsList() {
                                         </tr>
                                         <tr>
                                             <td className="font-semibold py-0.5">NIC No</td>
-                                            <td className="py-0.5">-</td>
+                                            <td className="py-0.5">{printPatient?.nicNo || "-"}</td>
                                             <td className="font-semibold py-0.5">Consultant</td>
                                             <td className="py-0.5">SELF</td>
                                         </tr>
@@ -910,7 +910,7 @@ export default function PatientsList() {
                                 <div className="flex justify-between items-center">
                                     {/* Patient No */}
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold">MR #:</span>
+                                        <span className="text-xs font-bold">Patient #:</span>
                                         <div className="text-center">
                                             <svg ref={el => {
                                                 if (el && printPatient?.refNo) {
@@ -961,7 +961,7 @@ export default function PatientsList() {
                                         </tr>
                                         <tr>
                                             <td className="font-semibold py-0.5">Father/Husband</td>
-                                            <td className="py-0.5">-</td>
+                                            <td className="py-0.5">{printPatient?.fatherHusbandName || "-"}</td>
                                             <td className="font-semibold py-0.5">Reg. Centre</td>
                                             <td className="py-0.5">Main Lab</td>
                                         </tr>
@@ -973,7 +973,7 @@ export default function PatientsList() {
                                         </tr>
                                         <tr>
                                             <td className="font-semibold py-0.5">NIC No</td>
-                                            <td className="py-0.5">-</td>
+                                            <td className="py-0.5">{printPatient?.nicNo || "-"}</td>
                                             <td className="font-semibold py-0.5">Consultant</td>
                                             <td className="py-0.5">SELF</td>
                                         </tr>
@@ -1034,8 +1034,17 @@ export default function PatientsList() {
                             </div>
 
                             {/* Footer */}
-                            <div className="text-center text-xs border-t border-gray-400 pt-2">
-                                <p className="font-semibold">Computerized Receipt, No Signature(s) Required</p>
+                            {/* Footer */}
+                            <div className="border-t border-gray-400 pt-2">
+                                <p className="text-center text-xs font-semibold mb-2">Computerized Receipt, No Signature(s) Required</p>
+                                <div className="text-center text-xs text-gray-700 space-y-0.5">
+                                    <p className="font-medium">
+                                        Phone: {info?.phoneNumber || '0325-0020111'}
+                                    </p>
+                                    <p className="text-[10px] leading-tight">
+                                        {info?.address || 'Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha'}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>

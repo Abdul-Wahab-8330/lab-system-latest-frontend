@@ -735,29 +735,31 @@ export default function ResultPrintComponent() {
                                                             <td className="py-0.5">
                                                                 {printPatient?.age} Years / {printPatient?.gender}
                                                             </td>
+                                                            {/* this is the second specimen status we add while registering patient */}
                                                             <td className="font-semibold py-0.5">Specimen</td>
                                                             <td className="py-0.5">
-                                                                {printPatient?.tests?.[0]?.testId?.specimen || "Taken in Lab"}
+                                                                {printPatient?.specimen || "Taken in Lab"}
                                                             </td>
                                                         </tr>
                                                         <tr>
                                                             <td className="font-semibold py-0.5">Father/Husband</td>
-                                                            <td className="py-0.5">-</td>
+                                                            <td className="py-0.5">{printPatient?.fatherHusbandName || "-"}</td>
                                                             <td className="font-semibold py-0.5">Reg. Centre</td>
                                                             <td className="py-0.5">Main Lab</td>
                                                         </tr>
                                                         <tr>
-                                                            <td className="font-semibold py-0.5">Contact No</td>
-                                                            <td className="py-0.5">{printPatient?.phone}</td>
+                                                            <td className="font-semibold py-0.5">NIC No</td>
+                                                            <td className="py-0.5">{printPatient?.nicNo || "-"}</td>
                                                             <td className="font-semibold py-0.5">Consultant</td>
                                                             <td className="py-0.5">{printPatient?.referencedBy || "SELF"}</td>
                                                         </tr>
                                                         <tr>
                                                             <td className="font-semibold py-0.5">Hosp/ MR #</td>
                                                             <td className="py-0.5">-</td>
-                                                            <td className="font-semibold py-0.5">NIC No</td>
-                                                            <td className="py-0.5">-</td>
-                                                            
+                                                            <td className="font-semibold py-0.5">Contact No</td>
+                                                            <td className="py-0.5">{printPatient?.phone}</td>
+
+
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -805,7 +807,7 @@ export default function ResultPrintComponent() {
                                                             </div>
 
                                                             {/* Table with headers (once per category) */}
-                                                            <table className=" text-xs border-collapse mb-2 "  style={{ width: "83%" }}>
+                                                            <table className=" text-xs border-collapse mb-2 " style={{ width: "83%" }}>
                                                                 <thead>
                                                                     <tr className="border-b border-gray-800">
                                                                         <th className="text-left pl-2 font-semibold align-bottom">TEST</th>
@@ -818,7 +820,7 @@ export default function ResultPrintComponent() {
                                                                             <div className="text-[10px] font-semibold">
                                                                                 {printPatient?.refNo}
                                                                             </div>
-                                                                            <div className="text-[10px] font-normal mt-0.5">
+                                                                            <div className="text-[10px] font-normal">
                                                                                 {new Date().toLocaleDateString("en-GB", {
                                                                                     day: "2-digit",
                                                                                     month: "short",
@@ -857,7 +859,35 @@ export default function ResultPrintComponent() {
                                                                                 {filledFields.map((f, fi) => (
                                                                                     <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
                                                                                         <td className="py-0.5 pl-2">{f.fieldName}</td>
-                                                                                        <td className="text-center py-0.5">{f.range || "-"}</td>
+                                                                                        <td className="text-center py-0.5">
+                                                                                            {(() => {
+                                                                                                const rangeStr = f.range || "-";
+                                                                                                const patientGender = printPatient?.gender?.toUpperCase();
+
+                                                                                                // Check if range contains gender-specific format
+                                                                                                if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
+                                                                                                    // Split by comma
+                                                                                                    const parts = rangeStr.split(',');
+
+                                                                                                    // Find matching gender part
+                                                                                                    for (let part of parts) {
+                                                                                                        part = part.trim();
+                                                                                                        if (patientGender === 'MALE' && part.startsWith('M:')) {
+                                                                                                            return part.substring(2).trim();
+                                                                                                        }
+                                                                                                        if (patientGender === 'FEMALE' && part.startsWith('F:')) {
+                                                                                                            return part.substring(2).trim();
+                                                                                                        }
+                                                                                                    }
+
+                                                                                                    // If no match found, return first available or original
+                                                                                                    return rangeStr;
+                                                                                                }
+
+                                                                                                // No gender-specific format, return as is
+                                                                                                return rangeStr;
+                                                                                            })()}
+                                                                                        </td>
                                                                                         <td className="text-center py-0.5">{f.unit || "."}</td>
                                                                                         <td className="text-center font-semibold py-0.5">
                                                                                             {f.defaultValue}

@@ -59,6 +59,9 @@ export default function RegisterPatient() {
         age: "",
         gender: "Male",
         phone: "",
+        fatherHusbandName: "",
+        nicNo: "",
+        specimen: "Taken in Lab",
         referencedBy: "Self",
         paymentStatus: 'Paid',
         resultStatus: 'Pending',
@@ -217,6 +220,9 @@ export default function RegisterPatient() {
             age: patient.age?.toString() || "",
             gender: patient.gender || "Male",
             phone: patient.phone || "",
+            fatherHusbandName: patient.fatherHusbandName || "",
+            nicNo: patient.nicNo || "",
+            specimen: patient.specimen || "Taken in Lab",
             referencedBy: patient.referencedBy || "Self"
         }));
 
@@ -308,6 +314,9 @@ export default function RegisterPatient() {
                 age: Number(form.age),
                 gender: form.gender,
                 phone: form.phone,
+                fatherHusbandName: form.fatherHusbandName,
+                nicNo: form.nicNo,
+                specimen: form.specimen,
                 referencedBy: form.referencedBy,
                 paymentStatus: form.paymentStatus,
                 paymentStatusUpdatedBy: user?.name || "System",
@@ -324,6 +333,9 @@ export default function RegisterPatient() {
                 age: "",
                 gender: "Male",
                 phone: "",
+                fatherHusbandName: "",
+                nicNo: "",
+                specimen: "Taken in Lab",
                 referencedBy: "Self",
                 paymentStatus: 'Paid',
                 resultStatus: 'Pending',
@@ -409,7 +421,7 @@ export default function RegisterPatient() {
                                     <h3 className="text-lg font-semibold text-gray-800">Patient Information</h3>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                                     {/* Enhanced Name Input with Search */}
                                     <div className="relative">
                                         <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -540,6 +552,53 @@ export default function RegisterPatient() {
                                             className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                         />
                                     </div>
+
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                            Father/Husband Name
+                                        </label>
+                                        <Input
+                                            placeholder="Enter father/husband name"
+                                            value={form.fatherHusbandName}
+                                            onChange={(e) => setForm({ ...form, fatherHusbandName: e.target.value })}
+                                            className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                        />
+                                    </div>
+
+                                    {/* NEW FIELD 2: NIC No */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                            NIC No
+                                        </label>
+                                        <Input
+                                            placeholder="Enter NIC number"
+                                            value={form.nicNo}
+                                            onChange={(e) => setForm({ ...form, nicNo: e.target.value })}
+                                            className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                        />
+                                    </div>
+
+                                    {/* NEW FIELD 3: Specimen */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                            Specimen
+                                        </label>
+                                        <Select
+                                            value={form.specimen}
+                                            onValueChange={(value) => setForm({ ...form, specimen: value })}
+                                        >
+                                            <SelectTrigger className="h-12 w-full border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
+                                                <SelectValue placeholder="Select Specimen" />
+                                            </SelectTrigger>
+                                            <SelectContent className='bg-white border-0 shadow-xl rounded-xl'>
+                                                <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value="Taken in Lab">Taken in Lab</SelectItem>
+                                                <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value="Taken Outside Lab">Taken Outside Lab</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-1">Referenced By</label>
                                         <Select
@@ -979,6 +1038,9 @@ export default function RegisterPatient() {
                                             age: "",
                                             gender: "Male",
                                             phone: "",
+                                            fatherHusbandName: "",
+                                            nicNo: "",
+                                            specimen: "Taken in Lab",
                                             referencedBy: "Self",
                                             paymentStatus: 'Paid',
                                             resultStatus: 'Pending',

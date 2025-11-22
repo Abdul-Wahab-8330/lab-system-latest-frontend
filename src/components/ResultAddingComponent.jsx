@@ -145,7 +145,7 @@ export default function ResultAddingComponent() {
                     if (idx > -1) {
                         updatedResults[idx] = { ...ct, testId: ct.testId };
                     } else {
-                        updatedResults.push({ ...ct, testId: ct.testId });
+                        updatedResults.push({ ...ct, testId: ct.testId?._id || ct.testId });
                     }
                 });
 
@@ -483,7 +483,9 @@ export default function ResultAddingComponent() {
                         {/* Tests - Enhanced Collapsible Layout */}
                         <div className="space-y-3">
                             {selectedPatient?.tests?.map((test, ti) => {
-                                const isSaved = selectedPatient.results?.some(r => r.testId?.toString() === test.testId?.toString());
+                                const isSaved = selectedPatient.results?.some(r =>
+                                    r.testId?.toString() === test.testId?._id?.toString()
+                                );
                                 const testKey = `${selectedPatient._id}-${ti}`;
                                 const isExpanded = expandedTests[testKey] !== undefined ? expandedTests[testKey] : !isSaved;
 

@@ -32,13 +32,17 @@ import UserManagementCharts from "./components/UserManagementCharts";
 import AccessDenied from './components/AccesssDenied'
 import InventoryManagement from "./components/InventoryManagement";
 import ExpenseManagement from "./components/ExpenseManagement";
+import RevenueSummary from "./components/RevenueSummary";
+import PrintReport from "./components/PrintReport";
+import PrintRegistration from "./components/PrintRegistration";
+
 
 const UserManagementRoute = ({ children, user }) => {
-    if (user?.userName !== 'abdulwahab123') {
-      return <AccessDenied/>;
-    }
-    return children;
-  };
+  if (user?.userName !== 'abdulwahab123') {
+    return <AccessDenied />;
+  }
+  return children;
+};
 
 
 function App() {
@@ -78,16 +82,16 @@ function App() {
 
 
           <Route path="create-user" element={
-              <UserManagementRoute user={user}>
-                <CreateUserForm />
-              </UserManagementRoute>
-            }
+            <UserManagementRoute user={user}>
+              <CreateUserForm />
+            </UserManagementRoute>
+          }
           />
           <Route path="all-users" element={
-              <UserManagementRoute user={user}>
-                <UserList />
-              </UserManagementRoute>
-            }
+            <UserManagementRoute user={user}>
+              <UserList />
+            </UserManagementRoute>
+          }
           />
 
 
@@ -100,6 +104,8 @@ function App() {
 
           <Route path="inventory" element={<InventoryManagement />} />
           <Route path="expenses" element={<ExpenseManagement />} />
+          <Route path="revenue-summary" element={<RevenueSummary />} />
+
         </Route>
 
         {/* User Routes */}
@@ -119,6 +125,27 @@ function App() {
           <Route path="results" element={<ResultAddingComponent />} />
           <Route path="result-print" element={<ResultPrintComponent />} />
         </Route>
+
+
+        {/* Print report route - OUTSIDE layout for clean printing */}
+        <Route
+          path="/print-report/:id"
+          element={
+            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+              <PrintReport />
+            </CheckAuth>
+          }
+        />
+
+        <Route
+          path="/print-registration/:id"
+          element={
+            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+              <PrintRegistration />
+            </CheckAuth>
+          }
+        />
+
 
         {/* Other Routes */}
         <Route path="/unauth-page" element={<UnauthPage />} />

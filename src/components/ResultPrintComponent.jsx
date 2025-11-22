@@ -4,7 +4,7 @@ import {
     DialogDescription,
     DialogFooter,
 } from "@/components/ui/dialog";
-import { RefreshCcw, AlertTriangle } from "lucide-react";
+import { RefreshCcw, AlertTriangle, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { PatientsContext } from "@/context/PatientsContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -142,6 +142,7 @@ export default function ResultPrintComponent() {
                 `${import.meta.env.VITE_API_URL}/api/results/${patient._id}/tests`
             );
             setPrintPatient(res.data);
+
             console.log('Printing results for patient:', res.data);
             console.log(printPatient?.tests?.[0]?.testId?.specimen)
             console.log(printPatient?.tests?.[0]?.testId?.category)
@@ -155,22 +156,10 @@ export default function ResultPrintComponent() {
         }
     };
 
-    // const handlePrintClick = async (patient) => {
-    //     try {
-    //         const res = await axios.get(
-    //             `${import.meta.env.VITE_API_URL}/api/patients/${patient._id}`  
-    //         );
-    //         setPrintPatient(res.data);
-    //         console.log('Specimen:', res.data?.tests?.[0]?.testId?.specimen);
-
-    //         setTimeout(() => {
-    //             handlePrintResults();
-    //         }, 100);
-    //     } catch (err) {
-    //         console.error("Error loading patient data:", err);
-    //         toast.error("Failed to load patient data for printing");
-    //     }
-    // };
+    const handlePrintInNewWindow = (patient) => {
+        // Open in new tab
+        window.open(`/print-report/${patient._id}`, '_blank');
+    };
 
     const fmt = (iso) => {
         if (!iso) return "—";
@@ -330,14 +319,25 @@ export default function ResultPrintComponent() {
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Button
-                                                                size="sm"
-                                                                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                                                                onClick={() => handlePrintClick(p)}
-                                                            >
-                                                                <Printer className="w-4 h-4 mr-1" />
-                                                                Print
-                                                            </Button>
+                                                            <div className="flex gap-2">
+                                                                <Button
+                                                                    size="sm"
+                                                                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                                                    onClick={() => handlePrintClick(p)}
+                                                                >
+                                                                    <Printer className="w-4 h-4 mr-1" />
+                                                                    Print
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-sm hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                                                    onClick={() => handlePrintInNewWindow(p)}
+                                                                >
+                                                                    <ArrowRight className="w-4 h-4 mr-1" />
+                                                                    New Window
+                                                                </Button>
+                                                            </div>
                                                         </TableCell>
                                                         <TableCell>
                                                             <Button
@@ -748,16 +748,17 @@ export default function ResultPrintComponent() {
                                                             <td className="py-0.5">Main Lab</td>
                                                         </tr>
                                                         <tr>
-                                                            <td className="font-semibold py-0.5">NIC No</td>
-                                                            <td className="py-0.5">{printPatient?.nicNo || "-"}</td>
+                                                            <td className="font-semibold py-0.5">Contact No</td>
+                                                            <td className="py-0.5">{printPatient?.phone}</td>
                                                             <td className="font-semibold py-0.5">Consultant</td>
                                                             <td className="py-0.5">{printPatient?.referencedBy || "SELF"}</td>
                                                         </tr>
                                                         <tr>
                                                             <td className="font-semibold py-0.5">Hosp/ MR #</td>
                                                             <td className="py-0.5">-</td>
-                                                            <td className="font-semibold py-0.5">Contact No</td>
-                                                            <td className="py-0.5">{printPatient?.phone}</td>
+                                                            <td className="font-semibold py-0.5">NIC No</td>
+                                                            <td className="py-0.5">{printPatient?.nicNo || "-"}</td>
+
 
 
                                                         </tr>

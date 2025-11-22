@@ -41,7 +41,8 @@ import {
     TestTube,
     FileText,
     Eye,
-    Crown
+    Crown,
+    ArrowBigRight
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Button } from "./ui/button";
@@ -161,6 +162,10 @@ export default function PatientsList() {
         }, 100);
     };
 
+
+    const handlePrintInNewWindow = (patient) => {
+        window.open(`/print-registration/${patient._id}`, '_blank');
+    };
 
 
     const openDeleteDialog = (patient) => {
@@ -292,8 +297,13 @@ export default function PatientsList() {
                                             </TableHead>
                                             <TableHead className="font-bold text-gray-800">Details</TableHead>
                                             <TableHead className="font-bold text-gray-800">Print</TableHead>
-                                            <TableHead className="font-bold text-gray-800">
-                                                <Trash2 className="inline h-4 w-4 mr-2" />Actions</TableHead>
+                                            {
+                                                user?.role?.toLowerCase() === 'admin' && (
+                                                    <TableHead className="font-bold text-gray-800">
+                                                        <Trash2 className="inline h-4 w-4 mr-2" />Actions
+                                                    </TableHead>
+                                                )
+                                            }
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -320,10 +330,10 @@ export default function PatientsList() {
                                                     <TableCell>
                                                         <Badge
                                                             className={`${patient?.paymentStatus?.toLowerCase() === "not paid"
-                                                                    ? "bg-red-100 text-red-700 border-red-200"
-                                                                    : patient?.paymentStatus?.toLowerCase() === "partially paid"
-                                                                        ? "bg-orange-100 text-orange-700 border-orange-200"
-                                                                        : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                                ? "bg-red-100 text-red-700 border-red-200"
+                                                                : patient?.paymentStatus?.toLowerCase() === "partially paid"
+                                                                    ? "bg-orange-100 text-orange-700 border-orange-200"
+                                                                    : "bg-emerald-100 text-emerald-700 border-emerald-200"
                                                                 } rounded-full px-3 py-1 font-medium border`}
                                                         >
                                                             <DollarSign className="h-3 w-3 mr-1" />
@@ -411,10 +421,10 @@ export default function PatientsList() {
                                                                             <strong className="text-gray-700 mr-2">Payment Status:</strong>
                                                                             <Badge
                                                                                 className={`${patient?.paymentStatus?.toLowerCase() === "not paid"
-                                                                                        ? "bg-red-100 text-red-700 border-red-200"
-                                                                                        : patient?.paymentStatus?.toLowerCase() === "partially paid"
-                                                                                            ? "bg-orange-100 text-orange-700 border-orange-200"
-                                                                                            : "bg-emerald-100 text-emerald-700 border-emerald-200"
+                                                                                    ? "bg-red-100 text-red-700 border-red-200"
+                                                                                    : patient?.paymentStatus?.toLowerCase() === "partially paid"
+                                                                                        ? "bg-orange-100 text-orange-700 border-orange-200"
+                                                                                        : "bg-emerald-100 text-emerald-700 border-emerald-200"
                                                                                     } rounded-full px-3 py-1 font-medium border`}
                                                                             >
                                                                                 <DollarSign className="h-3 w-3 mr-1" />
@@ -577,25 +587,41 @@ export default function PatientsList() {
                                                     </TableCell>
 
                                                     <TableCell>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className='bg-green-50 border-green-200 hover:bg-green-100 hover:border-green-300 text-green-700 rounded-lg transition-all duration-200'
-                                                            onClick={() => handlePrintClick(patient)}
-                                                        >
-                                                            <Printer className="h-4 w-4 mr-1" />
-                                                            Print
-                                                        </Button>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className='bg-green-50 border-green-200 hover:bg-green-100 hover:border-green-300 text-green-700 rounded-lg transition-all duration-200'
+                                                                onClick={() => handlePrintClick(patient)}
+                                                            >
+                                                                <Printer className="h-4 w-4 mr-1" />
+                                                                Print
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="bg-green-50 border-green-200 hover:bg-green-100 hover:border-green-300 text-green-700  rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                                                                onClick={() => handlePrintInNewWindow(patient)}
+                                                            >
+                                                                <ArrowBigRight className="h-4 w-4 mr-1" />
+                                                                New Window
+                                                            </Button>
+                                                        </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            className="bg-red-50 border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all duration-200"
-                                                            onClick={() => openDeleteDialog(patient)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4 text-red-600" />
-                                                        </Button>
+                                                        {/* Delete Button */}
+                                                        {
+                                                            user?.role === 'admin' && (
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    className="bg-red-50 border-red-200 hover:bg-red-100 hover:border-red-300 rounded-lg transition-all duration-200"
+                                                                    onClick={() => openDeleteDialog(patient)}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4 text-red-600" />
+                                                                </Button>
+                                                            )
+                                                        }
                                                     </TableCell>
 
 

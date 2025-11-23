@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
+import { socket } from '@/socket';
 import {
     Search,
     ClipboardList,
@@ -97,6 +98,30 @@ export default function ResultAddingComponent() {
 
         setFilteredPatients(data);
     }, [search, testSearch, pendingPatients]);
+
+    // Real-time socket listener
+    useEffect(() => {
+        socket.on('resultAdded', (data) => {
+            // If dialog is open and it's the same patient
+            if (selectedPatient && data.patientId === selectedPatient._id) {
+                // Refresh patient data to show updated results
+                const refreshPatient = async () => {
+                    const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${selectedPatient._id}/tests`);
+                    setSelectedPatient(res.data);
+                    toast.info('Results updated by another user');
+                };
+                refreshPatient();
+            }
+
+            // Also refresh pending patients list
+            loadPendingPatients();
+        });
+
+        return () => {
+            socket.off('resultAdded');
+        };
+    }, [selectedPatient]);
+
 
     const openDetailsDialog = (patient) => {
         setDetailsPatient(patient);

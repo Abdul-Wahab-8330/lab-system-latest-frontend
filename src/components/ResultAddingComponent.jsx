@@ -108,7 +108,7 @@ export default function ResultAddingComponent() {
                 const refreshPatient = async () => {
                     const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${selectedPatient._id}/tests`);
                     setSelectedPatient(res.data);
-                    toast.info('Results updated by another user');
+                    toast.success('Results updated by another user');
                 };
                 refreshPatient();
             }

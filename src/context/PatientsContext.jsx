@@ -1,5 +1,7 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
+import { socket } from "@/socket";
+import toast from "react-hot-toast";
 
 export const PatientsContext = createContext();
 
@@ -32,6 +34,54 @@ export function PatientsProvider({ children }) {
 
   useEffect(() => {
     fetchPatients();
+  }, []);
+
+  useEffect(() => {
+    let debounceTimer;
+
+    socket.on('patientRegistered', (data) => {
+      console.log('Socket received:', data.patient.name);
+      toast(`New patient registered: ${data.patient.name}`);
+
+      // Debounce: only fetch once if multiple registrations happen quickly
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        fetchPatients();
+      }, 500); // 
+    });
+
+    socket.on('patientDeleted', (data) => {
+      console.log('Patient deleted:', data.patientName);
+      fetchPatients();
+      toast.error(`Patient deleted: ${data.patientName}`);
+    });
+
+    socket.on('resultAdded', (data) => {
+    console.log('Result added for patient:', data.patientId);
+    fetchPatients();
+    toast.success(`Results have been updated for patiet : ${data.patientName}`);
+  });
+
+  socket.on('resultReset', (data) => {
+    console.log('Result reset for patient:', data.patientId);
+    fetchPatients();
+    toast.info(`Results reset for patient: ${data.patientName}`);
+  });
+
+   socket.on('paymentStatusUpdated', (data) => {
+    console.log('Payment status updated for patient:', data.patientId);
+    fetchPatients();
+    toast.success(`Payment updated: ${data.patientName} - ${data.paymentStatus}`);
+  });
+
+    return () => {
+      socket.off('patientRegistered');
+      socket.off('patientDeleted');
+      socket.off('resultAdded');
+      socket.off('resultReset');
+      socket.off('paymentStatusUpdated');
+      clearTimeout(debounceTimer);
+    };
   }, []);
 
   return (

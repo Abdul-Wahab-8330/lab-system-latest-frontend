@@ -102,6 +102,12 @@ export default function ResultAddingComponent() {
     // Real-time socket listener
     useEffect(() => {
         socket.on('resultAdded', (data) => {
+            // 🔥 ADD THIS CHECK - Ignore if this is MY socket
+            if (data.triggeredBySocketId === socket.id) {
+                console.log('✅ Ignoring my own resultAdded event');
+                return; // Don't process - I already updated manually
+            }
+
             // If dialog is open and it's the same patient
             if (selectedPatient && data.patientId === selectedPatient._id) {
                 // Refresh patient data to show updated results
@@ -115,6 +121,7 @@ export default function ResultAddingComponent() {
 
             // Also refresh pending patients list
             loadPendingPatients();
+            fetchAddedPatients();
         });
 
         return () => {
@@ -154,14 +161,15 @@ export default function ResultAddingComponent() {
             return;
         }
 
+        setLoading(true)
 
         try {
             await axios.patch(`${import.meta.env.VITE_API_URL}/api/results/${selectedPatient._id}/results`, {
                 tests: changedTests,
-                resultAddedBy: user?.name
+                resultAddedBy: user?.name,
+                socketId: socket.id
             });
 
-            setLoading(true)
             // Update results instantly for Saved badge & progress bar
             setSelectedPatient(prev => {
                 const updatedResults = [...prev.results];

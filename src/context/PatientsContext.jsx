@@ -57,22 +57,27 @@ export function PatientsProvider({ children }) {
     });
 
     socket.on('resultAdded', (data) => {
-    console.log('Result added for patient:', data.patientId);
-    fetchPatients();
-    toast.success(`Results have been updated for patiet : ${data.patientName}`);
-  });
+      // Ignore if this is MY socket
+      if (data.triggeredBySocketId === socket.id) {
+        console.log('✅ Ignoring my own resultAdded event in context');
+        return;
+      }
+      console.log('Result added for patient:', data.patientId);
+      fetchPatients();
+      toast.success(`Results have been updated for patiet : ${data.patientName}`);
+    });
 
-  socket.on('resultReset', (data) => {
-    console.log('Result reset for patient:', data.patientId);
-    fetchPatients();
-    toast.info(`Results reset for patient: ${data.patientName}`);
-  });
+    socket.on('resultReset', (data) => {
+      console.log('Result reset for patient:', data.patientId);
+      fetchPatients();
+      toast(`Results reset for patient: ${data.patientName}`);
+    });
 
-   socket.on('paymentStatusUpdated', (data) => {
-    console.log('Payment status updated for patient:', data.patientId);
-    fetchPatients();
-    toast.success(`Payment updated: ${data.patientName} - ${data.paymentStatus}`);
-  });
+    socket.on('paymentStatusUpdated', (data) => {
+      console.log('Payment status updated for patient:', data.patientId);
+      fetchPatients();
+      toast.success(`Payment updated: ${data.patientName} - ${data.paymentStatus}`);
+    });
 
     return () => {
       socket.off('patientRegistered');

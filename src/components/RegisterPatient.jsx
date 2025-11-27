@@ -188,7 +188,7 @@ export default function RegisterPatient() {
             }]);
             toast.success(`Added: ${test.testName}`);
         } else {
-            toast.info('Test already selected');
+            toast('Test already selected');
         }
 
         setQuickTestSearch("");

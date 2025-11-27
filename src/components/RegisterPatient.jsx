@@ -250,7 +250,17 @@ export default function RegisterPatient() {
     };
 
     const handleNameInputChange = (e) => {
-        const value = e.target.value;
+        let value = e.target.value;
+
+        // ✅ Auto-capitalize: First letter of each word
+        value = value
+            .split(' ')
+            .map(word => {
+                if (word.length === 0) return word;
+                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            })
+            .join(' ');
+
         setForm({ ...form, name: value });
         setSearchQuery(value);
     };
@@ -837,10 +847,10 @@ export default function RegisterPatient() {
                                                         <div className="flex justify-between items-center">
                                                             <span className="text-xs font-semibold text-gray-700">Payment Status:</span>
                                                             <span className={`text-xs font-bold ${discountData.paidAmount >= netTotal
-                                                                    ? 'text-green-600'
-                                                                    : discountData.paidAmount > 0
-                                                                        ? 'text-orange-600'
-                                                                        : 'text-red-600'
+                                                                ? 'text-green-600'
+                                                                : discountData.paidAmount > 0
+                                                                    ? 'text-orange-600'
+                                                                    : 'text-red-600'
                                                                 }`}>
                                                                 {discountData.paidAmount >= netTotal
                                                                     ? 'Paid'
@@ -1093,81 +1103,85 @@ export default function RegisterPatient() {
 
 
 
-                                {testsError ? (
-                                    <div className="p-6 rounded-2xl bg-red-50 border-2 border-red-200 text-center">
-                                        <div className="text-red-600 font-semibold mb-2">Error Loading Tests</div>
-                                        <div className="text-red-500 text-sm mb-4">{testsError}</div>
-                                        <Button
-                                            type="button"
-                                            onClick={fetchTests}
-                                            variant="outline"
-                                            className="border-red-300 text-red-600 hover:bg-red-50"
-                                        >
-                                            Retry Loading Tests
-                                        </Button>
-                                    </div>
-                                ) : isLoadingTests ? (
-                                    <div className="p-12 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100 text-center">
-                                        <div className="animate-spin h-8 w-8 border-3 border-gray-300 border-t-green-600 rounded-full mx-auto mb-4"></div>
-                                        <div className="text-gray-600 font-medium">Loading available tests...</div>
-                                        <div className="text-gray-500 text-sm mt-2">Please wait while we fetch the test catalog</div>
-                                    </div>
-                                ) : tests.length === 0 ? (
-                                    <div className="p-12 rounded-2xl bg-gradient-to-br from-gray-50 via-slate-50 to-gray-50 border-2 border-gray-200 text-center">
-                                        <TestTube className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                        <div className="text-gray-600 font-medium mb-2">No Tests Available</div>
-                                        <div className="text-gray-500 text-sm mb-4">No tests found in the system</div>
-                                        <Button
-                                            type="button"
-                                            onClick={fetchTests}
-                                            variant="outline"
-                                            className="border-gray-300"
-                                        >
-                                            Refresh Tests
-                                        </Button>
-                                    </div>
-                                ) : filteredTests.length === 0 && testSearchQuery ? (
-                                    <div className="p-12 rounded-2xl bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 border-2 border-yellow-200 text-center">
-                                        <Search className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                                        <div className="text-yellow-700 font-medium mb-2">No Tests Found</div>
-                                        <div className="text-yellow-600 text-sm mb-4">No tests match your search "{testSearchQuery}"</div>
-                                        <Button
-                                            type="button"
-                                            onClick={() => setTestSearchQuery("")}
-                                            variant="outline"
-                                            className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-                                        >
-                                            Clear Search
-                                        </Button>
-                                    </div>
-                                ) : !hideTests ? (
-                                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-6 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100">
-                                        {filteredTests.map(test => {
-                                            const checked = !!selectedTests.find(t => String(t.testId) === String(test._id));
-                                            return (
-                                                <label key={test._id} className={`group flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${checked ? "bg-white border-green-400 shadow-lg transform scale-[1.02]" : "bg-white/80 border-gray-200 hover:bg-white hover:border-green-300 hover:shadow-md"}`}>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="font-semibold text-gray-900 truncate mb-1">{test.testName}</div>
-                                                        <div className="text-xs text-gray-500 mb-1">{test.category}</div>
-                                                        <div className="text-xs text-gray-600 mb-1">{test.testCode}</div>
-                                                        <div className="text-sm text-green-600 font-medium">Rs.{test.testPrice}</div>
-                                                    </div>
-                                                    <div className="relative ml-3">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={checked}
-                                                            onChange={() => handleToggleTest(test)}
-                                                            className="sr-only"
-                                                        />
-                                                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${checked ? 'bg-green-500 border-green-500' : 'border-gray-300 group-hover:border-green-400'}`}>
-                                                            {checked && <CheckCircle className="w-3 h-3 text-white" />}
-                                                        </div>
-                                                    </div>
-                                                </label>
-                                            );
-                                        })}
-                                    </div>
-                                ) : null}
+                                {!hideTests && (
+                                    <>
+                                        {testsError ? (
+                                            <div className="p-6 rounded-2xl bg-red-50 border-2 border-red-200 text-center">
+                                                <div className="text-red-600 font-semibold mb-2">Error Loading Tests</div>
+                                                <div className="text-red-500 text-sm mb-4">{testsError}</div>
+                                                <Button
+                                                    type="button"
+                                                    onClick={fetchTests}
+                                                    variant="outline"
+                                                    className="border-red-300 text-red-600 hover:bg-red-50"
+                                                >
+                                                    Retry Loading Tests
+                                                </Button>
+                                            </div>
+                                        ) : isLoadingTests ? (
+                                            <div className="p-12 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100 text-center">
+                                                <div className="animate-spin h-8 w-8 border-3 border-gray-300 border-t-green-600 rounded-full mx-auto mb-4"></div>
+                                                <div className="text-gray-600 font-medium">Loading available tests...</div>
+                                                <div className="text-gray-500 text-sm mt-2">Please wait while we fetch the test catalog</div>
+                                            </div>
+                                        ) : tests.length === 0 ? (
+                                            <div className="p-12 rounded-2xl bg-gradient-to-br from-gray-50 via-slate-50 to-gray-50 border-2 border-gray-200 text-center">
+                                                <TestTube className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                                <div className="text-gray-600 font-medium mb-2">No Tests Available</div>
+                                                <div className="text-gray-500 text-sm mb-4">No tests found in the system</div>
+                                                <Button
+                                                    type="button"
+                                                    onClick={fetchTests}
+                                                    variant="outline"
+                                                    className="border-gray-300"
+                                                >
+                                                    Refresh Tests
+                                                </Button>
+                                            </div>
+                                        ) : filteredTests.length === 0 && testSearchQuery ? (
+                                            <div className="p-12 rounded-2xl bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 border-2 border-yellow-200 text-center">
+                                                <Search className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+                                                <div className="text-yellow-700 font-medium mb-2">No Tests Found</div>
+                                                <div className="text-yellow-600 text-sm mb-4">No tests match your search "{testSearchQuery}"</div>
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => setTestSearchQuery("")}
+                                                    variant="outline"
+                                                    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                                                >
+                                                    Clear Search
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-6 rounded-2xl bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-100">
+                                                {filteredTests.map(test => {
+                                                    const checked = !!selectedTests.find(t => String(t.testId) === String(test._id));
+                                                    return (
+                                                        <label key={test._id} className={`group flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${checked ? "bg-white border-green-400 shadow-lg transform scale-[1.02]" : "bg-white/80 border-gray-200 hover:bg-white hover:border-green-300 hover:shadow-md"}`}>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="font-semibold text-gray-900 truncate mb-1">{test.testName}</div>
+                                                                <div className="text-xs text-gray-500 mb-1">{test.category}</div>
+                                                                <div className="text-xs text-gray-600 mb-1">{test.testCode}</div>
+                                                                <div className="text-sm text-green-600 font-medium">Rs.{test.testPrice}</div>
+                                                            </div>
+                                                            <div className="relative ml-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={checked}
+                                                                    onChange={() => handleToggleTest(test)}
+                                                                    className="sr-only"
+                                                                />
+                                                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${checked ? 'bg-green-500 border-green-500' : 'border-gray-300 group-hover:border-green-400'}`}>
+                                                                    {checked && <CheckCircle className="w-3 h-3 text-white" />}
+                                                                </div>
+                                                            </div>
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                             </div>
 
                             {/* Selected Tests Section */}

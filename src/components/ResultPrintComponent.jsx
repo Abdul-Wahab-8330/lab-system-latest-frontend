@@ -12,19 +12,25 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Search, Printer, Info, FileText, User, Calendar, Phone, TestTube, Activity } from "lucide-react";
+import { Search, Printer, Info, FileText, User, Calendar, Phone, TestTube, Activity, ChevronDown, ChevronRight, CheckCircle, Edit } from "lucide-react";
 import { AddedPatientsContext } from "@/context/AddedPatientsContext";
-
 import { useRef } from "react";
 import { useReactToPrint } from 'react-to-print';
 import JsBarcode from 'jsbarcode';
 import { QRCodeSVG } from 'qrcode.react';
 
+import { socket } from '@/socket';
+import { AuthContext } from "@/context/AuthProvider";
+
+
 export default function ResultPrintComponent() {
     const { fetchPatients, patients, setPatients } = useContext(PatientsContext);
-    const { addedPatients, setAddedPatients } = useContext(AddedPatientsContext);
+    const { addedPatients, setAddedPatients, fetchAddedPatients } = useContext(AddedPatientsContext);
+    const { user } = useContext(AuthContext);
+
 
     const [filteredPatients, setFilteredPatients] = useState([]);
     const [search, setSearch] = useState("");
@@ -34,6 +40,10 @@ export default function ResultPrintComponent() {
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [labInfo, setLabInfo] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [editPatient, setEditPatient] = useState(null);
+    const [changedTests, setChangedTests] = useState([]);
 
     // Dialog state for delete confirmation
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -161,6 +171,108 @@ export default function ResultPrintComponent() {
         window.open(`/print-report/${patient._id}`, '_blank');
     };
 
+    const openEditDialog = async (patient) => {
+        try {
+            const res = await axios.get(
+                `${import.meta.env.VITE_API_URL}/api/results/${patient._id}/tests`
+            );
+            setEditPatient(res.data);
+            setChangedTests([]); // Reset changed tests
+            setEditDialogOpen(true);
+        } catch (err) {
+            console.error("Error loading patient data:", err);
+            toast.error("Failed to load patient data");
+        }
+    };
+
+    const handleEditFieldChange = (testIndex, fieldIndex, value) => {
+        const updated = JSON.parse(JSON.stringify(editPatient));
+        updated.tests[testIndex].fields[fieldIndex].defaultValue = value;
+        setEditPatient(updated);
+
+        setChangedTests(prev => {
+            const updatedTest = updated.tests[testIndex];
+            // ✅ FIX: Handle both nested and direct testId formats
+            const testIdToCompare = updatedTest.testId?._id || updatedTest.testId;
+
+            const exists = prev.find(t => {
+                const existingTestId = t.testId?._id || t.testId;
+                return existingTestId?.toString() === testIdToCompare?.toString();
+            });
+
+            if (exists) {
+                // Update existing changed test
+                return prev.map(t => {
+                    const existingTestId = t.testId?._id || t.testId;
+                    return existingTestId?.toString() === testIdToCompare?.toString() ? updatedTest : t;
+                });
+            } else {
+                // Add new changed test
+                return [...prev, updatedTest];
+            }
+        });
+    };
+
+    const saveEditedResults = async () => {
+        console.log('🟢 Save button clicked!');
+        console.log('🔍 Changed Tests RAW:', changedTests);
+
+        // ✅ ADD DETAILED LOGGING:
+        changedTests.forEach((test, i) => {
+            console.log(`Test ${i}:`, {
+                testId: test.testId,
+                'testId._id': test.testId?._id,
+                'testId.toString()': test.testId?.toString?.(),
+                testName: test.testName,
+                fullTest: test
+            });
+        });
+
+        if (changedTests.length === 0) {
+            toast("No changes to save!");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const testsToSend = changedTests.map(test => ({
+                testId: test.testId?._id || test.testId,
+                testName: test.testName,
+                fields: test.fields.map(f => ({
+                    fieldName: f.fieldName,
+                    defaultValue: f.defaultValue,
+                    unit: f.unit,
+                    range: f.range
+                }))
+            }));
+
+            console.log('🔵 Tests to send:', testsToSend);
+
+            const response = await axios.patch(
+                `${import.meta.env.VITE_API_URL}/api/results/${editPatient._id}/results`,
+                {
+                    tests: testsToSend,
+                    resultAddedBy: user?.name || 'Admin',
+                    socketId: socket.id
+                }
+            );
+
+            console.log('✅ PATCH Response:', response.data);
+
+            toast.success('Results updated successfully!');
+            setEditDialogOpen(false);
+            setChangedTests([]);
+
+            await fetchPatients();
+        } catch (error) {
+            console.error("❌ Error updating results:", error);
+            console.error("❌ Error response:", error.response?.data);
+            toast.error('Failed to update results!');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const fmt = (iso) => {
         if (!iso) return "—";
         try {
@@ -246,7 +358,11 @@ export default function ResultPrintComponent() {
                                             <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150">
                                                 <TableHead className="font-bold text-gray-800 py-4">
                                                     <FileText className="inline h-4 w-4 mr-2" />
-                                                    Ref No
+                                                    Case No
+                                                </TableHead>
+                                                <TableHead className="font-bold text-gray-800 py-4">
+                                                    <FileText className="inline h-4 w-4 mr-2" />
+                                                    Pat No
                                                 </TableHead>
                                                 <TableHead className="font-bold text-gray-800">
                                                     <User className="inline h-4 w-4 mr-2" />
@@ -285,6 +401,9 @@ export default function ResultPrintComponent() {
                                                             }`}
                                                     >
                                                         <TableCell className="font-semibold text-blue-700 py-4">
+                                                            {p.caseNo}
+                                                        </TableCell>
+                                                        <TableCell className="font-semibold text-blue-700 py-4">
                                                             {p.refNo}
                                                         </TableCell>
                                                         <TableCell className="font-medium text-gray-900">
@@ -320,6 +439,14 @@ export default function ResultPrintComponent() {
                                                         </TableCell>
                                                         <TableCell>
                                                             <div className="flex gap-2">
+                                                                <Button
+                                                                    size="sm"
+                                                                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                                                    onClick={() => openEditDialog(p)}
+                                                                >
+                                                                    <Edit className="w-4 h-4 mr-1" />
+                                                                    Edit
+                                                                </Button>
                                                                 <Button
                                                                     size="sm"
                                                                     className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
@@ -416,6 +543,119 @@ export default function ResultPrintComponent() {
                                     {loading ? "Processing..." : "Yes, Reset"}
                                 </Button>
                             </DialogFooter>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Edit Results Dialog */}
+                <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                    <DialogContent className="max-w-4xl bg-white rounded-2xl border-0 shadow-2xl max-h-[95vh] overflow-auto">
+                        <DialogHeader>
+                            <DialogTitle className="text-xl font-bold text-gray-900 flex items-center mt-2">
+                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                    <Edit className="h-4 w-4 text-blue-600" />
+                                </div>
+                                Edit Results for "{editPatient?.name}"
+                            </DialogTitle>
+                        </DialogHeader>
+                        <Separator className="bg-gray-200" />
+
+                        {/* Patient Info Card */}
+                        {editPatient && (
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-2">
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div className="flex items-center">
+                                        <FileText className="h-4 w-4 mr-2 text-blue-600" />
+                                        <span className="text-gray-600">Ref No:</span>
+                                        <span className="font-semibold text-gray-900 ml-2">{editPatient.refNo}</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <User className="h-4 w-4 mr-2 text-blue-600" />
+                                        <span className="text-gray-600">Gender:</span>
+                                        <span className="font-semibold text-gray-900 ml-2">{editPatient.gender}</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <Calendar className="h-4 w-4 mr-2 text-blue-600" />
+                                        <span className="text-gray-600">Age:</span>
+                                        <span className="font-semibold text-gray-900 ml-2">{editPatient.age || "—"}</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <Phone className="h-4 w-4 mr-2 text-blue-600" />
+                                        <span className="text-gray-600">Contact:</span>
+                                        <span className="font-semibold text-gray-900 ml-2">{editPatient.phone || "—"}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Tests - Simple Non-Collapsible Layout */}
+                        <div className="space-y-4 max-h-[50vh] overflow-y-auto">
+                            {editPatient?.tests?.map((test, ti) => (
+                                <div key={ti} className="border-2 rounded-lg shadow-sm border-gray-200 bg-white p-4">
+                                    {/* Test Header */}
+                                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-200">
+                                        <TestTube className="h-4 w-4 text-blue-600" />
+                                        <h3 className="font-semibold text-sm text-blue-700">
+                                            {test.testName}
+                                        </h3>
+                                        <span className="text-xs text-gray-500">
+                                            ({test.fields?.length || 0} parameters)
+                                        </span>
+                                    </div>
+
+                                    {/* Fields */}
+                                    <div className="space-y-3">
+                                        {test.fields?.map((f, fi) => (
+                                            <div key={fi} className="w-full">
+                                                <Label className="block text-xs font-medium text-gray-700 mb-1">
+                                                    {f.fieldName}
+                                                </Label>
+                                                <Input
+                                                    value={f.defaultValue || ''}
+                                                    onChange={(e) => handleEditFieldChange(ti, fi, e.target.value)}
+                                                    className="w-full h-9 px-3 border rounded-md text-sm transition-all duration-200 border-blue-300 focus:border-blue-500 hover:border-gray-300 focus:ring-1 focus:ring-blue-200"
+                                                    placeholder={`Enter ${f.fieldName.toLowerCase()}...`}
+                                                />
+
+                                                {/* Unit and Range */}
+                                                {(f.unit || f.range) && (
+                                                    <div className="flex items-center gap-3 mt-0.5 text-xs pl-2 text-gray-400">
+                                                        {f.unit && (
+                                                            <span>Unit: <span className="text-gray-400">{f.unit}</span></span>
+                                                        )}
+                                                        {f.range && (
+                                                            <span>Range: <span className="text-gray-400">{f.range}</span></span>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-end gap-3 pt-6 border-t">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setEditDialogOpen(false);
+                                    setChangedTests([]);
+                                }}
+                                className="rounded-lg"
+                                disabled={loading}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                onClick={saveEditedResults}
+                                disabled={loading || changedTests.length === 0}
+                            >
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                {loading ? 'Saving...' : 'Save Changes'}
+                            </Button>
                         </div>
                     </DialogContent>
                 </Dialog>

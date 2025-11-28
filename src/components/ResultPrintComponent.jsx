@@ -12,18 +12,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Search, Printer, Info, FileText, User, Calendar, Phone, TestTube, Activity, ChevronDown, ChevronRight, CheckCircle, Edit } from "lucide-react";
 import { AddedPatientsContext } from "@/context/AddedPatientsContext";
+import { AuthContext } from "@/context/AuthProvider";
+
+
+
 import { useRef } from "react";
 import { useReactToPrint } from 'react-to-print';
 import JsBarcode from 'jsbarcode';
 import { QRCodeSVG } from 'qrcode.react';
-
 import { socket } from '@/socket';
-import { AuthContext } from "@/context/AuthProvider";
+
 
 
 export default function ResultPrintComponent() {
@@ -439,14 +442,12 @@ export default function ResultPrintComponent() {
                                                         </TableCell>
                                                         <TableCell>
                                                             <div className="flex gap-2">
-                                                                <Button
-                                                                    size="sm"
-                                                                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                                                                    onClick={() => openEditDialog(p)}
-                                                                >
-                                                                    <Edit className="w-4 h-4 mr-1" />
-                                                                    Edit
-                                                                </Button>
+                                                                {user?.role === 'admin' && (
+                                                                    <Button className='bg-blue-600 text-white border' onClick={() => openEditDialog(p)}>
+                                                                        <Edit className="w-4 h-4 mr-1" />
+                                                                        Edit
+                                                                    </Button>
+                                                                )}
                                                                 <Button
                                                                     size="sm"
                                                                     className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
@@ -659,6 +660,9 @@ export default function ResultPrintComponent() {
                         </div>
                     </DialogContent>
                 </Dialog>
+
+                {/* Patient Details Dialog */}
+
 
                 {/* Patient Details Dialog */}
                 <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
@@ -1097,7 +1101,7 @@ export default function ResultPrintComponent() {
                                                                                 )}
 
                                                                                 {/* Field Rows */}
-                                                                                {filledFields.map((f, fi) => (
+                                                                                {/* {filledFields.map((f, fi) => (
                                                                                     <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
                                                                                         <td className="py-0.5 pl-2">{f.fieldName}</td>
                                                                                         <td className="text-center py-0.5">
@@ -1134,7 +1138,98 @@ export default function ResultPrintComponent() {
                                                                                             {f.defaultValue}
                                                                                         </td>
                                                                                     </tr>
-                                                                                ))}
+                                                                                ))} */}
+
+                                                                                {/* Field Rows - WITH CATEGORY SUPPORT */}
+                                                                                {(() => {
+                                                                                    // Check if ANY field has a category
+                                                                                    const hasCategories = filledFields.some(f => f.category);
+
+                                                                                    if (!hasCategories) {
+                                                                                        // NO CATEGORIES: Render normally (existing behavior)
+                                                                                        return filledFields.map((f, fi) => (
+                                                                                            <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
+                                                                                                <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                                                                <td className="text-center py-0.5">
+                                                                                                    {(() => {
+                                                                                                        const rangeStr = f.range || "-";
+                                                                                                        const patientGender = printPatient?.gender?.toUpperCase();
+                                                                                                        if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
+                                                                                                            const parts = rangeStr.split(',');
+                                                                                                            for (let part of parts) {
+                                                                                                                part = part.trim();
+                                                                                                                if (patientGender === 'MALE' && part.startsWith('M:')) {
+                                                                                                                    return part.substring(2).trim();
+                                                                                                                }
+                                                                                                                if (patientGender === 'FEMALE' && part.startsWith('F:')) {
+                                                                                                                    return part.substring(2).trim();
+                                                                                                                }
+                                                                                                            }
+                                                                                                            return rangeStr;
+                                                                                                        }
+                                                                                                        return rangeStr;
+                                                                                                    })()}
+                                                                                                </td>
+                                                                                                <td className="text-center py-0.5">{f.unit || "."}</td>
+                                                                                                <td className="text-center font-semibold py-0.5">
+                                                                                                    {f.defaultValue}
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                        ));
+                                                                                    } else {
+                                                                                        // HAS CATEGORIES: Group by category
+                                                                                        const fieldsByCategory = {};
+                                                                                        filledFields.forEach(f => {
+                                                                                            const cat = f.category || "Other";
+                                                                                            if (!fieldsByCategory[cat]) {
+                                                                                                fieldsByCategory[cat] = [];
+                                                                                            }
+                                                                                            fieldsByCategory[cat].push(f);
+                                                                                        });
+
+                                                                                        return Object.entries(fieldsByCategory).map(([category, fields], catIdx) => (
+                                                                                            <React.Fragment key={catIdx}>
+                                                                                                {/* Category Heading */}
+                                                                                                <tr>
+                                                                                                    <td colSpan="4" className="py-1.5 font-bold text-xs uppercase bg-gray-50">
+                                                                                                        {category}
+                                                                                                    </td>
+                                                                                                </tr>
+
+                                                                                                {/* Fields in this category */}
+                                                                                                {fields.map((f, fi) => (
+                                                                                                    <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
+                                                                                                        <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                                                                        <td className="text-center py-0.5">
+                                                                                                            {(() => {
+                                                                                                                const rangeStr = f.range || "-";
+                                                                                                                const patientGender = printPatient?.gender?.toUpperCase();
+                                                                                                                if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
+                                                                                                                    const parts = rangeStr.split(',');
+                                                                                                                    for (let part of parts) {
+                                                                                                                        part = part.trim();
+                                                                                                                        if (patientGender === 'MALE' && part.startsWith('M:')) {
+                                                                                                                            return part.substring(2).trim();
+                                                                                                                        }
+                                                                                                                        if (patientGender === 'FEMALE' && part.startsWith('F:')) {
+                                                                                                                            return part.substring(2).trim();
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                    return rangeStr;
+                                                                                                                }
+                                                                                                                return rangeStr;
+                                                                                                            })()}
+                                                                                                        </td>
+                                                                                                        <td className="text-center py-0.5">{f.unit || "."}</td>
+                                                                                                        <td className="text-center font-semibold py-0.5">
+                                                                                                            {f.defaultValue}
+                                                                                                        </td>
+                                                                                                    </tr>
+                                                                                                ))}
+                                                                                            </React.Fragment>
+                                                                                        ));
+                                                                                    }
+                                                                                })()}
                                                                             </React.Fragment>
                                                                         );
                                                                     })}

@@ -1256,9 +1256,10 @@ export default function ResultPrintComponent() {
 
                                             <div className="border-t border-gray-800 pt-1">
                                                 <div className="flex justify-start items-end text-xs mb-2">
-                                                    <div className="text-right">
-                                                        <p className="font-semibold">Dr. Mudaser Hussain Abbasi</p>
-                                                        <p>MBBS, DMJ. Mphil</p>
+                                                    <div className="">
+                                                        <p className="font-semibold">Dr. Mudaser Hussain</p>
+                                                        <p className="text-left">Consultant Pathologist</p>
+                                                        <p>MBBS, MPhil. (Biochemistry)</p>
                                                     </div>
                                                 </div>
 

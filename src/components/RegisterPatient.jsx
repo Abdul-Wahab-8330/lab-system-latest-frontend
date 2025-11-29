@@ -410,10 +410,10 @@ export default function RegisterPatient() {
                 paidAmount: 0
             });
             setShowDiscountPanel(false);
-            await fetchPatients();
-            console.log("Patient created:", newPatient);
             toast.success('Registered Successfully!')
             navigate('/user/patients');
+            await fetchPatients();
+            console.log("Patient created:", newPatient);
 
         } catch (err) {
             console.error("submit err:", err);

@@ -120,7 +120,8 @@ function App() {
           <Route path="dashboard" element={<UserDashboard />} />
           <Route path="register-patient" element={<RegisterPatient />} />
           <Route path="patients" element={<PatientsList />} />
-          <Route path="all-patients" element={<AllPatientsComponent />} />
+          {/* was merged with reg reports component(patient list) */}
+          {/* <Route path="all-patients" element={<AllPatientsComponent />} /> */}
           <Route path="payments" element={<PaymentComponent />} />
           <Route path="results" element={<ResultAddingComponent />} />
           <Route path="result-print" element={<ResultPrintComponent />} />

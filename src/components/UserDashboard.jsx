@@ -233,7 +233,7 @@ function UserDashboard() {
             <thead className="bg-gray-100">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Ref No
+                  Pat No
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Patient Name

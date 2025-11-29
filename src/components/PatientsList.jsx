@@ -4,6 +4,7 @@ import { PatientsContext } from "@/context/PatientsContext"; // your context
 import { Input } from "@/components/ui/input";
 import JsBarcode from 'jsbarcode';
 import { QRCodeSVG } from 'qrcode.react';
+
 import {
     Table,
     TableBody,
@@ -52,12 +53,16 @@ import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { SystemFiltersContext } from '@/context/SystemFiltersContext';
+import GlobalDateFilter from './GlobalDateFilter';
 import { AlertTriangle } from "lucide-react";
 
 export default function PatientsList() {
     const { patients, fetchPatients } = useContext(PatientsContext);
     const { info } = useContext(LabInfoContext)
     const { user } = useContext(AuthContext)
+
+    const { checkDateFilter } = useContext(SystemFiltersContext);
     const [search, setSearch] = useState("");
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [patientToDelete, setPatientToDelete] = useState(null);
@@ -86,9 +91,12 @@ export default function PatientsList() {
                 testSearch === "" ||
                 (p.tests && p.tests.some((t) => t.testName?.toLowerCase().includes(testLower)));
 
-            return matchesText && matchesDate && matchesTest;
+            // ✅ Check global filter from context
+            const matchesGlobalFilter = checkDateFilter(p.createdAt, 'registration');
+
+            return matchesText && matchesDate && matchesTest && matchesGlobalFilter;
         });
-    }, [patients, search, dateSearch, testSearch]);
+    }, [patients, search, dateSearch, testSearch, checkDateFilter]);
 
     // 🔹 NEW: Function to export filtered patients to CSV
     const exportToCSV = () => {
@@ -177,7 +185,7 @@ export default function PatientsList() {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 m-2">
             <div className="max-w-7xl mx-auto">
                 <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden p-0">
-                    {/* Enhanced Header */}
+                {/* card header */}
                     <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
@@ -190,7 +198,10 @@ export default function PatientsList() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 flex-wrap">
+                                {/* ✅ Global Date Filter Component */}
+                                <GlobalDateFilter filterType="registration" />
+
                                 {user?.role?.toLowerCase() === 'admin' ? (
                                     <Button
                                         variant="outline"

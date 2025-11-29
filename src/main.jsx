@@ -10,24 +10,27 @@ import { AddedPatientsProvider } from './context/AddedPatientsContext';
 import { LabInfoProvider } from './context/LabnfoContext';
 import { InventoryProvider } from './context/InventoryContext';
 import { ExpenseProvider } from './context/ExpenseContext';
+import { SystemFiltersProvider } from './context/SystemFiltersContext';
 
 
 createRoot(document.getElementById('root')).render(
   <AuthProvider>
-    <ExpenseProvider>
-      <InventoryProvider>
-        <AddedPatientsProvider>
-          <LabInfoProvider>
-            <PatientsProvider>
-              <TestProvider>
-                <BrowserRouter>
-                  <App />
-                </BrowserRouter>
-              </TestProvider>
-            </PatientsProvider>
-          </LabInfoProvider>
-        </AddedPatientsProvider>
-      </InventoryProvider>
-    </ExpenseProvider>
+    <SystemFiltersProvider>
+      <ExpenseProvider>
+        <InventoryProvider>
+          <AddedPatientsProvider>
+            <LabInfoProvider>
+              <PatientsProvider>
+                <TestProvider>
+                  <BrowserRouter>
+                    <App />
+                  </BrowserRouter>
+                </TestProvider>
+              </PatientsProvider>
+            </LabInfoProvider>
+          </AddedPatientsProvider>
+        </InventoryProvider>
+      </ExpenseProvider>
+    </SystemFiltersProvider>
   </AuthProvider>
 )

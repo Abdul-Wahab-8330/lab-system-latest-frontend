@@ -18,7 +18,8 @@ import { Separator } from "@/components/ui/separator";
 import { Search, Printer, Info, FileText, User, Calendar, Phone, TestTube, Activity, ChevronDown, ChevronRight, CheckCircle, Edit } from "lucide-react";
 import { AddedPatientsContext } from "@/context/AddedPatientsContext";
 import { AuthContext } from "@/context/AuthProvider";
-
+import { SystemFiltersContext } from '@/context/SystemFiltersContext';
+import GlobalDateFilter from './GlobalDateFilter';
 
 
 import { useRef } from "react";
@@ -33,6 +34,7 @@ export default function ResultPrintComponent() {
     const { fetchPatients, patients, setPatients } = useContext(PatientsContext);
     const { addedPatients, setAddedPatients, fetchAddedPatients } = useContext(AddedPatientsContext);
     const { user } = useContext(AuthContext);
+    const { checkDateFilter } = useContext(SystemFiltersContext);
 
 
     const [filteredPatients, setFilteredPatients] = useState([]);
@@ -75,6 +77,7 @@ export default function ResultPrintComponent() {
     // Update filtered patients whenever addedPatients, search, or testSearch changes
     useEffect(() => {
         let data = [...(addedPatients || [])];
+
         if (search) {
             data = data.filter(
                 (p) =>
@@ -82,6 +85,7 @@ export default function ResultPrintComponent() {
                     p.refNo.toString().includes(search)
             );
         }
+
         if (testSearch) {
             data = data.filter((p) =>
                 p.tests?.some((t) =>
@@ -89,8 +93,12 @@ export default function ResultPrintComponent() {
                 )
             );
         }
+
+        // ✅ Apply global filter from context
+        data = data.filter(p => checkDateFilter(p.createdAt, 'results'));
+
         setFilteredPatients(data);
-    }, [search, testSearch, addedPatients]);
+    }, [search, testSearch, addedPatients, checkDateFilter]);
 
     const handleDeleteResubmit = async (patientId) => {
         try {
@@ -293,7 +301,7 @@ export default function ResultPrintComponent() {
                 <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden p-0">
                     {/* Enhanced Header */}
                     <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between flex-wrap gap-3">
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl">
                                     <Printer className="h-6 w-6 text-white" />
@@ -303,10 +311,15 @@ export default function ResultPrintComponent() {
                                     <p className="text-blue-100 mt-1">Generate and print patient reports</p>
                                 </div>
                             </div>
-                            <Badge className="bg-white/20 text-white border-0 px-4 py-2 rounded-xl">
-                                <FileText className="h-4 w-4 mr-1" />
-                                {filteredPatients?.length || 0} Reports
-                            </Badge>
+                            <div className="flex items-center gap-3">
+                                {/* ✅ Global Date Filter Component */}
+                                <GlobalDateFilter filterType="results" />
+
+                                <Badge className="bg-white/20 text-white border-0 px-4 py-2 rounded-xl">
+                                    <FileText className="h-4 w-4 mr-1" />
+                                    {filteredPatients?.length || 0} Reports
+                                </Badge>
+                            </div>
                         </div>
                     </CardHeader>
 

@@ -37,15 +37,19 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { SystemFiltersContext } from '@/context/SystemFiltersContext';
+import GlobalDateFilter from './GlobalDateFilter';
 
 export default function PaymentComponent() {
     const { patients, fetchPatients } = useContext(PatientsContext);
     const { user } = useContext(AuthContext);
+    const { checkDateFilter } = useContext(SystemFiltersContext);
 
     const [search, setSearch] = useState("");
     const [testSearch, setTestSearch] = useState("");
     const [dateSearch, setDateSearch] = useState("");
     const [paymentFilter, setPaymentFilter] = useState("All");
+
 
     useEffect(() => {
         fetchPatients();
@@ -61,24 +65,18 @@ export default function PaymentComponent() {
                 p.name?.toLowerCase().includes(searchLower) ||
                 p.refNo?.toLowerCase().includes(searchLower);
 
-            // ✅ NEW: Date restriction for non-admin users
             const isAdmin = user?.role?.toLowerCase() === 'admin';
             let matchesDate = true;
 
             if (!isAdmin) {
-                // Non-admin: Only show today and yesterday
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-
                 const yesterday = new Date(today);
                 yesterday.setDate(yesterday.getDate() - 1);
-
                 const patientDate = new Date(p.createdAt);
                 patientDate.setHours(0, 0, 0, 0);
-
                 matchesDate = patientDate >= yesterday;
             } else {
-                // Admin: Use date filter as normal
                 matchesDate = dateSearch === "" || formattedDate === dateSearch;
             }
 
@@ -89,9 +87,12 @@ export default function PaymentComponent() {
             const matchesPayment =
                 paymentFilter === "All" || p.paymentStatus === paymentFilter;
 
-            return matchesText && matchesDate && matchesTest && matchesPayment;
+            // ✅ Check global filter from context
+            const matchesGlobalFilter = checkDateFilter(p.createdAt, 'payment');
+
+            return matchesText && matchesDate && matchesTest && matchesPayment && matchesGlobalFilter;
         });
-    }, [patients, search, testSearch, dateSearch, paymentFilter, user]);
+    }, [patients, search, testSearch, dateSearch, paymentFilter, user, checkDateFilter]);
 
     const handlePaymentUpdate = async (id, patient) => {
         try {
@@ -139,7 +140,7 @@ export default function PaymentComponent() {
                 <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden p-0">
                     {/* Enhanced Header */}
                     <CardHeader className="bg-gradient-to-r from-green-700 to-emerald-600 py-3 text-white">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between flex-wrap gap-3">
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl">
                                     <CreditCard className="h-6 w-6 text-white" />
@@ -149,10 +150,15 @@ export default function PaymentComponent() {
                                     <p className="text-green-100 mt-1">Track and manage patient payments</p>
                                 </div>
                             </div>
-                            <Badge className="bg-white/20 text-white border-0 px-4 py-2 rounded-xl">
-                                <FileText className="h-4 w-4 mr-1" />
-                                {filteredPatients?.length} Records
-                            </Badge>
+                            <div className="flex items-center gap-3">
+                                {/* ✅ Global Date Filter Component */}
+                                <GlobalDateFilter filterType="payment" />
+
+                                <Badge className="bg-white/20 text-white border-0 px-4 py-2 rounded-xl">
+                                    <FileText className="h-4 w-4 mr-1" />
+                                    {filteredPatients?.length} Records
+                                </Badge>
+                            </div>
                         </div>
                     </CardHeader>
 

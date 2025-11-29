@@ -357,11 +357,11 @@ export default function DoctorCard() {
                 <p className="text-gray-500">Add your first referring doctor to get started.</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {doctors.map((doc, index) => (
                   <div
                     key={doc._id}
-                    className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-300 hover:shadow-lg hover:scale-[1.01] ${
+                    className={`flex items-center justify-between px-4 py-2 rounded-2xl border-2 transition-all duration-300 hover:shadow-lg hover:scale-[1.01] ${
                       index % 2 === 0 
                         ? 'bg-white border-blue-100 hover:bg-blue-50' 
                         : 'bg-blue-50/50 border-blue-200 hover:bg-blue-100'
@@ -371,7 +371,7 @@ export default function DoctorCard() {
                       {getDoctorAvatar(doc.name)}
                       <div>
                         <div className="text-lg font-bold text-gray-900">{doc.name}</div>
-                        <div className="text-sm text-gray-500 flex items-center mt-1">
+                        <div className="text-sm text-gray-500 flex items-center ">
                           <User className="h-3 w-3 mr-1" />
                           Referring Doctor
                         </div>

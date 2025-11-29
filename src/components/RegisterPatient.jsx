@@ -17,12 +17,14 @@ import {
 import { Categories } from "@/utils/testCategories";
 import { AuthContext } from "@/context/AuthProvider";
 import { Separator } from "./ui/separator";
+import { DoctorsContext } from "@/context/DoctorsContext";
 import toast from "react-hot-toast";
 import { useNavigate } from 'react-router-dom';
 
 export default function RegisterPatient() {
     const { createPatient, setPatients, patients, fetchPatients } = useContext(PatientsContext);
     const { user } = useContext(AuthContext);
+    const { doctors, fetchDoctors } = useContext(DoctorsContext);
     const [isFocused, setIsFocused] = useState(false);
     const [isLoadingTests, setIsLoadingTests] = useState(true);
     const [testsError, setTestsError] = useState(null);
@@ -30,7 +32,6 @@ export default function RegisterPatient() {
     const navigate = useNavigate();
 
 
-    const [doctors, setDoctors] = useState([]);
     const [tests, setTests] = useState([]);
 
     // Patient search functionality
@@ -88,12 +89,6 @@ export default function RegisterPatient() {
     const netTotal = total - discountAmount;
     const dueAmount = netTotal - discountData.paidAmount;
 
-
-    useEffect(() => {
-        fetchDoctors();
-        fetchTests();
-    }, []);
-
     // Search patients with debounce
     useEffect(() => {
         if (searchTimeoutRef.current) {
@@ -143,6 +138,10 @@ export default function RegisterPatient() {
             }
         };
     }, [quickTestSearch]);
+
+    useEffect(() => {
+        fetchTests();
+    }, []);
 
 
 
@@ -270,15 +269,6 @@ export default function RegisterPatient() {
         setSearchResults([]);
         setShowSearchResults(false);
         setForm(prev => ({ ...prev, name: "" }));
-    };
-
-    const fetchDoctors = async () => {
-        try {
-            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/doctors`);
-            setDoctors(res.data || []);
-        } catch (err) {
-            console.error(err);
-        }
     };
 
     const fetchTests = async () => {
@@ -412,8 +402,10 @@ export default function RegisterPatient() {
             setShowDiscountPanel(false);
             toast.success('Registered Successfully!')
             navigate('/user/patients');
-            await fetchPatients();
-            console.log("Patient created:", newPatient);
+            await Promise.all([
+                fetchPatients(),
+                fetchDoctors()
+            ]); console.log("Patient created:", newPatient);
 
         } catch (err) {
             console.error("submit err:", err);
@@ -458,6 +450,8 @@ export default function RegisterPatient() {
             toast.success(`Selected ${newSelections.length} test(s)`);
         }
     };
+
+
 
 
     return (
@@ -664,23 +658,48 @@ export default function RegisterPatient() {
 
 
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Referenced By</label>
-                                        <Select
-                                            value={form.referencedBy}
-                                            onValueChange={(value) => setForm({ ...form, referencedBy: value })}
-                                        >
-                                            <SelectTrigger className="h-12 w-full border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
-                                                <SelectValue placeholder="Self" />
-                                            </SelectTrigger>
-                                            <SelectContent className='bg-white border-0 shadow-xl rounded-xl'>
-                                                <SelectItem className='hover:bg-blue-50 rounded-lg m-1' value='Self'>Self</SelectItem>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                            Referenced By
+
+                                        </label>
+                                        <div className="relative">
+                                            <Input
+                                                list="doctors-datalist"
+                                                placeholder="Type or select doctor..."
+                                                value={form.referencedBy}
+                                                onChange={(e) => {
+                                                    let value = e.target.value;
+                                                    // Auto-capitalize first letter of each word
+                                                    value = value
+                                                        .split(' ')
+                                                        .map(word => {
+                                                            if (word.length === 0) return word;
+                                                            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+                                                        })
+                                                        .join(' ');
+                                                    setForm({ ...form, referencedBy: value });
+                                                }}
+                                                className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                            />
+                                            <datalist id="doctors-datalist">
+                                                <option value="Self" />
                                                 {doctors?.map((d) => (
-                                                    <SelectItem className='hover:bg-blue-50 rounded-lg m-1' key={d._id} value={d.name}>
-                                                        {d.name}
-                                                    </SelectItem>
+                                                    <option key={d._id} value={d.name} />
                                                 ))}
-                                            </SelectContent>
-                                        </Select>
+                                            </datalist>
+
+                                            {/* Show badge if it's a new doctor */}
+                                            {form.referencedBy &&
+                                                form.referencedBy !== 'Self' &&
+                                                !doctors?.some(d => d.name.toLowerCase() === form.referencedBy.toLowerCase()) && (
+                                                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium flex items-center gap-1">
+                                                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                                            New
+                                                        </span>
+                                                    </div>
+                                                )}
+                                        </div>
                                     </div>
 
 
@@ -1105,7 +1124,7 @@ export default function RegisterPatient() {
 
                                 {!hideTests && (
                                     <>
-                                    
+
                                         {testsError ? (
                                             <div className="p-6 rounded-2xl bg-red-50 border-2 border-red-200 text-center">
                                                 <div className="text-red-600 font-semibold mb-2">Error Loading Tests</div>

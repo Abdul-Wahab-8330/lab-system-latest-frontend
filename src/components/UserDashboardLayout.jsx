@@ -10,7 +10,8 @@ import {
   LucideBoxes,
   CalculatorIcon,
   DollarSignIcon,
-  PoundSterling
+  PoundSterling,
+  Printer
 } from "lucide-react";
 
 import {
@@ -276,16 +277,16 @@ const UserDashboardLayout = () => {
 
             <div className="flex items-center space-x-4">
               {/* Export Button */}
-              {user?.role == 'admin' && <Link to='/user/patients' className="lg:flex hidden items-center space-x-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors duration-200">
-                <Download className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700 flex gap-2 items-center">Export <Crown className='text-gray-5  00' size={16} /></span>
+              {user?.role == 'admin' && <Link to='/user/patients' className="lg:flex hidden items-center space-x-2 px-4 py-2 border border-gray-100 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors duration-200">
+                <Printer className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-medium text-gray-700 flex gap-2 items-center">Reports </span>
               </Link>}
 
               {/* Add New Button */}
               {user?.role == 'admin' ?
-                <Link to='/admin/create-test' className="lg:flex hidden  items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-200 shadow-sm">
+                <Link to='/admin/create-test' className="lg:flex hidden  items-center space-x-2 px-4 border border-blue-400 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-200 shadow-sm">
                   <Plus className="w-4 h-4" />
-                  <span className="text-sm font-medium flex gap-2 items-center">Create New Test <Crown className='text-white' size={16} /></span>
+                  <span className="text-sm font-medium flex gap-2 items-center">Register Patient</span>
                 </Link>
                 :
                 <Link to='/user/register-patient' className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-200 shadow-sm">

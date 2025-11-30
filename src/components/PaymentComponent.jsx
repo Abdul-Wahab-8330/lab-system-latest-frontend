@@ -65,20 +65,7 @@ export default function PaymentComponent() {
                 p.name?.toLowerCase().includes(searchLower) ||
                 p.refNo?.toLowerCase().includes(searchLower);
 
-            const isAdmin = user?.role?.toLowerCase() === 'admin';
-            let matchesDate = true;
-
-            if (!isAdmin) {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const yesterday = new Date(today);
-                yesterday.setDate(yesterday.getDate() - 1);
-                const patientDate = new Date(p.createdAt);
-                patientDate.setHours(0, 0, 0, 0);
-                matchesDate = patientDate >= yesterday;
-            } else {
-                matchesDate = dateSearch === "" || formattedDate === dateSearch;
-            }
+            const matchesDate = dateSearch === "" || formattedDate === dateSearch;
 
             const matchesTest =
                 testSearch === "" ||
@@ -205,18 +192,13 @@ export default function PaymentComponent() {
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         <Calendar className="inline h-4 w-4 mr-1" />
                                         Filter by Date
-                                        {user?.role?.toLowerCase() !== 'admin' && (
-                                            <span className="ml-2 text-xs text-amber-600 block pt-1">(Showing today & yesterday only)</span>
-                                        )}
+                                        
                                     </label>
                                     <input
                                         type="date"
                                         value={dateSearch}
                                         onChange={(e) => setDateSearch(e.target.value)}
-                                        disabled={user?.role?.toLowerCase() !== 'admin'}
-                                        className={`h-12 w-full px-4 border-2 border-gray-200 focus:border-emerald-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70 focus:outline-none ${user?.role?.toLowerCase() !== 'admin' ? 'opacity-60 cursor-not-allowed' : ''
-                                            }`}
-                                        title={user?.role?.toLowerCase() !== 'admin' ? 'Date filter available for admins only' : ''}
+                                        className="h-12 w-full px-4 border-2 border-gray-200 focus:border-emerald-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70 focus:outline-none"
                                     />
                                 </div>
 

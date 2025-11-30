@@ -1,5 +1,3 @@
-
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,14 +6,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useReactToPrint } from 'react-to-print';
+import { LabInfoContext } from '@/context/LabnfoContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Search, Trash2, TestTube2, DollarSign, FileText, Settings, Loader2, Info } from "lucide-react";
-import { useContext, useState, useMemo } from "react";
+import { MoreHorizontal, Pencil, Search, Trash2, TestTube2, DollarSign, FileText, Settings, Loader2, Info, Printer, Download } from "lucide-react";
+import { useContext, useState, useMemo, useRef } from "react";
 import { TestContext } from "../context/TestContext";
 import toast from "react-hot-toast";
 
@@ -24,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const TestList = () => {
   const { tests, deleteTest, updateTest, loading } = useContext(TestContext);
+  const { info } = useContext(LabInfoContext);
 
   const [search, setSearch] = useState("");
   const [searchTestCode, setSearchTestCode] = useState("");
@@ -44,6 +45,22 @@ const TestList = () => {
   });
   const [updateLoading, setUpdateLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [simpleReportOpen, setSimpleReportOpen] = useState(false);
+  const [detailedReportOpen, setDetailedReportOpen] = useState(false);
+
+  const simpleReportRef = useRef();
+  const detailedReportRef = useRef();
+
+  const handlePrintSimple = useReactToPrint({
+    contentRef: simpleReportRef,
+    documentTitle: `Test_List_Simple_${new Date().toISOString().split('T')[0]}`,
+  });
+
+  const handlePrintDetailed = useReactToPrint({
+    contentRef: detailedReportRef,
+    documentTitle: `Test_List_Detailed_${new Date().toISOString().split('T')[0]}`,
+  });
+
 
   const filteredTests = useMemo(() => {
     return tests.filter((test) => {
@@ -174,7 +191,7 @@ const TestList = () => {
           <div className="p-8">
             {/* Search Bar */}
             {/* Search Bar */}
-            <div className="mb-8">
+            <div className="mb-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
                 {/* Search by Name */}
                 <div className="relative">
@@ -217,6 +234,24 @@ const TestList = () => {
                   </Select>
                 </div>
               </div>
+            </div>
+
+            {/* Report Buttons */}
+            <div className="mb-6 flex gap-4">
+              <Button
+                onClick={() => setSimpleReportOpen(true)}
+                className="flex-1 h-11 bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 rounded-xl font-bold border border-green-500 shadow-lg"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Print/Download Test List
+              </Button>
+              <Button
+                onClick={() => setDetailedReportOpen(true)}
+                className="flex-1 h-11 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 rounded-xl border border-blue-500 font-bold shadow-lg"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Print/Download Detailed Test List
+              </Button>
             </div>
 
             {/* Table */}
@@ -395,7 +430,6 @@ const TestList = () => {
                     </div>
 
                     {/* Category */}
-                    {/* Category */}
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                         <Settings className="w-4 h-4 text-purple-500" />
@@ -478,11 +512,11 @@ const TestList = () => {
                         />
                         <div className="flex-1" >
                           <label
-                            htmlFor="isDiagnosticTest" 
+                            htmlFor="isDiagnosticTest"
                             className="text-sm font-semibold text-gray-800 cursor-pointer flex items-center gap-2"
                           >
-                          
-                            Is it a Diagnostic Test ? <Info size={13} className="inline-block"/>
+
+                            Is it a Diagnostic Test ? <Info size={13} className="inline-block" />
                           </label>
                           {/* <p className="text-xs text-gray-600 mt-1">
                             <Info size={11} className="inline-block"/> Checked tests will not appear in result entry and final report sections
@@ -656,6 +690,204 @@ const TestList = () => {
               </div>
             </DialogContent>
           )}
+        </Dialog>
+
+        {/* Simple Report Dialog */}
+        <Dialog open={simpleReportOpen} onOpenChange={setSimpleReportOpen}>
+          <DialogContent className="min-w-[80vw] max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border-0">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 -m-6 mb-6 px-8 py-6">
+              <DialogHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
+                      <Download className="w-6 h-6" />
+                      Test List Report
+                    </DialogTitle>
+                    <p className="text-green-100 mt-1">Simple overview of all tests</p>
+                  </div>
+                  <Button onClick={handlePrintSimple} className="bg-white/20 hover:bg-white/30 text-white border border-white/30">
+                    <Printer className="h-4 w-4 mr-2" />
+                    Print / Download PDF
+                  </Button>
+                </div>
+              </DialogHeader>
+            </div>
+
+            <div ref={simpleReportRef} className="px-4 pb-4">
+              {/* Header */}
+              <div className="mb-3 mt-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start">
+                    {info?.logoUrl && (
+                      <img
+                        src={info?.logoUrl}
+                        alt="Lab Logo"
+                        className="h-20 w-20 mr-4 object-contain"
+                        onError={(e) => e.target.style.display = 'none'}
+                      />
+                    )}
+                    <div className="text-left">
+                      <h1 className="text-2xl font-bold mb-0">
+                        <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
+                        <span style={{ letterSpacing: '0.25em' }}>LAB</span>
+                      </h1>
+                      <p className="text-sm mb-1">
+                        <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
+                        <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
+                      </p>
+                      <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
+                        Better Diagnosis - Better Treatment
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center mb-3 pb-2 border-b border-gray-800">
+                <p className="text-gray-700 text-sm font-semibold">Test List Report</p>
+                <p className="text-xs text-gray-600 mt-1">
+                  Generated on: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                </p>
+              </div>
+
+              {/* Simple Table */}
+              <table className="w-full text-xs border-collapse border-2 border-gray-800">
+                <thead>
+                  <tr className="bg-gray-800 text-white">
+                    <th className="px-3 py-2 text-left font-bold border-r border-gray-600">Sr. No</th>
+                    <th className="px-3 py-2 text-left font-bold border-r border-gray-600">Test Name</th>
+                    <th className="px-3 py-2 text-center font-bold">Test Price (Rs.)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTests.map((test, index) => (
+                    <tr key={test._id} className={`border-b border-gray-300 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                      <td className="px-3 py-2 text-gray-900 border-r border-gray-300">{index + 1}</td>
+                      <td className="px-3 py-2 font-semibold text-gray-900 border-r border-gray-300">{test.testName}</td>
+                      <td className="px-3 py-2 text-center font-bold text-green-700">Rs. {test.testPrice}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Summary */}
+              <div className="mt-4 pt-2 border-t-2 border-gray-800">
+                <div className="flex justify-between items-center bg-gray-100 px-3 py-2">
+                  <span className="text-base font-bold text-gray-900">Total Tests:</span>
+                  <span className="text-xl font-bold text-gray-900">{filteredTests.length}</span>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Detailed Report Dialog */}
+        <Dialog open={detailedReportOpen} onOpenChange={setDetailedReportOpen}>
+          <DialogContent className="min-w-[80vw] max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border-0">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 -m-6 mb-6 px-8 py-6">
+              <DialogHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
+                      <Printer className="w-6 h-6" />
+                      Detailed Test List Report
+                    </DialogTitle>
+                    <p className="text-blue-100 mt-1">Complete test information with all details</p>
+                  </div>
+                  <Button onClick={handlePrintDetailed} className="bg-white/20 hover:bg-white/30 text-white border border-white/30">
+                    <Printer className="h-4 w-4 mr-2" />
+                    Print / Download PDF
+                  </Button>
+                </div>
+              </DialogHeader>
+            </div>
+
+            <div ref={detailedReportRef} className="px-4 pb-4">
+              {/* Header */}
+              <div className="mb-3 mt-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start">
+                    {info?.logoUrl && (
+                      <img
+                        src={info?.logoUrl}
+                        alt="Lab Logo"
+                        className="h-20 w-20 mr-4 object-contain"
+                        onError={(e) => e.target.style.display = 'none'}
+                      />
+                    )}
+                    <div className="text-left">
+                      <h1 className="text-2xl font-bold mb-0">
+                        <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
+                        <span style={{ letterSpacing: '0.25em' }}>LAB</span>
+                      </h1>
+                      <p className="text-sm mb-1">
+                        <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
+                        <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
+                      </p>
+                      <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
+                        Better Diagnosis - Better Treatment
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center mb-3 pb-2 border-b-2 border-gray-800">
+                <p className="text-gray-900 text-base font-bold">Detailed Test List Report</p>
+                <p className="text-xs text-gray-600 mt-1">
+                  Generated on: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                </p>
+              </div>
+
+              {/* Detailed Table */}
+              <table className="w-full text-xs border-collapse border-2 border-gray-800">
+                <thead>
+                  <tr className="bg-gray-800 text-white">
+                    <th className="px-2 py-2 text-left font-bold border-r border-gray-600">Sr. No</th>
+                    <th className="px-2 py-2 text-left font-bold border-r border-gray-600">Test Name</th>
+                    <th className="px-2 py-2 text-center font-bold border-r border-gray-600">Test Price (Rs.)</th>
+                    <th className="px-2 py-2 text-center font-bold border-r border-gray-600">Category</th>
+                    <th className="px-2 py-2 text-left font-bold border-r border-gray-600">Specimen</th>
+                    <th className="px-2 py-2 text-left font-bold border-r border-gray-600">Performing Time</th>
+                    <th className="px-2 py-2 text-left font-bold">Reporting Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTests.map((test, index) => (
+                    <tr key={test._id} className={`border-b border-gray-300 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                      <td className="px-2 py-2 text-gray-900 border-r border-gray-300">{index + 1}</td>
+                      <td className="px-2 py-2 font-semibold text-gray-900 border-r border-gray-300">{test.testName}</td>
+                      <td className="px-2 py-2 text-center font-bold text-green-700 border-r border-gray-300">Rs. {test.testPrice}</td>
+                      <td className="px-2 py-2 text-center text-gray-700 border-r border-gray-300">{test.category}</td>
+                      <td className="px-2 py-2 text-gray-700 border-r border-gray-300">{test.specimen || '-'}</td>
+                      <td className="px-2 py-2 text-gray-700 border-r border-gray-300">{test.performed || '-'}</td>
+                      <td className="px-2 py-2 text-gray-700">{test.reported || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Summary Stats */}
+              <div className="mt-4 grid grid-cols-2 gap-3 text-center">
+                <div className="border border-gray-800 bg-gray-50 p-2">
+                  <p className="text-xs font-semibold text-gray-600">Total Tests</p>
+                  <p className="text-lg font-bold text-gray-900">{filteredTests.length}</p>
+                </div>
+                <div className="border border-gray-800 bg-green-50 p-2">
+                  <p className="text-xs font-semibold text-gray-600">Total Categories</p>
+                  <p className="text-lg font-bold text-green-900">
+                    {new Set(filteredTests.map(t => t.category)).size}
+                  </p>
+                </div>
+                {/* <div className="border border-gray-800 bg-blue-50 p-2">
+                  <p className="text-xs font-semibold text-gray-600">Average Price</p>
+                  <p className="text-lg font-bold text-blue-900">
+                    Rs. {Math.round(filteredTests.reduce((sum, t) => sum + t.testPrice, 0) / filteredTests.length || 0)}
+                  </p>
+                </div> */}
+              </div>
+            </div>
+          </DialogContent>
         </Dialog>
       </div>
     </div>

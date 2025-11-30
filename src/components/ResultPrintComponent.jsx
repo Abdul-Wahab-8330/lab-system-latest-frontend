@@ -144,12 +144,20 @@ export default function ResultPrintComponent() {
             const res = await axios.get(
                 `${import.meta.env.VITE_API_URL}/api/results/${patient._id}/tests`
             );
-            setSelectedPatient(res.data);
+
+            // ✅ FILTER: Remove diagnostic tests from details
+            const filteredPatient = {
+                ...res.data,
+                tests: res.data.tests.filter(test => !test.testId?.isDiagnosticTest)
+            };
+
+            setSelectedPatient(filteredPatient);
             setDetailsOpen(true);
         } catch (err) {
             console.error("openPatientDetails:", err);
         }
     }
+
     // Print handler using react-to-print
     const handlePrintResults = useReactToPrint({
         contentRef: reportRef,
@@ -187,7 +195,14 @@ export default function ResultPrintComponent() {
             const res = await axios.get(
                 `${import.meta.env.VITE_API_URL}/api/results/${patient._id}/tests`
             );
-            setEditPatient(res.data);
+
+            // ✅ FILTER: Remove diagnostic tests from edit dialog
+            const filteredPatient = {
+                ...res.data,
+                tests: res.data.tests.filter(test => test.testId?.isDiagnosticTest !== true)
+            };
+
+            setEditPatient(filteredPatient);
             setChangedTests([]); // Reset changed tests
             setEditDialogOpen(true);
         } catch (err) {
@@ -441,13 +456,14 @@ export default function ResultPrintComponent() {
                                                         <TableCell>
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-sm font-medium text-gray-600">
-                                                                    {p.results?.length || 0} / {p.tests?.length || 0}
+                                                                    {/* ✅ FILTER: Only count non-diagnostic tests */}
+                                                                    {p.results?.length || 0} / {p.tests?.filter(t => !t.testId?.isDiagnosticTest).length || 0}
                                                                 </span>
                                                                 <div className="w-16 bg-gray-200 rounded-full h-2">
                                                                     <div
                                                                         className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-300"
                                                                         style={{
-                                                                            width: `${((p.results?.length || 0) / (p.tests?.length || 1)) * 100}%`
+                                                                            width: `${((p.results?.length || 0) / (p.tests?.filter(t => !t.testId?.isDiagnosticTest).length || 1)) * 100}%`
                                                                         }}
                                                                     ></div>
                                                                 </div>
@@ -1034,9 +1050,12 @@ export default function ResultPrintComponent() {
                                         <td>
                                             {/* Group tests by category */}
                                             {(() => {
+                                                // ✅ FILTER: Remove diagnostic tests before grouping
+                                                const nonDiagnosticTests = printPatient?.tests?.filter(test => !test.testId?.isDiagnosticTest) || [];
+
                                                 // Group tests by category
                                                 const testsByCategory = {};
-                                                printPatient?.tests?.forEach(test => {
+                                                nonDiagnosticTests.forEach(test => {
                                                     const category = test.testId?.category || "OTHER TESTS";
                                                     if (!testsByCategory[category]) {
                                                         testsByCategory[category] = [];

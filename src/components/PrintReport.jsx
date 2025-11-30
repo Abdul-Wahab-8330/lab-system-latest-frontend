@@ -26,7 +26,14 @@ export default function PrintReport() {
             const patientRes = await axios.get(
                 `${import.meta.env.VITE_API_URL}/api/results/${id}/tests`
             );
-            setPrintPatient(patientRes.data);
+
+            // ✅ FILTER: Remove diagnostic tests before setting state
+            const filteredPatient = {
+                ...patientRes.data,
+                tests: patientRes.data.tests.filter(test => test.testId?.isDiagnosticTest !== true)
+            };
+
+            setPrintPatient(filteredPatient);
 
             const labRes = await axios.get(
                 `${import.meta.env.VITE_API_URL}/api/lab-info`
@@ -307,8 +314,11 @@ export default function PrintReport() {
                         <td>
                             {/* Group tests by category */}
                             {(() => {
+                                // ✅ FILTER: Extra safety - remove diagnostic tests before grouping
+                                const nonDiagnosticTests = printPatient?.tests?.filter(test => test.testId?.isDiagnosticTest !== true) || [];
+
                                 const testsByCategory = {};
-                                printPatient?.tests?.forEach(test => {
+                                nonDiagnosticTests.forEach(test => {
                                     const category = test.testId?.category || "OTHER TESTS";
                                     if (!testsByCategory[category]) {
                                         testsByCategory[category] = [];
@@ -379,44 +389,151 @@ export default function PrintReport() {
                                                                     </tr>
                                                                 )}
 
-                                                                {filledFields.map((f, fi) => (
-                                                                    <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
-                                                                        <td className="py-0.5 pl-2">{f.fieldName}</td>
-                                                                        <td className="text-center py-0.5">
-                                                                            {(() => {
-                                                                                const rangeStr = f.range || "-";
-                                                                                const patientGender = printPatient?.gender?.toUpperCase();
+                                                                {(() => {
+                                                                    // Check if ANY field has a category
+                                                                    const hasCategories = filledFields.some(f => f.category);
 
-                                                                                if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
-                                                                                    const parts = rangeStr.split(',');
-
-                                                                                    for (let part of parts) {
-                                                                                        part = part.trim();
-                                                                                        if (patientGender === 'MALE' && part.startsWith('M:')) {
-                                                                                            return part.substring(2).trim();
+                                                                    if (!hasCategories) {
+                                                                        // NO CATEGORIES: Render normally (existing behavior)
+                                                                        return filledFields.map((f, fi) => (
+                                                                            <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
+                                                                                <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                                                <td className="text-center py-0.5">
+                                                                                    {(() => {
+                                                                                        const rangeStr = f.range || "-";
+                                                                                        const patientGender = printPatient?.gender?.toUpperCase();
+                                                                                        if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
+                                                                                            const parts = rangeStr.split(',');
+                                                                                            for (let part of parts) {
+                                                                                                part = part.trim();
+                                                                                                if (patientGender === 'MALE' && part.startsWith('M:')) {
+                                                                                                    return part.substring(2).trim();
+                                                                                                }
+                                                                                                if (patientGender === 'FEMALE' && part.startsWith('F:')) {
+                                                                                                    return part.substring(2).trim();
+                                                                                                }
+                                                                                            }
+                                                                                            return rangeStr;
                                                                                         }
-                                                                                        if (patientGender === 'FEMALE' && part.startsWith('F:')) {
-                                                                                            return part.substring(2).trim();
-                                                                                        }
-                                                                                    }
+                                                                                        return rangeStr;
+                                                                                    })()}
+                                                                                </td>
+                                                                                <td className="text-center py-0.5">{f.unit || "."}</td>
+                                                                                <td className="text-center font-semibold py-0.5">
+                                                                                    {f.defaultValue}
+                                                                                </td>
+                                                                            </tr>
+                                                                        ));
+                                                                    } else {
+                                                                        // HAS CATEGORIES: Group by category
+                                                                        const fieldsByCategory = {};
+                                                                        filledFields.forEach(f => {
+                                                                            const cat = f.category || "Other";
+                                                                            if (!fieldsByCategory[cat]) {
+                                                                                fieldsByCategory[cat] = [];
+                                                                            }
+                                                                            fieldsByCategory[cat].push(f);
+                                                                        });
 
-                                                                                    return rangeStr;
-                                                                                }
+                                                                        return Object.entries(fieldsByCategory).map(([category, fields], catIdx) => (
+                                                                            <React.Fragment key={catIdx}>
+                                                                                {/* Category Heading */}
+                                                                                <tr>
+                                                                                    <td colSpan="4" className="py-1.5 font-bold text-xs uppercase bg-gray-50">
+                                                                                        {category}
+                                                                                    </td>
+                                                                                </tr>
 
-                                                                                return rangeStr;
-                                                                            })()}
-                                                                        </td>
-                                                                        <td className="text-center py-0.5">{f.unit || "."}</td>
-                                                                        <td className="text-center font-semibold py-0.5">
-                                                                            {f.defaultValue}
-                                                                        </td>
-                                                                    </tr>
-                                                                ))}
+                                                                                {/* Fields in this category */}
+                                                                                {fields.map((f, fi) => (
+                                                                                    <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
+                                                                                        <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                                                        <td className="text-center py-0.5">
+                                                                                            {(() => {
+                                                                                                const rangeStr = f.range || "-";
+                                                                                                const patientGender = printPatient?.gender?.toUpperCase();
+                                                                                                if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
+                                                                                                    const parts = rangeStr.split(',');
+                                                                                                    for (let part of parts) {
+                                                                                                        part = part.trim();
+                                                                                                        if (patientGender === 'MALE' && part.startsWith('M:')) {
+                                                                                                            return part.substring(2).trim();
+                                                                                                        }
+                                                                                                        if (patientGender === 'FEMALE' && part.startsWith('F:')) {
+                                                                                                            return part.substring(2).trim();
+                                                                                                        }
+                                                                                                    }
+                                                                                                    return rangeStr;
+                                                                                                }
+                                                                                                return rangeStr;
+                                                                                            })()}
+                                                                                        </td>
+                                                                                        <td className="text-center py-0.5">{f.unit || "."}</td>
+                                                                                        <td className="text-center font-semibold py-0.5">
+                                                                                            {f.defaultValue}
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                ))}
+                                                                            </React.Fragment>
+                                                                        ));
+                                                                    }
+                                                                })()}
                                                             </React.Fragment>
                                                         );
                                                     })}
                                                 </tbody>
                                             </table>
+
+                                            {/* ✅ ADD REPORT EXTRAS - DYNAMIC NARRATIVE SECTIONS */}
+                                            {testsWithData.map((test, testIndex) => {
+                                                const testData = test.testId || test;
+                                                const extras = testData.reportExtras;
+
+                                                if (!extras || Object.keys(extras).length === 0) {
+                                                    return null;
+                                                }
+
+                                                return (
+                                                    <div key={`extras-${testIndex}`} className="mt-4 mb-4 w-full">
+                                                        {Object.entries(extras).map(([key, value]) => {
+                                                            if (!value ||
+                                                                (typeof value === 'string' && value.trim() === '') ||
+                                                                (Array.isArray(value) && value.length === 0)) {
+                                                                return null;
+                                                            }
+
+                                                            const heading = key
+                                                                .replace(/([A-Z])/g, ' $1')
+                                                                .trim()
+                                                                .split(' ')
+                                                                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                                                .join(' ');
+
+                                                            return (
+                                                                <div key={key} className="mb-3">
+                                                                    <h4 className="font-bold text-sm uppercase mb-1 underline text-gray-800">
+                                                                        {heading}:
+                                                                    </h4>
+
+                                                                    {typeof value === 'string' ? (
+                                                                        <p className="text-xs leading-relaxed text-gray-800 whitespace-pre-line">
+                                                                            {value}
+                                                                        </p>
+                                                                    ) : Array.isArray(value) ? (
+                                                                        <ol className="list-decimal list-inside text-xs text-gray-700 space-y-0.5 ml-2">
+                                                                            {value.map((item, i) => (
+                                                                                <li key={i} className="leading-relaxed">{item}</li>
+                                                                            ))}
+                                                                        </ol>
+                                                                    ) : null}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                );
+                                            })}
+
+
                                         </div>
                                     );
                                 });

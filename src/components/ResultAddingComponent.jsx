@@ -60,8 +60,14 @@ export default function ResultAddingComponent() {
     // helper to compute percent based on tests where ALL fields are filled
     const computePercentCompleted = (patient) => {
         if (!patient?.results || patient.results.length === 0) return 0;
+
+        // ✅ FILTER: Only count non-diagnostic tests
+        const nonDiagnosticTests = patient.tests.filter(test => !test.testId?.isDiagnosticTest);
+
+        if (nonDiagnosticTests.length === 0) return 0;
+
         const completedCount = patient?.results?.length;
-        return Math.round((completedCount / patient.tests.length) * 100);
+        return Math.round((completedCount / nonDiagnosticTests.length) * 100);
     };
 
     const percentCompleted = computePercentCompleted(selectedPatient);
@@ -76,8 +82,17 @@ export default function ResultAddingComponent() {
 
     const loadPendingPatients = async () => {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/pending`);
-        setPendingPatients(res.data);
-        setFilteredPatients(res.data);
+
+        // ✅ FILTER: Remove patients that ONLY have diagnostic tests
+        const filteredData = res.data.filter(patient => {
+            const nonDiagnosticTests = patient.tests.filter(test =>
+                !test.testId?.isDiagnosticTest
+            );
+            return nonDiagnosticTests.length > 0; // Only show if has at least 1 non-diagnostic test
+        });
+
+        setPendingPatients(filteredData);
+        setFilteredPatients(filteredData);
     };
 
     // Filter function
@@ -137,7 +152,14 @@ export default function ResultAddingComponent() {
 
     const openResultDialog = async (patient) => {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${patient._id}/tests`);
-        setSelectedPatient(res.data);
+
+        // ✅ FILTER: Remove diagnostic tests from the patient data
+        const filteredPatient = {
+            ...res.data,
+            tests: res.data.tests.filter(test => !test.testId?.isDiagnosticTest)
+        };
+
+        setSelectedPatient(filteredPatient);
         setOpen(true);
     };
 
@@ -360,13 +382,14 @@ export default function ResultAddingComponent() {
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-sm font-medium text-gray-600">
-                                                                {p.results?.length || 0} / {p.tests.length}
+                                                                {/* ✅ FILTER: Only count non-diagnostic tests */}
+                                                                {p.results?.length || 0} / {p.tests.filter(t => !t.testId?.isDiagnosticTest).length}
                                                             </span>
                                                             <div className="w-16 bg-gray-200 rounded-full h-2">
                                                                 <div
                                                                     className="bg-gradient-to-r from-purple-400 to-purple-600 h-2 rounded-full transition-all duration-300"
                                                                     style={{
-                                                                        width: `${((p.results?.length || 0) / p.tests.length) * 100}%`
+                                                                        width: `${((p.results?.length || 0) / (p.tests.filter(t => !t.testId?.isDiagnosticTest).length || 1)) * 100}%`
                                                                     }}
                                                                 ></div>
                                                             </div>
@@ -709,9 +732,9 @@ export default function ResultAddingComponent() {
                                             {detailsPatient.tests?.length || 0}
                                         </Badge>
                                     </h3>
-                                    {detailsPatient.tests?.length > 0 ? (
+                                    {detailsPatient.tests?.filter(t => !t.testId?.isDiagnosticTest).length > 0 ? (
                                         <div className="space-y-4">
-                                            {detailsPatient.tests.map((t, i) => (
+                                            {detailsPatient.tests.filter(t => !t.testId?.isDiagnosticTest).map((t, i) => (
                                                 <div key={i} className="bg-purple-50 rounded-lg p-4">
                                                     <h4 className="font-semibold text-purple-800 mb-3">{t.testName}</h4>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

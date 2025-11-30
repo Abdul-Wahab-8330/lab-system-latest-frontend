@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Search, Trash2, TestTube2, DollarSign, FileText, Settings, Loader2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Search, Trash2, TestTube2, DollarSign, FileText, Settings, Loader2, Info } from "lucide-react";
 import { useContext, useState, useMemo } from "react";
 import { TestContext } from "../context/TestContext";
 import toast from "react-hot-toast";
@@ -39,7 +39,8 @@ const TestList = () => {
     specimen: "",
     performed: "",
     reported: "",
-    fields: []
+    fields: [],
+    isDiagnosticTest: false
   });
   const [updateLoading, setUpdateLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -64,6 +65,7 @@ const TestList = () => {
       performed: test.performed,
       reported: test.reported,
       fields: [...test.fields],
+      isDiagnosticTest: test.isDiagnosticTest || false,
     });
     setEditDialogOpen(true);
   };
@@ -336,7 +338,6 @@ const TestList = () => {
                     <Pencil className="w-6 h-6" />
                     Edit Test Template
                   </DialogTitle>
-                  <p className="text-blue-100 mt-1">Modify test configuration and field settings</p>
                 </DialogHeader>
               </div>
 
@@ -462,6 +463,32 @@ const TestList = () => {
                         }
                         required
                       />
+                    </div>
+                    {/* ✅ NEW: Diagnostic Test Checkbox */}
+                    <div className="space-y-2 md:col-span-2">
+                      <div title="Checked tests will not appear in result entry and final report sections" className="flex cursor-pointer items-center space-x-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+                        <input
+                          type="checkbox"
+                          id="isDiagnosticTest"
+                          checked={editForm.isDiagnosticTest || false}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, isDiagnosticTest: e.target.checked })
+                          }
+                          className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <div className="flex-1" >
+                          <label
+                            htmlFor="isDiagnosticTest" 
+                            className="text-sm font-semibold text-gray-800 cursor-pointer flex items-center gap-2"
+                          >
+                          
+                            Is it a Diagnostic Test ? <Info size={13} className="inline-block"/>
+                          </label>
+                          {/* <p className="text-xs text-gray-600 mt-1">
+                            <Info size={11} className="inline-block"/> Checked tests will not appear in result entry and final report sections
+                          </p> */}
+                        </div>
+                      </div>
                     </div>
                   </div>
 

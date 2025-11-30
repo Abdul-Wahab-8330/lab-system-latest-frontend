@@ -954,7 +954,7 @@ export default function RegisterPatient() {
 
                                                 {/* Quick Test Results Dropdown */}
                                                 {isQuickTestFocused && showQuickTestResults && quickTestResults.length > 0 && (
-                                                    <div className="absolute top-full left-0 right-0 z-50 bg-white border-2 border-green-200 rounded-xl shadow-2xl max-h-30 overflow-y-auto mt-2">
+                                                    <div className="absolute top-full left-0 right-0 z-50 bg-white border-2 border-green-200 rounded-xl shadow-2xl max-h-40 overflow-y-auto mt-2">
                                                         <div className="p-3 text-xs font-medium text-gray-500 border-b bg-gradient-to-r from-green-50 to-emerald-50">
                                                             Found {quickTestResults.length} test(s) - Press Enter to add first result
                                                         </div>

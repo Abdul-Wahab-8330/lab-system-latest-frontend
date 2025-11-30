@@ -1243,11 +1243,66 @@ export default function ResultPrintComponent() {
                                                                                         ));
                                                                                     }
                                                                                 })()}
+
+
+                                                                                {/* ========================================
+    REPORT EXTRAS - DYNAMIC NARRATIVE SECTIONS
+    ======================================== */}
+
+
                                                                             </React.Fragment>
                                                                         );
                                                                     })}
                                                                 </tbody>
                                                             </table>
+                                                            {/* ✅ ADD THIS AFTER </table> */}
+                                                            {testsWithData.map((test, testIndex) => {
+                                                                const testData = test.testId || test;
+                                                                const extras = testData.reportExtras;
+
+                                                                if (!extras || Object.keys(extras).length === 0) {
+                                                                    return null;
+                                                                }
+
+                                                                return (
+                                                                    <div key={`extras-${testIndex}`} className="mt-4 mb-4 w-full">
+                                                                        {Object.entries(extras).map(([key, value]) => {
+                                                                            if (!value ||
+                                                                                (typeof value === 'string' && value.trim() === '') ||
+                                                                                (Array.isArray(value) && value.length === 0)) {
+                                                                                return null;
+                                                                            }
+
+                                                                            const heading = key
+                                                                                .replace(/([A-Z])/g, ' $1')
+                                                                                .trim()
+                                                                                .split(' ')
+                                                                                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                                                                .join(' ');
+
+                                                                            return (
+                                                                                <div key={key} className="mb-3">
+                                                                                    <h4 className="font-bold text-sm uppercase mb-1 underline text-gray-800">
+                                                                                        {heading}:
+                                                                                    </h4>
+
+                                                                                    {typeof value === 'string' ? (
+                                                                                        <p className="text-xs leading-relaxed text-gray-800 whitespace-pre-line">
+                                                                                            {value}
+                                                                                        </p>
+                                                                                    ) : Array.isArray(value) ? (
+                                                                                        <ol className="list-decimal list-inside text-xs text-gray-700 space-y-0.5 ml-2">
+                                                                                            {value.map((item, i) => (
+                                                                                                <li key={i} className="leading-relaxed">{item}</li>
+                                                                                            ))}
+                                                                                        </ol>
+                                                                                    ) : null}
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                );
+                                                            })}
                                                         </div>
                                                     );
                                                 });

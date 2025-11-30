@@ -72,13 +72,13 @@ export default function RevenueSummary() {
     return grouped;
   };
 
-  // Calculate totals for a date
   const calculateDateTotals = (patientsList) => {
     const totalTests = patientsList.reduce((sum, p) => sum + p.tests.length, 0);
-    const totalRevenue = patientsList.reduce((sum, p) => sum + (p.paymentStatus === 'Paid' ? p.total : 0), 0);
-    const totalPaid = patientsList.reduce((sum, p) => sum + (p.paymentStatus === 'Paid' ? p.total : 0), 0);
-    const totalUnpaid = patientsList.reduce((sum, p) => sum + (p.paymentStatus !== 'Paid' ? p.total : 0), 0);
-    return { totalTests, totalRevenue, totalPaid, totalUnpaid };
+    const totalDiscount = patientsList.reduce((sum, p) => sum + (p.discountAmount || 0), 0);
+    const totalNetTotal = patientsList.reduce((sum, p) => sum + (p.netTotal !== undefined ? p.netTotal : p.total), 0);
+    const totalPaid = patientsList.reduce((sum, p) => sum + (p.paidAmount || 0), 0);
+    const totalDue = patientsList.reduce((sum, p) => sum + (p.dueAmount || 0), 0);
+    return { totalTests, totalDiscount, totalNetTotal, totalPaid, totalDue, totalRevenue: totalNetTotal };
   };
 
   // Calculate test-wise breakdown for a date
@@ -99,10 +99,10 @@ export default function RevenueSummary() {
   };
 
   const groupedPatients = groupPatientsByDate(filteredPatients);
-  const grandTotal = filteredPatients.reduce((sum, p) => sum + (p.paymentStatus === 'Paid' ? p.total : 0), 0);
+  const grandTotal = filteredPatients.reduce((sum, p) => sum + (p.netTotal !== undefined ? p.netTotal : p.total), 0);
   const grandTotalTests = filteredPatients.reduce((sum, p) => sum + p.tests.length, 0);
-  const totalPaid = filteredPatients.reduce((sum, p) => sum + (p.paymentStatus === 'Paid' ? p.total : 0), 0);
-  const totalUnpaid = filteredPatients.reduce((sum, p) => sum + (p.paymentStatus !== 'Paid' ? p.total : 0), 0);
+  const totalPaid = filteredPatients.reduce((sum, p) => sum + (p.paidAmount || 0), 0);
+  const totalUnpaid = filteredPatients.reduce((sum, p) => sum + (p.dueAmount || 0), 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
@@ -272,7 +272,7 @@ export default function RevenueSummary() {
 
               {/* Daily breakdown with PATIENT-WISE listing */}
               {Object.entries(groupedPatients).map(([date, datePatients]) => {
-                const { totalTests, totalRevenue, totalPaid, totalUnpaid } = calculateDateTotals(datePatients);
+                const { totalTests, totalRevenue, totalPaid, totalDue } = calculateDateTotals(datePatients);
                 const testBreakdown = getTestBreakdown(datePatients);
 
                 return (
@@ -298,8 +298,8 @@ export default function RevenueSummary() {
                           <span className="text-sm font-bold text-gray-900">Rs. {totalPaid.toLocaleString()}</span>
                         </div>
                         <div className="px-2 py-1.5 text-center">
-                          <span className="text-xs font-semibold text-gray-600 block">Unpaid</span>
-                          <span className="text-sm font-bold text-gray-900">Rs. {totalUnpaid.toLocaleString()}</span>
+                          <span className="text-xs font-semibold text-gray-600 block">Due</span>
+                          <span className="text-sm font-bold text-gray-900">Rs. {totalDue?.toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -308,7 +308,7 @@ export default function RevenueSummary() {
                     <table className="w-full text-xs border-collapse">
                       <thead>
                         <tr className="bg-gray-100 border-b border-gray-800">
-                          <th className="px-3 py-1.5 text-left font-bold text-gray-900">Reg#</th>
+                          <th className="px-3 py-1.5 text-left font-bold text-gray-900">Case#</th>
                           <th className="px-3 py-1.5 text-left font-bold text-gray-900 border-l border-gray-300">Patient Name</th>
                           <th className="px-3 py-1.5 text-left font-bold text-gray-900 border-l border-gray-300">Tests</th>
                           <th className="px-3 py-1.5 text-right font-bold text-gray-900 border-l border-gray-300">Amount</th>
@@ -320,13 +320,13 @@ export default function RevenueSummary() {
                           const isPaid = patient.paymentStatus === 'Paid';
                           return (
                             <tr key={patient._id} className={`border-b border-gray-300 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                              <td className="px-3 py-1 font-semibold text-gray-900">{patient.refNo}</td>
+                              <td className="px-3 py-1 font-semibold text-gray-900">{patient.caseNo}</td>
                               <td className="px-3 py-1 font-medium text-gray-900 border-l border-gray-300">{patient.name}</td>
                               <td className="px-3 py-1 text-gray-700 border-l border-gray-300">
                                 {patient.tests.map(t => t.testName).join(', ')}
                               </td>
                               <td className="px-3 py-1 text-right font-bold text-gray-900 border-l border-gray-300">
-                                Rs. {patient.total.toLocaleString()}
+                                Rs. {(patient.netTotal !== undefined ? patient.netTotal : patient.total).toLocaleString()}
                               </td>
                               <td className="px-3 py-1 text-center border-l border-gray-300">
                                 <span className={`px-2 py-0.5 text-xs font-bold ${isPaid ? 'bg-gray-200 text-gray-900' : 'bg-gray-800 text-white'
@@ -342,7 +342,7 @@ export default function RevenueSummary() {
                         <tr className="bg-gray-800 text-white border-t-2 border-gray-900">
                           <td colSpan="3" className="px-3 py-2 font-bold">DAILY TOTAL</td>
                           <td className="px-3 py-2 text-right font-bold border-l border-gray-600">
-                            Rs. {totalRevenue.toLocaleString()}
+                            Rs. {totalRevenue?.toLocaleString()}
                           </td>
                           <td className="px-3 py-2 text-center border-l border-gray-600 font-bold">
                             {datePatients.length} Patients
@@ -370,7 +370,7 @@ export default function RevenueSummary() {
               <div className="mt-4 pt-2 border-t-2 border-gray-800">
                 <div className="flex justify-end items-center gap-2 bg-gray-100 px-3 py-2">
                   <span className="text-base font-bold text-gray-900">Grand Total:</span>
-                  <span className="text-xl font-bold text-gray-900">Rs. {grandTotal.toLocaleString()}</span>
+                  <span className="text-xl font-bold text-gray-900">Rs. {grandTotal?.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -452,7 +452,7 @@ export default function RevenueSummary() {
                       <thead>
                         <tr className="bg-gray-200">
                           <th className="px-2 py-1.5 text-left font-bold border-r border-gray-400">S.No</th>
-                          <th className="px-2 py-1.5 text-left font-bold border-r border-gray-400">Reg#</th>
+                          <th className="px-2 py-1.5 text-left font-bold border-r border-gray-400">Case#</th>
                           <th className="px-2 py-1.5 text-left font-bold border-r border-gray-400">Patient Name</th>
                           <th className="px-2 py-1.5 text-left font-bold border-r border-gray-400">Age/Gender</th>
                           <th className="px-2 py-1.5 text-left font-bold border-r border-gray-400">Phone</th>
@@ -478,7 +478,7 @@ export default function RevenueSummary() {
                             >
                               <td className="px-2 py-1 text-gray-900 border-r border-gray-300">{currentSerial}</td>
                               <td className="px-2 py-1 font-semibold text-gray-900 border-r border-gray-300">
-                                {patient.refNo}
+                                {patient.caseNo}
                               </td>
                               <td className="px-2 py-1 font-semibold text-gray-900 border-r border-gray-300">
                                 {patient.name}
@@ -499,7 +499,7 @@ export default function RevenueSummary() {
                                 {patient.discountAmount > 0 ? `Rs. ${patient.discountAmount.toLocaleString()}` : '-'}
                               </td>
                               <td className="px-2 py-1 text-right font-bold text-gray-900 border-r border-gray-300">
-                                Rs. {(patient.netTotal || patient.total).toLocaleString()}
+                                Rs. {(patient.netTotal !== undefined ? patient.netTotal : patient.total).toLocaleString()}
                               </td>
                               <td className="px-2 py-1 text-right font-bold text-green-700 border-r border-gray-300">
                                 {patient.paidAmount > 0 ? `Rs. ${patient.paidAmount.toLocaleString()}` : 'Rs. 0'}
@@ -509,8 +509,8 @@ export default function RevenueSummary() {
                               </td>
                               <td className="px-2 py-1 text-center">
                                 <span className={`px-2 py-0.5 text-xs font-bold ${isPaid ? 'bg-green-200 text-green-900' :
-                                    isPartiallyPaid ? 'bg-yellow-200 text-yellow-900' :
-                                      'bg-red-200 text-red-900'
+                                  isPartiallyPaid ? 'bg-yellow-200 text-yellow-900' :
+                                    'bg-red-200 text-red-900'
                                   }`}>
                                   {patient.paymentStatus}
                                 </span>
@@ -521,17 +521,20 @@ export default function RevenueSummary() {
 
                         {/* Date Total Row */}
                         <tr className="bg-gray-700 text-white border-t-2 border-gray-900">
-                          <td colSpan="8" className="px-2 py-1.5 text-right font-bold">
+                          <td colSpan="7" className="px-2 py-1.5 text-right font-bold">
                             Date Total:
                           </td>
                           <td className="px-2 py-1.5 text-right font-bold border-l border-gray-500">
-                            Rs. {datePatients.reduce((sum, p) => sum + (p.netTotal || p.total), 0).toLocaleString()}
+                            Rs. {dateTotals.totalDiscount.toLocaleString()}
+                          </td>
+                          <td className="px-2 py-1.5 text-right font-bold border-l border-gray-500">
+                            Rs. {dateTotals.totalNetTotal.toLocaleString()}
                           </td>
                           <td className="px-2 py-1.5 text-right font-bold border-l border-gray-500">
                             Rs. {dateTotals.totalPaid.toLocaleString()}
                           </td>
                           <td className="px-2 py-1.5 text-right font-bold border-l border-gray-500">
-                            Rs. {dateTotals.totalUnpaid.toLocaleString()}
+                            Rs. {dateTotals.totalDue.toLocaleString()}
                           </td>
                           <td className="px-2 py-1.5 border-l border-gray-500"></td>
                         </tr>
@@ -542,27 +545,30 @@ export default function RevenueSummary() {
               })}
 
               {/* Grand Total */}
-              <div className="border-2 border-gray-900 bg-gray-900 text-white">
+              {/* <div className="border-2 border-gray-900 bg-gray-900 text-white">
                 <table className="w-full text-xs">
                   <tbody>
                     <tr>
-                      <td colSpan="8" className="px-3 py-2 text-right font-bold text-sm">
+                      <td colSpan="7" className="px-3 py-2 text-right font-bold text-sm">
                         GRAND TOTAL ({filteredPatients.length} Patients, {grandTotalTests} Tests):
+                      </td>
+                      <td className="px-3 py-2 text-right font-bold border-l border-gray-700">
+                        Rs. {filteredPatients.reduce((sum, p) => sum + (p.discountAmount || 0), 0).toLocaleString()}
                       </td>
                       <td className="px-3 py-2 text-right font-bold border-l border-gray-700">
                         Rs. {filteredPatients.reduce((sum, p) => sum + (p.netTotal || p.total), 0).toLocaleString()}
                       </td>
                       <td className="px-3 py-2 text-right font-bold border-l border-gray-700">
-                        Rs. {totalPaid.toLocaleString()}
+                        Rs. {filteredPatients.reduce((sum, p) => sum + (p.paidAmount || 0), 0).toLocaleString()}
                       </td>
                       <td className="px-3 py-2 text-right font-bold border-l border-gray-700">
-                        Rs. {totalUnpaid.toLocaleString()}
+                        Rs. {filteredPatients.reduce((sum, p) => sum + (p.dueAmount || 0), 0).toLocaleString()}
                       </td>
                       <td className="px-3 py-2 border-l border-gray-700"></td>
                     </tr>
                   </tbody>
                 </table>
-              </div>
+              </div> */}
 
               {/* Summary Stats - keep same */}
               <div className="mt-4 grid grid-cols-5 gap-3 text-center">
@@ -577,7 +583,7 @@ export default function RevenueSummary() {
                 <div className="border border-gray-800 bg-blue-50 p-2">
                   <p className="text-xs font-semibold text-gray-600">Gross Revenue</p>
                   <p className="text-lg font-bold text-blue-900">
-                    Rs. {filteredPatients.reduce((sum, p) => sum + p.total, 0).toLocaleString()}
+                    Rs. {filteredPatients.reduce((sum, p) => sum + (p.netTotal !== undefined ? p.netTotal : p.total), 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="border border-gray-800 bg-green-50 p-2">

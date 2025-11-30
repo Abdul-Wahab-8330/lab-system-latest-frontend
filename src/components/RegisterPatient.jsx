@@ -799,10 +799,13 @@ export default function RegisterPatient() {
                                                             value={discountData.discountPercentage || ''}
                                                             onChange={(e) => {
                                                                 const percent = Number(e.target.value) || 0;
+                                                                const newDiscountAmount = (total * percent) / 100;
+                                                                const newNetTotal = total - newDiscountAmount;
+
                                                                 setDiscountData({
-                                                                    ...discountData,
                                                                     discountPercentage: percent,
-                                                                    discountByPKR: 0
+                                                                    discountByPKR: 0,
+                                                                    paidAmount: percent === 0 ? 0 : (newNetTotal > 0 ? newNetTotal : 0)  // ← Reset to 0 if discount cleared
                                                                 });
                                                             }}
                                                             className="h-9 text-sm border border-gray-300 focus:border-blue-500 rounded-lg w-full"
@@ -821,10 +824,12 @@ export default function RegisterPatient() {
                                                             value={discountData.discountByPKR || ''}
                                                             onChange={(e) => {
                                                                 const amount = Number(e.target.value) || 0;
+                                                                const newNetTotal = total - amount;
+
                                                                 setDiscountData({
-                                                                    ...discountData,
                                                                     discountByPKR: amount,
-                                                                    discountPercentage: 0
+                                                                    discountPercentage: 0,
+                                                                    paidAmount: amount === 0 ? 0 : (newNetTotal > 0 ? newNetTotal : 0)  // ← Reset to 0 if discount cleared
                                                                 });
                                                             }}
                                                             className="h-9 text-sm border border-gray-300 focus:border-blue-500 rounded-lg w-full"

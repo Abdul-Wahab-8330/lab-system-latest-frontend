@@ -170,7 +170,7 @@ export default function AllPatientsComponent() {
                                     </label>
                                     <div className="relative">
                                         <Input
-                                            placeholder="Name or Reference No..."
+                                            placeholder="Name or Pat No..."
                                             className="h-12 pl-4 pr-10 border-2 border-gray-200 focus:border-emerald-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
@@ -228,7 +228,7 @@ export default function AllPatientsComponent() {
                                             <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150">
                                                 <TableHead className="font-bold text-gray-800 py-4">
                                                     <FileText className="inline h-4 w-4 mr-2" />
-                                                    Ref No
+                                                    Pat No
                                                 </TableHead>
                                                 <TableHead className="font-bold text-gray-800">
                                                     <User className="inline h-4 w-4 mr-2" />
@@ -364,7 +364,7 @@ export default function AllPatientsComponent() {
                                     </h3>
                                     <div className="grid grid-cols-2 gap-4 text-sm">
                                         <div>
-                                            <span className="text-gray-600">Ref No:</span>
+                                            <span className="text-gray-600">Pat No:</span>
                                             <span className="font-semibold text-blue-700 ml-2">{detailsPatient.refNo}</span>
                                         </div>
                                         <div>

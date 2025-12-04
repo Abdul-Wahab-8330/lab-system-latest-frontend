@@ -143,7 +143,8 @@ function UserDashboard() {
   // Memoize recent tests calculation
   const recentTests = useMemo(() => {
     return patients.slice().reverse().slice(0, 5).map(patient => ({
-      id: patient.refNo,
+      refNo: patient.refNo,
+      caseNo: patient.caseNo,
       patient: patient.name,
       test: patient.tests.length > 0 ? patient.tests[0].testName : 'No tests',
       status: patient.resultStatus === 'Added' ? 'Completed' :
@@ -233,6 +234,9 @@ function UserDashboard() {
             <thead className="bg-gray-100">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Case No
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Pat No
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -257,9 +261,13 @@ function UserDashboard() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
               {recentTests.map((test) => (
+                console.log(recentTests),
                 <tr key={test.id} className="hover:bg-gray-50 transition-colors duration-150">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                    {test.id}
+                    {test.caseNo}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                    {test.refNo}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {test.patient}

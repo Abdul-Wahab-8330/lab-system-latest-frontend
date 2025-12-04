@@ -31,7 +31,8 @@ import {
     Clock,
     Users,
     ChevronDown,
-    ChevronRight
+    ChevronRight,
+    Loader
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { AddedPatientsContext } from "@/context/AddedPatientsContext";
@@ -80,20 +81,41 @@ export default function ResultAddingComponent() {
         loadPendingPatients();
     }, []);
 
+    // const loadPendingPatients = async () => {
+    //     const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/pending`);
+
+    //     // ✅ FILTER: Remove patients that ONLY have diagnostic tests
+    //     const filteredData = res.data.filter(patient => {
+    //         const nonDiagnosticTests = patient.tests.filter(test =>
+    //             !test.testId?.isDiagnosticTest
+    //         );
+    //         return nonDiagnosticTests.length > 0; // Only show if has at least 1 non-diagnostic test
+    //     });
+
+    //     setPendingPatients(filteredData);
+    //     setFilteredPatients(filteredData);
+    // };
+
+
     const loadPendingPatients = async () => {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/pending`);
 
         // ✅ FILTER: Remove patients that ONLY have diagnostic tests
+        // ✅ ALSO: Only show patients with incomplete results
         const filteredData = res.data.filter(patient => {
             const nonDiagnosticTests = patient.tests.filter(test =>
                 !test.testId?.isDiagnosticTest
             );
-            return nonDiagnosticTests.length > 0; // Only show if has at least 1 non-diagnostic test
+
+            // Must have non-diagnostic tests AND results must be incomplete
+            return nonDiagnosticTests.length > 0 &&
+                patient.results.length < nonDiagnosticTests.length;
         });
 
         setPendingPatients(filteredData);
         setFilteredPatients(filteredData);
     };
+
 
     // Filter function
     useEffect(() => {
@@ -102,7 +124,8 @@ export default function ResultAddingComponent() {
         if (search) {
             data = data.filter(p =>
                 p.name.toLowerCase().includes(search.toLowerCase()) ||
-                p.refNo.toString().includes(search)
+                p.refNo.toString().includes(search) ||
+                p.caseNo.toString().includes(search)
             );
         }
         if (testSearch) {
@@ -125,11 +148,23 @@ export default function ResultAddingComponent() {
 
             // If dialog is open and it's the same patient
             if (selectedPatient && data.patientId === selectedPatient._id) {
-                // Refresh patient data to show updated results
                 const refreshPatient = async () => {
                     const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/${selectedPatient._id}/tests`);
-                    setSelectedPatient(res.data);
-                    toast.success('Results updated by another user');
+
+                    // ✅ Check if patient is now fully completed
+                    const nonDiagnosticTests = res.data.tests.filter(t =>
+                        !t.testId?.isDiagnosticTest
+                    );
+                    const isFullyCompleted = res.data.results.length >= nonDiagnosticTests.length;
+
+                    if (isFullyCompleted) {
+                        // Remove from this component
+                        setOpen(false);
+                        toast.success('All results completed by another user!');
+                    } else {
+                        setSelectedPatient(res.data);
+                        toast.success('Results updated by another user');
+                    }
                 };
                 refreshPatient();
             }
@@ -216,17 +251,26 @@ export default function ResultAddingComponent() {
 
 
             // Close dialogs based on completion
+            // ✅ Calculate if ALL non-diagnostic tests are now completed
             const totalResultsAfterSave = selectedPatient.results.length + changedTests.length;
-            const allCompleted = totalResultsAfterSave >= selectedPatient.tests.length;
+            const nonDiagnosticTests = selectedPatient.tests.filter(t =>
+                !t.testId?.isDiagnosticTest
+            );
+            const allCompleted = totalResultsAfterSave >= nonDiagnosticTests.length;
 
+            // Always close confirmation dialog
+            setConfirmOpen(false);
+
+            // ✅ Only close main dialog and remove from list if ALL completed
             if (allCompleted) {
-                setConfirmOpen(false);
-                setOpen(false);
-                fetchPatients();
+                setOpen(false); // Close the results dialog
+                toast.success('All results completed! Moving to Final Reports...');
             } else {
-                setConfirmOpen(false);
-                fetchPatients();
+                toast.success('Results saved! Continue adding remaining tests.');
+                // Keep dialog open so user can continue
             }
+
+            fetchPatients();
 
             // Refresh other lists
             loadPendingPatients();
@@ -290,7 +334,7 @@ export default function ResultAddingComponent() {
                                     </label>
                                     <div className="relative">
                                         <Input
-                                            placeholder="Name or Reference No..."
+                                            placeholder="Name, Case No or Pat No..."
                                             className="h-12 pl-4 pr-10 border-2 border-gray-200 focus:border-purple-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
@@ -307,7 +351,7 @@ export default function ResultAddingComponent() {
                                     </label>
                                     <div className="relative">
                                         <Input
-                                            placeholder="Test name..."
+                                            placeholder="Search by Test name..."
                                             className="h-12 pl-4 pr-10 border-2 border-gray-200 focus:border-purple-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                             value={testSearch}
                                             onChange={(e) => setTestSearch(e.target.value)}
@@ -329,7 +373,11 @@ export default function ResultAddingComponent() {
                                             <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150">
                                                 <TableHead className="font-bold text-gray-800 py-4">
                                                     <FileText className="inline h-4 w-4 mr-2" />
-                                                    Ref No
+                                                    Case No
+                                                </TableHead>
+                                                <TableHead className="font-bold text-gray-800 py-4">
+                                                    <FileText className="inline h-4 w-4 mr-2" />
+                                                    Pat No
                                                 </TableHead>
                                                 <TableHead className="font-bold text-gray-800">
                                                     <Users className="inline h-4 w-4 mr-2" />
@@ -360,6 +408,9 @@ export default function ResultAddingComponent() {
                                                     className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-indigo-50 ${index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'
                                                         }`}
                                                 >
+                                                    <TableCell className="font-semibold text-purple-700 py-4">
+                                                        {p.caseNo}
+                                                    </TableCell>
                                                     <TableCell className="font-semibold text-purple-700 py-4">
                                                         {p.refNo}
                                                     </TableCell>
@@ -393,6 +444,7 @@ export default function ResultAddingComponent() {
                                                                     }}
                                                                 ></div>
                                                             </div>
+                                                            
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
@@ -446,7 +498,12 @@ export default function ResultAddingComponent() {
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                     <div className="flex items-center">
                                         <FileText className="h-4 w-4 mr-2 text-purple-600" />
-                                        <span className="text-gray-600">Ref No:</span>
+                                        <span className="text-gray-600">Case No:</span>
+                                        <span className="font-semibold text-gray-900 ml-2">{selectedPatient.caseNo}</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <FileText className="h-4 w-4 mr-2 text-purple-600" />
+                                        <span className="text-gray-600">Pat No:</span>
                                         <span className="font-semibold text-gray-900 ml-2">{selectedPatient.refNo}</span>
                                     </div>
                                     <div className="flex items-center">
@@ -701,7 +758,11 @@ export default function ResultAddingComponent() {
                                     </h3>
                                     <div className="grid grid-cols-2 gap-4 text-sm">
                                         <div>
-                                            <span className="text-gray-600">Ref No:</span>
+                                            <span className="text-gray-600">Case No:</span>
+                                            <span className="font-semibold text-amber-700 ml-2">{detailsPatient.caseNo}</span>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-600">Pat No:</span>
                                             <span className="font-semibold text-amber-700 ml-2">{detailsPatient.refNo}</span>
                                         </div>
                                         <div>

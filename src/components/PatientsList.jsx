@@ -82,7 +82,8 @@ export default function PatientsList() {
 
             const matchesText =
                 p.name?.toLowerCase().includes(searchLower) ||
-                p.refNo?.toLowerCase().includes(searchLower);
+                p.refNo?.toLowerCase().includes(searchLower) ||
+                p.caseNo?.toLowerCase().includes(searchLower);
 
             const matchesDate =
                 dateSearch === "" || formattedDate === dateSearch;
@@ -236,7 +237,7 @@ export default function PatientsList() {
                                     </label>
                                     <div className="relative">
                                         <Input
-                                            placeholder="Enter name or reference number..."
+                                            placeholder="Enter name, Case No or Pat No..."
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
                                             className="h-12 pl-4 pr-10 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"

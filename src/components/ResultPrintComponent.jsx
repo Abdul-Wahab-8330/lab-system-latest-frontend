@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Search, Printer, Info, FileText, User, Calendar, Phone, TestTube, Activity, ChevronDown, ChevronRight, CheckCircle, Edit } from "lucide-react";
+import { Search, Clock, Printer, Info, FileText, User, Calendar, Phone, TestTube, Activity, ChevronDown, ChevronRight, CheckCircle, Edit } from "lucide-react";
 import { AddedPatientsContext } from "@/context/AddedPatientsContext";
 import { AuthContext } from "@/context/AuthProvider";
 import { SystemFiltersContext } from '@/context/SystemFiltersContext';
@@ -81,8 +81,9 @@ export default function ResultPrintComponent() {
         if (search) {
             data = data.filter(
                 (p) =>
-                    p.name.toLowerCase().includes(search.toLowerCase()) ||
-                    p.refNo.toString().includes(search)
+                    p.name?.toLowerCase().includes(search.toLowerCase()) ||
+                    p.refNo?.toString().includes(search) ||
+                    p.caseNo?.toString().includes(search)
             );
         }
 
@@ -350,7 +351,7 @@ export default function ResultPrintComponent() {
                                     </label>
                                     <div className="relative">
                                         <Input
-                                            placeholder="Name or Reference No..."
+                                            placeholder="Name, Case No or Pat No..."
                                             className="h-12 pl-4 pr-10 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
@@ -367,7 +368,7 @@ export default function ResultPrintComponent() {
                                     </label>
                                     <div className="relative">
                                         <Input
-                                            placeholder="Test name..."
+                                            placeholder="Search by Test name..."
                                             className="h-12 pl-4 pr-10 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                             value={testSearch}
                                             onChange={(e) => setTestSearch(e.target.value)}
@@ -409,7 +410,7 @@ export default function ResultPrintComponent() {
                                                 </TableHead>
                                                 <TableHead className="font-bold text-gray-800">
                                                     <Activity className="inline h-4 w-4 mr-2" />
-                                                    Results Completed
+                                                    Results Added
                                                 </TableHead>
                                                 <TableHead className="font-bold text-gray-800">
                                                     <Printer className="inline h-4 w-4 mr-2" />
@@ -467,6 +468,7 @@ export default function ResultPrintComponent() {
                                                                         }}
                                                                     ></div>
                                                                 </div>
+
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
@@ -477,14 +479,22 @@ export default function ResultPrintComponent() {
                                                                         Edit
                                                                     </Button>
                                                                 )}
-                                                                <Button
-                                                                    size="sm"
-                                                                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                                                                    onClick={() => handlePrintClick(p)}
-                                                                >
-                                                                    <Printer className="w-4 h-4 mr-1" />
-                                                                    Print
-                                                                </Button>
+                                                                <div className="relative">
+                                                                    <Button
+                                                                        size="sm"
+                                                                        className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                                                        onClick={() => handlePrintClick(p)}
+                                                                    >
+                                                                        <Printer className="w-4 h-4 mr-1" />
+                                                                        Print
+                                                                    </Button>
+                                                                    {/* ✅ Icon-only badge */}
+                                                                    {p.results?.length < p.tests?.filter(t => !t.testId?.isDiagnosticTest).length && (
+                                                                        <div title='Some Results Remaining...' className="cursor-pointer absolute -top-1 -right-1 bg-orange-500 rounded-full p-1 border-2 border-white animate-pulse">
+                                                                            <Clock size={15} className="h-3 w-3 text-white" />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                                 <Button
                                                                     size="sm"
                                                                     variant="outline"
@@ -596,7 +606,12 @@ export default function ResultPrintComponent() {
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                     <div className="flex items-center">
                                         <FileText className="h-4 w-4 mr-2 text-blue-600" />
-                                        <span className="text-gray-600">Ref No:</span>
+                                        <span className="text-gray-600">Case No:</span>
+                                        <span className="font-semibold text-gray-900 ml-2">{editPatient.caseNo}</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <FileText className="h-4 w-4 mr-2 text-blue-600" />
+                                        <span className="text-gray-600">Pat No:</span>
                                         <span className="font-semibold text-gray-900 ml-2">{editPatient.refNo}</span>
                                     </div>
                                     <div className="flex items-center">
@@ -722,7 +737,7 @@ export default function ResultPrintComponent() {
                                                     <p className="text-base font-medium text-gray-900">{selectedPatient.name || "—"}</p>
                                                 </div>
                                                 <div>
-                                                    <label className="font-semibold text-sm text-gray-600">Reference No:</label>
+                                                    <label className="font-semibold text-sm text-gray-600">Pat No:</label>
                                                     <p className="text-base font-medium text-blue-700">{selectedPatient.refNo || "—"}</p>
                                                 </div>
                                                 <div>

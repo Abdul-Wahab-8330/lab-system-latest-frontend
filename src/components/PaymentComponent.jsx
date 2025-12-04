@@ -63,7 +63,8 @@ export default function PaymentComponent() {
 
             const matchesText =
                 p.name?.toLowerCase().includes(searchLower) ||
-                p.refNo?.toLowerCase().includes(searchLower);
+                p.refNo?.toLowerCase().includes(searchLower) ||
+                p.caseNo?.toLowerCase().includes(searchLower);
 
             const matchesDate = dateSearch === "" || formattedDate === dateSearch;
 
@@ -161,7 +162,7 @@ export default function PaymentComponent() {
                                     </label>
                                     <div className="relative">
                                         <Input
-                                            placeholder="Name or Reference No..."
+                                            placeholder="Name, Case No or Pat No..."
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
                                             className="h-12 pl-4 pr-10 border-2 border-gray-200 focus:border-emerald-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
@@ -231,7 +232,11 @@ export default function PaymentComponent() {
                                         <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150">
                                             <TableHead className="font-bold text-gray-800 py-4">
                                                 <FileText className="inline h-4 w-4 mr-2" />
-                                                Ref No
+                                                Case No
+                                            </TableHead>
+                                            <TableHead className="font-bold text-gray-800 py-4">
+                                                <FileText className="inline h-4 w-4 mr-2" />
+                                                Pat No
                                             </TableHead>
                                             <TableHead className="font-bold text-gray-800">
                                                 <Users className="inline h-4 w-4 mr-2" />
@@ -271,6 +276,9 @@ export default function PaymentComponent() {
                                                         className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 ${index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'}`}
                                                     >
                                                         <TableCell className="font-semibold text-emerald-700 py-4">
+                                                            {patient.caseNo}
+                                                        </TableCell>
+                                                        <TableCell className="font-semibold text-emerald-700 py-4">
                                                             {patient.refNo}
                                                         </TableCell>
                                                         <TableCell className="font-medium text-gray-900">
@@ -302,7 +310,6 @@ export default function PaymentComponent() {
                                                             )}
                                                         </TableCell>
 
-                                                        {/* Payment Status Column */}
                                                         {/* Payment Status Column */}
                                                         <TableCell>
                                                             <Badge
@@ -436,7 +443,12 @@ export default function PaymentComponent() {
                                                                             <div className="space-y-3">
                                                                                 <p className="flex items-center text-sm">
                                                                                     <FileText className="h-4 w-4 mr-2 text-gray-500" />
-                                                                                    <strong className="text-gray-700">Ref No:</strong>
+                                                                                    <strong className="text-gray-700">Case No:</strong>
+                                                                                    <span className="ml-2 text-emerald-600 font-semibold">{patient.caseNo}</span>
+                                                                                </p>
+                                                                                <p className="flex items-center text-sm">
+                                                                                    <FileText className="h-4 w-4 mr-2 text-gray-500" />
+                                                                                    <strong className="text-gray-700">Pat No:</strong>
                                                                                     <span className="ml-2 text-emerald-600 font-semibold">{patient.refNo}</span>
                                                                                 </p>
                                                                                 <p className="flex items-center text-sm">

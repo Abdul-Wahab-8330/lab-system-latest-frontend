@@ -43,7 +43,9 @@ import {
     FileText,
     Eye,
     Crown,
-    ArrowBigRight
+    ArrowBigRight,
+    Edit,
+    X
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Button } from "./ui/button";
@@ -67,6 +69,17 @@ export default function PatientsList() {
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [patientToDelete, setPatientToDelete] = useState(null);
     const [testSearch, setTestSearch] = useState("");
+
+    const [editOpen, setEditOpen] = useState(false);
+    const [patientToEdit, setPatientToEdit] = useState(null);
+    const [editedPatient, setEditedPatient] = useState({
+        name: '',
+        age: '',
+        gender: '',
+        phone: '',
+        fatherHusbandName: '',
+        nicNo: ''
+    });
 
     // State for date search
     const [dateSearch, setDateSearch] = useState("");
@@ -182,11 +195,69 @@ export default function PatientsList() {
         setDeleteOpen(true);
     };
 
+    const openEditDialog = (patient) => {
+        setPatientToEdit(patient);
+        setEditedPatient({
+            name: patient.name || '',
+            age: patient.age || '',
+            gender: patient.gender || '',
+            phone: patient.phone || '',
+            fatherHusbandName: patient.fatherHusbandName || '',
+            nicNo: patient.nicNo || ''
+        });
+        setEditOpen(true);
+    };
+
+    const handleEditChange = (field, value) => {
+        setEditedPatient(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleUpdatePatient = async () => {
+        try {
+            const res = await axios.patch(
+                `${import.meta.env.VITE_API_URL}/api/patients/update/${patientToEdit._id}`,
+                editedPatient
+            );
+            if (res.data.success) {
+                toast.success('Patient updated successfully!');
+                setEditOpen(false);
+                setPatientToEdit(null);
+                fetchPatients();
+            }
+        } catch (error) {
+            console.log(error);
+            toast.error('Failed to update patient. Please try again.');
+        }
+    };
+
+    const handleDeleteTest = async (testId) => {
+        try {
+            const res = await axios.delete(
+                `${import.meta.env.VITE_API_URL}/api/patients/${patientToEdit._id}/test/${testId}`
+            );
+            if (res.data.success) {
+                toast.success('Test deleted successfully!');
+                // Update the patientToEdit state to reflect the change
+                setPatientToEdit(prev => ({
+                    ...prev,
+                    tests: prev.tests.filter(t => t._id !== testId)
+                }));
+                fetchPatients();
+            }
+        } catch (error) {
+            console.log(error);
+            toast.error('Failed to delete test.');
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 m-2">
             <div className="max-w-7xl mx-auto">
                 <Card className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border-0 overflow-hidden p-0">
-                {/* card header */}
+                    {/* card header */}
                     <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
@@ -286,7 +357,7 @@ export default function PatientsList() {
                                     <TableHeader>
                                         <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150">
                                             <TableHead className="font-bold text-gray-800 py-4">
-                                                Ref/Patient No
+                                                Patient No
                                             </TableHead>
                                             <TableHead className="font-bold text-gray-800 py-4">
                                                 Case No
@@ -309,13 +380,10 @@ export default function PatientsList() {
                                             </TableHead>
                                             <TableHead className="font-bold text-gray-800">Details</TableHead>
                                             <TableHead className="font-bold text-gray-800">Print</TableHead>
-                                            {
-                                                user?.role?.toLowerCase() === 'admin' && (
-                                                    <TableHead className="font-bold text-gray-800">
-                                                        <Trash2 className="inline h-4 w-4 mr-2" />Actions
-                                                    </TableHead>
-                                                )
-                                            }
+                                            <TableHead className="font-bold text-gray-800">
+                                                <Edit className="inline h-4 w-4 mr-2" />
+                                                Actions
+                                            </TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -621,9 +689,19 @@ export default function PatientsList() {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        {/* Delete Button */}
-                                                        {
-                                                            user?.role === 'admin' && (
+                                                        <div className="flex gap-2">
+                                                            {/* Edit Button */}
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="bg-blue-50 border-blue-200 hover:bg-blue-100 hover:border-blue-300 rounded-lg transition-all duration-200"
+                                                                onClick={() => openEditDialog(patient)}
+                                                            >
+                                                                <Edit className="h-4 w-4 text-blue-600" />
+                                                            </Button>
+
+                                                            {/* Delete Button - Admin Only */}
+                                                            {user?.role === 'admin' && (
                                                                 <Button
                                                                     variant="outline"
                                                                     size="sm"
@@ -632,8 +710,8 @@ export default function PatientsList() {
                                                                 >
                                                                     <Trash2 className="h-4 w-4 text-red-600" />
                                                                 </Button>
-                                                            )
-                                                        }
+                                                            )}
+                                                        </div>
                                                     </TableCell>
 
 
@@ -702,6 +780,188 @@ export default function PatientsList() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+
+            {/* Edit Patient Dialog */}
+            <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                <DialogContent className="max-w-3xl bg-white rounded-2xl border-0 shadow-2xl max-h-[95vh] overflow-auto">
+                    <DialogHeader className="pb-4">
+                        <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
+                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                <Edit className="h-4 w-4 text-blue-600" />
+                            </div>
+                            Edit Patient Details
+                        </DialogTitle>
+                    </DialogHeader>
+                    <Separator className="bg-gray-200" />
+
+                    {patientToEdit && (
+                        <div className="py-4 space-y-6">
+                            {/* Patient Info Section */}
+                            <div className="space-y-4">
+                                <h3 className="font-semibold text-gray-800 flex items-center">
+                                    <Users className="h-4 w-4 mr-2" />
+                                    Patient Information
+                                </h3>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Patient Name *
+                                        </label>
+                                        <Input
+                                            value={editedPatient.name}
+                                            onChange={(e) => handleEditChange('name', e.target.value)}
+                                            className="border-2 border-gray-200 focus:border-blue-500 rounded-lg"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Age
+                                        </label>
+                                        <Input
+                                            type="number"
+                                            value={editedPatient.age}
+                                            onChange={(e) => handleEditChange('age', e.target.value)}
+                                            className="border-2 border-gray-200 focus:border-blue-500 rounded-lg"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Gender
+                                        </label>
+                                        <select
+                                            value={editedPatient.gender}
+                                            onChange={(e) => handleEditChange('gender', e.target.value)}
+                                            className="w-full h-10 px-3 border-2 border-gray-200 focus:border-blue-500 rounded-lg bg-white"
+                                        >
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Phone Number
+                                        </label>
+                                        <Input
+                                            value={editedPatient.phone}
+                                            onChange={(e) => handleEditChange('phone', e.target.value)}
+                                            className="border-2 border-gray-200 focus:border-blue-500 rounded-lg"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Father/Husband Name
+                                        </label>
+                                        <Input
+                                            value={editedPatient.fatherHusbandName}
+                                            onChange={(e) => handleEditChange('fatherHusbandName', e.target.value)}
+                                            className="border-2 border-gray-200 focus:border-blue-500 rounded-lg"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            NIC Number
+                                        </label>
+                                        <Input
+                                            value={editedPatient.nicNo}
+                                            onChange={(e) => handleEditChange('nicNo', e.target.value)}
+                                            className="border-2 border-gray-200 focus:border-blue-500 rounded-lg"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <Separator className="bg-gray-200" />
+
+                            {/* Tests Section */}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="font-semibold text-gray-800 flex items-center">
+                                        <TestTube className="h-4 w-4 mr-2" />
+                                        Registered Tests
+                                    </h3>
+                                    <Badge className="bg-blue-100 text-blue-800 rounded-full px-3 py-1">
+                                        {patientToEdit.tests?.length || 0} tests
+                                    </Badge>
+                                </div>
+
+                                {patientToEdit.tests && patientToEdit.tests.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {patientToEdit.tests.map((test, idx) => (
+                                            <div key={idx} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                                <div className="flex-1">
+                                                    <p className="font-medium text-gray-900">{test.testName}</p>
+                                                    <p className="text-sm text-gray-600">Rs.{test.price}</p>
+                                                </div>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="bg-red-50 border-red-200 hover:bg-red-100 hover:border-red-300"
+                                                        >
+                                                            <X className="h-4 w-4 text-red-600" />
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent className=" bg-white rounded-2xl border-0 shadow-2xl">
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Delete Test</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Are you sure you want to delete "{test.testName}" from this patient's registration?
+                                                                This action cannot be undone.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel >Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                onClick={() => handleDeleteTest(test._id)}
+                                                                className="bg-red-600 hover:bg-red-700 border text-white"
+                                                            >
+                                                                Delete
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-gray-500">
+                                        <TestTube className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                        <p>No tests found</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex justify-end gap-3 pt-4">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setEditOpen(false)}
+                                    className="rounded-lg"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg"
+                                    onClick={handleUpdatePatient}
+                                >
+                                    <Edit className="h-4 w-4 mr-1" />
+                                    Update Patient
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
             {/* ========================================
     HIDDEN PRINT TEMPLATE FOR REGISTRATION
     ======================================== */}

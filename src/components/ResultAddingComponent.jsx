@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { socket } from '@/socket';
+
 import {
     Search,
     ClipboardList,
@@ -32,11 +33,14 @@ import {
     Users,
     ChevronDown,
     ChevronRight,
-    Loader
+    Loader,
+    Trash2,
+    AlertTriangle
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { AddedPatientsContext } from "@/context/AddedPatientsContext";
 import toast from "react-hot-toast";
+
 
 export default function ResultAddingComponent() {
     const [detailsOpen, setDetailsOpen] = useState(false);
@@ -57,6 +61,9 @@ export default function ResultAddingComponent() {
     const [expandedTests, setExpandedTests] = useState({});
 
     const [editedFields, setEditedFields] = useState({});
+    const [deleteTestDialog, setDeleteTestDialog] = useState(false);
+    const [testToDelete, setTestToDelete] = useState(null);
+    const [deletingTest, setDeletingTest] = useState(false);
 
     // helper to compute percent based on tests where ALL fields are filled
     const computePercentCompleted = (patient) => {
@@ -197,6 +204,39 @@ export default function ResultAddingComponent() {
         setSelectedPatient(filteredPatient);
         setOpen(true);
     };
+
+    // const handleDeleteTest = async () => {
+    //     if (!testToDelete || !selectedPatient) return;
+
+    //     setDeletingTest(true);
+    //     try {
+    //         await axios.delete(
+    //             `${import.meta.env.VITE_API_URL}/api/results/patients/${selectedPatient._id}/tests/${testToDelete.testId._id || testToDelete.testId}`
+    //         );
+
+    //         // Update local state - remove test from UI
+    //         setSelectedPatient(prev => ({
+    //             ...prev,
+    //             tests: prev.tests.filter(t =>
+    //                 (t.testId?._id || t.testId)?.toString() !==
+    //                 (testToDelete.testId?._id || testToDelete.testId)?.toString()
+    //             )
+    //         }));
+
+    //         toast.success(`${testToDelete.testName} deleted successfully`);
+    //         setDeleteTestDialog(false);
+    //         setTestToDelete(null);
+
+    //         // Refresh lists
+    //         await loadPendingPatients();
+    //         await fetchPatients();
+    //     } catch (error) {
+    //         console.error("Error deleting test:", error);
+    //         toast.error("Failed to delete test");
+    //     } finally {
+    //         setDeletingTest(false);
+    //     }
+    // };
 
     const handleFieldChange = (testIndex, fieldIndex, value) => {
         const updated = JSON.parse(JSON.stringify(selectedPatient));
@@ -444,7 +484,7 @@ export default function ResultAddingComponent() {
                                                                     }}
                                                                 ></div>
                                                             </div>
-                                                            
+
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
@@ -642,6 +682,31 @@ export default function ResultAddingComponent() {
                                                     </Badge>
                                                 )}
                                             </div>
+
+                                            {/* ✅ Delete Button - Only show for admin and unsaved tests */}
+                                            {/* <div className="flex items-center gap-2">
+                                                {user?.role === 'admin' && !isSaved && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation(); // Prevent collapse toggle
+                                                            setTestToDelete(test);
+                                                            setDeleteTestDialog(true);
+                                                        }}
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                )}
+
+                                                {isSaved && (
+                                                    <Badge className="bg-green-100 text-green-700 border border-green-300 rounded-full px-2 py-0.5 text-xs">
+                                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                                        Saved
+                                                    </Badge>
+                                                )}
+                                            </div> */}
                                         </div>
 
                                         {/* Collapsible Content */}
@@ -836,6 +901,65 @@ export default function ResultAddingComponent() {
                         )}
                     </DialogContent>
                 </Dialog>
+
+                {/* Delete Test Confirmation Dialog */}
+                {/* <Dialog open={deleteTestDialog} onOpenChange={setDeleteTestDialog}>
+                    <DialogContent className="max-w-md bg-white rounded-2xl border-0 shadow-2xl">
+                        <DialogHeader className="pb-4">
+                            <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
+                                <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                                    <Trash2 className="h-4 w-4 text-red-600" />
+                                </div>
+                                Confirm Delete Test
+                            </DialogTitle>
+                        </DialogHeader>
+                        <Separator className="bg-gray-200" />
+                        <div className="py-4">
+                            <p className="text-gray-600 mb-4">
+                                Are you sure you want to delete{" "}
+                                <span className="font-semibold text-red-600">{testToDelete?.testName}</span>{" "}
+                                for{" "}
+                                <span className="font-semibold text-gray-900">{selectedPatient?.name}</span>?
+                            </p>
+                            <div className="bg-red-50 rounded-lg p-3 border border-red-200">
+                                <p className="text-sm text-red-700 flex items-center">
+                                    <AlertTriangle className="h-4 w-4 mr-2" />
+                                    This action cannot be undone. The test will be permanently removed.
+                                </p>
+                            </div>
+                            <div className="flex justify-end gap-3 mt-6">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        setDeleteTestDialog(false);
+                                        setTestToDelete(null);
+                                    }}
+                                    className="rounded-lg"
+                                    disabled={deletingTest}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg"
+                                    onClick={handleDeleteTest}
+                                    disabled={deletingTest}
+                                >
+                                    {deletingTest ? (
+                                        <>
+                                            <Loader className="h-4 w-4 mr-1 animate-spin" />
+                                            Deleting...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Trash2 className="h-4 w-4 mr-1" />
+                                            Yes, Delete
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog> */}
             </div>
         </div>
     );

@@ -319,10 +319,12 @@ export default function RegisterPatient() {
         SetLoading(true)
         if (!form.name || !form.age || !form.gender || !form.phone) {
             toast.error("Please fill required fields");
+            SetLoading(false);
             return;
         }
         if (selectedTests.length === 0) {
             toast.error("Please select at least one test");
+            SetLoading(false);
             return;
         }
         if (discountData.paidAmount > netTotal) {

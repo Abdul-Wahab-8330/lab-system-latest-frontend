@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import axios from "axios";
+import axios from "../api/axiosInstance";
 import { PatientsContext } from "@/context/PatientsContext";
 import ConfirmDialog from "./ConfirmDialog";
 import { Trash2, Search, User } from "lucide-react";

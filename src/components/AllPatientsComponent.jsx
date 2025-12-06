@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
-import axios from "axios";
+import axios from "../api/axiosInstance";
 import {
     Search,
     Users,
@@ -37,6 +37,8 @@ import toast from "react-hot-toast";
 export default function AllPatientsComponent() {
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [detailsPatient, setDetailsPatient] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [patientToDelete, setPatientToDelete] = useState(null);
 
@@ -101,9 +103,11 @@ export default function AllPatientsComponent() {
 
     const handleDeletePatient = async () => {
         try {
+            setIsDeleting(true);
             const res = await axios.delete(`${import.meta.env.VITE_API_URL}/api/patients/delete/${patientToDelete._id}`);
             if (res.data.success) {
                 console.log('patient deleted');
+                setIsDeleting(false);
                 setDeleteOpen(false);
                 setPatientToDelete(null);
                 fetchPatients(); // Refresh the patients list
@@ -548,11 +552,16 @@ export default function AllPatientsComponent() {
                                     Cancel
                                 </Button>
                                 <Button
+                                    disabled={isDeleting}
                                     className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg"
                                     onClick={handleDeletePatient}
                                 >
-                                    <Trash2 className="h-4 w-4 mr-1" />
-                                    Delete Patient
+                                    {isDeleting ? "Deleting..." : (
+                                        <>
+                                            <Trash2 className="h-4 w-4 mr-1" />
+                                            Delete Patient
+                                        </>
+                                    )}
                                 </Button>
                             </div>
                         </div>

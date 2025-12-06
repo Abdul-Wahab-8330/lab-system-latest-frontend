@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '../api/axiosInstance';
 import { createContext, useState, useEffect } from 'react';
 import loader from '../assets/loading.gif'
 
@@ -47,9 +47,7 @@ export const AuthProvider = ({ children }) => {
     const deleteUser = async (id) => {
         try {
             const token = sessionStorage.getItem('token');
-            await axios.delete(`${import.meta.env.VITE_API_URL}/api/users/delete/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/users/delete/${id}`);
             setUsers((prev) => prev.filter((u) => u._id !== id));
         } catch (error) {
             console.error('Error deleting user:', error);

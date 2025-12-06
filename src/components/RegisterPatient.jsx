@@ -3,7 +3,7 @@ import React, { useEffect, useState, useContext, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import axios from "axios";
+import axios from "../api/axiosInstance";
 import { PatientsContext } from "@/context/PatientsContext";
 import ConfirmDialog from "./ConfirmDialog";
 import { Trash2, Search, User, UserPlus, FileText, CreditCard, TestTube, CheckCircle, Lightbulb, DollarSign } from "lucide-react";

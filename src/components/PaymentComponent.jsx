@@ -35,7 +35,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import axios from "axios";
+import axios from "../api/axiosInstance";
 import toast from "react-hot-toast";
 import { SystemFiltersContext } from '@/context/SystemFiltersContext';
 import GlobalDateFilter from './GlobalDateFilter';

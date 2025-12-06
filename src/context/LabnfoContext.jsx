@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '../api/axiosInstance';
 import { createContext, useState, useEffect } from 'react';
 
 export const LabInfoContext = createContext();

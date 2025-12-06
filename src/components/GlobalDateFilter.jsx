@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, AlertCircle } from 'lucide-react';
 import { AuthContext } from '@/context/AuthProvider';
 import { SystemFiltersContext } from '@/context/SystemFiltersContext';
-import axios from 'axios';
+import axios from '../api/axiosInstance';
 import toast from 'react-hot-toast';
 
 export default function GlobalDateFilter({ filterType }) {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
+import axios from "../api/axiosInstance";
 import { Input } from "./ui/input";
 
 export default function AddDoctorDialog({ onDoctorAdded }) {

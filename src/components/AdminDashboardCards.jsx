@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Users, UserCheck, UserX, TrendingUp, DollarSign, Calendar, Activity, Eye } from 'lucide-react';
 import { AuthContext } from "@/context/AuthProvider";
 import { PatientsContext } from "@/context/PatientsContext";
-import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 // Enhanced Lab Users Management Card
@@ -113,13 +112,13 @@ const LabUsersCard = () => {
 
   // One-time check when users become available (but only if we haven't calculated yet)
   useEffect(() => {
-    if (users && users.length > 0 && !hasCalculated) {
+    if (users && users.length > 0) {
       const stats = calculateStats(users);
       setUserStats(stats);
       setHasCalculated(true);
       setLoading(false);
     }
-  }, [users, hasCalculated, calculateStats]);
+  }, [users]);
 
   if (loading) {
     return (
@@ -333,13 +332,13 @@ const RevenueAnalyticsCard = () => {
 
   // One-time check when patients become available (but only if we haven't calculated yet)
   useEffect(() => {
-    if (patients && !hasCalculated) {
+    if (patients && patients.length >= 0) {
       const revenue = calculateRevenue(patients);
       setRevenueData(revenue);
       setHasCalculated(true);
       setLoading(false);
     }
-  }, [patients, hasCalculated, calculateRevenue]);
+  }, [patients]);
 
   if (loading) {
     return (

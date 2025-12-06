@@ -261,8 +261,7 @@ function UserDashboard() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
               {recentTests.map((test) => (
-                console.log(recentTests),
-                <tr key={test.id} className="hover:bg-gray-50 transition-colors duration-150">
+                <tr key={test.caseNo} className="hover:bg-gray-50 transition-colors duration-150">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                     {test.caseNo}
                   </td>

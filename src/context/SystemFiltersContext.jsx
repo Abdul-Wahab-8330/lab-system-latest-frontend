@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../api/axiosInstance';
 import { socket } from '@/socket';
 
 export const SystemFiltersContext = createContext();

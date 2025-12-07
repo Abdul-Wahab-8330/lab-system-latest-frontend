@@ -119,15 +119,73 @@ export default function PublicReport() {
     }
   };
 
-  const handlePrintReg = useReactToPrint({
-    contentRef: regReportRef,
-    documentTitle: `Registration_${reports?.registrationReport?.name || 'Report'}`
-  });
+  const handlePrintReg = () => {
+    const element = regReportRef.current;
+    const printWindow = window.open('', '_blank');
 
-  const handlePrintFinal = useReactToPrint({
-    contentRef: finalReportRef,
-    documentTitle: `TestResults_${reports?.finalReport?.name || 'Report'}`
-  });
+    // Get all stylesheets from current page
+    const styles = Array.from(document.styleSheets)
+      .map(styleSheet => {
+        try {
+          return Array.from(styleSheet.cssRules)
+            .map(rule => rule.cssText)
+            .join('\n');
+        } catch (e) {
+          return '';
+        }
+      })
+      .join('\n');
+
+    printWindow.document.write(`
+    <html>
+      <head>
+        <title>Registration_${reports?.registrationReport?.name || 'Report'}</title>
+        <style>${styles}</style>
+      </head>
+      <body>
+        ${element.innerHTML}
+      </body>
+    </html>
+  `);
+    printWindow.document.close();
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
+  };
+
+  const handlePrintFinal = () => {
+    const element = finalReportRef.current;
+    const printWindow = window.open('', '_blank');
+
+    // Get all stylesheets from current page
+    const styles = Array.from(document.styleSheets)
+      .map(styleSheet => {
+        try {
+          return Array.from(styleSheet.cssRules)
+            .map(rule => rule.cssText)
+            .join('\n');
+        } catch (e) {
+          return '';
+        }
+      })
+      .join('\n');
+
+    printWindow.document.write(`
+    <html>
+      <head>
+        <title>TestResults_${reports?.finalReport?.name || 'Report'}</title>
+        <style>${styles}</style>
+      </head>
+      <body>
+        ${element.innerHTML}
+      </body>
+    </html>
+  `);
+    printWindow.document.close();
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
+  };
 
   const handlePatientNumberChange = (index, value) => {
     if (!/^\d*$/.test(value)) return;
@@ -209,15 +267,15 @@ export default function PublicReport() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">Patient Reports</h1>
-                <p className="text-sm text-gray-600 mt-1">Patient No: {reports.registrationReport.refNo}</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Patient Reports</h1>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">Patient No: {reports.registrationReport.refNo}</p>
               </div>
               <button
                 onClick={() => setReports(null)}
-                className="text-blue-600 hover:text-blue-800 font-medium"
+                className="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base"
               >
                 ← Back to Search
               </button>
@@ -225,12 +283,14 @@ export default function PublicReport() {
           </div>
 
           {/* Registration Report Card */}
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2"><CheckCircle className="h-5 w-5 text-green-600 " /> Registration Report</h2>
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600" /> Registration Report
+              </h2>
               <button
                 onClick={handlePrintReg}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                className="flex items-center gap-2 bg-blue-600 text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-blue-700 text-sm sm:text-base w-full sm:w-auto justify-center"
               >
                 <Download className="h-4 w-4" />
                 Download PDF
@@ -484,15 +544,15 @@ export default function PublicReport() {
 
           {/* Final Report Section */}
           {reports.hasResults ? (
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   Final Report
                 </h2>
                 <button
                   onClick={handlePrintFinal}
-                  className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                  className="flex items-center gap-2 bg-green-600 text-white px-3 py-2 sm:px-4 rounded-lg hover:bg-green-700 text-sm sm:text-base w-full sm:w-auto justify-center"
                 >
                   <Download className="h-4 w-4" />
                   Download PDF

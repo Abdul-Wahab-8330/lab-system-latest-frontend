@@ -1,15 +1,19 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import axios from "../api/axiosInstance";
 import { socket } from "@/socket";
 import toast from "react-hot-toast";
+import { AuthContext } from './AuthProvider'; // ✅ Import AuthContext
 
 export const PatientsContext = createContext();
 
 export function PatientsProvider({ children }) {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(false);
+      const { isAuthenticated, user } = useContext(AuthContext); // ✅ Get auth state
+
 
   const fetchPatients = async () => {
+      if (!isAuthenticated) return;
     setLoading(true);
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/patients`);
@@ -33,7 +37,9 @@ export function PatientsProvider({ children }) {
   };
 
   useEffect(() => {
-    fetchPatients();
+    if(isAuthenticated){
+      fetchPatients();
+    }
   }, []);
 
   useEffect(() => {

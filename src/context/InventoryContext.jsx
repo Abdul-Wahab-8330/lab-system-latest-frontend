@@ -1,5 +1,6 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import axios from "../api/axiosInstance";
+import { AuthContext } from './AuthProvider'; // ✅ Import AuthContext
 
 export const InventoryContext = createContext();
 
@@ -8,6 +9,8 @@ export function InventoryProvider({ children }) {
   const [transactions, setTransactions] = useState([]);
   const [stockLevels, setStockLevels] = useState([]);
   const [loading, setLoading] = useState(false);
+      const { isAuthenticated, user } = useContext(AuthContext); // ✅ Get auth state
+
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -16,6 +19,7 @@ export function InventoryProvider({ children }) {
   // ============================================
 
   const fetchItems = async () => {
+      if (!isAuthenticated) return;
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}/api/inventory/items`);
@@ -177,9 +181,11 @@ export function InventoryProvider({ children }) {
 
 
   useEffect(() => {
-    fetchItems();
-    fetchTransactions();
-    fetchStockLevels();
+    if(isAuthenticated){
+      fetchItems();
+      fetchTransactions();
+      fetchStockLevels(); 
+    }
   }, []);
 
   return (

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import axios from '../api/axiosInstance';
+import { AuthContext } from './AuthProvider'; // ✅ Import AuthContext
 
 export const TestContext = createContext();
 
@@ -7,8 +8,11 @@ export const TestContext = createContext();
 export const TestProvider = ({ children }) => {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
+      const { isAuthenticated, user } = useContext(AuthContext); // ✅ Get auth state
+
 
   const fetchTests = async () => {
+      if (!isAuthenticated) return;
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tests/all`);
       setTests(res.data.tests);
@@ -33,7 +37,9 @@ export const TestProvider = ({ children }) => {
 
 
   useEffect(() => {
-    fetchTests();
+    if (isAuthenticated){
+      fetchTests();
+    }
   }, []);
 
   return (

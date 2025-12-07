@@ -1,6 +1,7 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from '../api/axiosInstance';
 import { socket } from '@/socket';
+import { AuthContext } from './AuthProvider'; // ✅ Import AuthContext
 
 export const SystemFiltersContext = createContext();
 
@@ -11,8 +12,11 @@ export function SystemFiltersProvider({ children }) {
     results: { daysLimit: null, isActive: false }
   });
   const [loading, setLoading] = useState(false);
+      const { isAuthenticated, user } = useContext(AuthContext); // ✅ Get auth state
+
 
   const fetchFilters = async () => {
+      if (!isAuthenticated) return;
     setLoading(true);
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/system/filters`);
@@ -38,7 +42,10 @@ export function SystemFiltersProvider({ children }) {
   };
 
   useEffect(() => {
-    fetchFilters();
+    if(isAuthenticated)
+    {
+      fetchFilters();
+    }
 
     // Listen for real-time filter updates via socket
     socket.on('filterUpdated', (data) => {

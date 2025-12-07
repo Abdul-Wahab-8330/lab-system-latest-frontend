@@ -983,19 +983,20 @@ export default function ResultPrintComponent() {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <QRCodeSVG
-                                                        value={JSON.stringify({
-                                                            labName:
-                                                                labInfo?.labName ||
-                                                                "DOCTOR LAB & Imaging Center Sahiwal",
-                                                            address:
-                                                                labInfo?.address ||
-                                                                "Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha",
-                                                            phone: labInfo?.phoneNumber || "0325-0020111",
-                                                        })}
-                                                        size={70}
-                                                        level="M"
-                                                    />
+                                                    {/*text - scan to see online */}
+                                                    <div className="flex flex-col">
+                                                        <div className="text-[11px]">
+                                                            <div>Scan to View</div>
+                                                        </div>
+                                                        <QRCodeSVG
+                                                            value={`${window.location.origin}/public-report`}
+                                                            size={70}
+                                                            level="M"
+                                                        />
+                                                        <div className="text-[11px]">
+                                                            <div>Online Report</div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
 

@@ -990,7 +990,7 @@ export default function PatientsList() {
 
 
                             {/* LAB COPY Header */}
-                            <div className="mb-4">
+                            <div className="mb-2">
                                 <div className="text-center mb-3">
                                     <div className="inline-block px-6 py-1">
                                         <p className="text-sm font-bold text-blue-900">LAB COPY</p>
@@ -1000,7 +1000,7 @@ export default function PatientsList() {
                                 <div className="flex items-start justify-between">
                                     {/* Left: Logo and Lab Info */}
                                     <div className="flex items-start">
-                                        {info.logoUrl && (
+                                        {info?.logoUrl && (
                                             <img
                                                 src={info.logoUrl}
                                                 alt="Lab Logo"
@@ -1025,15 +1025,20 @@ export default function PatientsList() {
 
                                     {/* Right: QR Code */}
                                     <div className="flex flex-col items-center">
-                                        <QRCodeSVG
-                                            value={JSON.stringify({
-                                                labName: info.labName || 'DOCTOR LAB & Imaging Center Sahiwal',
-                                                address: info.address || 'Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha',
-                                                phone: info.phoneNumber || '0325-0020111'
-                                            })}
-                                            size={60}
-                                            level="M"
-                                        />
+                                        {/*text - scan to see online */}
+                                        <div className="flex flex-col">
+                                            <div className="text-[10px]">
+                                                <div>Scan to View</div>
+                                            </div>
+                                            <QRCodeSVG
+                                                value={`${window.location.origin}/public-report`}
+                                                size={60}
+                                                level="M"
+                                            />
+                                            <div className="text-[10px]">
+                                                <div>Online Report</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1159,7 +1164,7 @@ export default function PatientsList() {
                         ======================================== */}
                         <div className="pt-4" style={{ pageBreakInside: 'avoid' }}>
                             {/* PATIENT COPY Header */}
-                            <div className="mb-4">
+                            <div className="mb-2">
                                 <div className="text-center mb-3">
                                     <div className="inline-block px-6 py-1">
                                         <p className="text-sm font-bold text-blue-900">PATIENT COPY</p>
@@ -1194,15 +1199,20 @@ export default function PatientsList() {
 
                                     {/* Right: QR Code */}
                                     <div className="flex flex-col items-center">
-                                        <QRCodeSVG
-                                            value={JSON.stringify({
-                                                labName: info.labName || 'DOCTOR LAB & Imaging Center Sahiwal',
-                                                address: info.address || 'Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha',
-                                                phone: info.phoneNumber || '0325-0020111'
-                                            })}
-                                            size={60}
-                                            level="M"
-                                        />
+                                        {/*text - scan to see online */}
+                                        <div className="flex flex-col">
+                                            <div className="text-[10px]">
+                                                <div>Scan to View</div>
+                                            </div>
+                                            <QRCodeSVG
+                                                value={`${window.location.origin}/public-report`}
+                                                size={60}
+                                                level="M"
+                                            />
+                                            <div className="text-[10px]">
+                                                <div>Online Report</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

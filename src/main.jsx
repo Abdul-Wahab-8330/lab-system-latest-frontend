@@ -15,25 +15,25 @@ import { DoctorsProvider } from './context/DoctorsContext';
 
 
 createRoot(document.getElementById('root')).render(
-  <AuthProvider>
-    <DoctorsProvider>
-      <SystemFiltersProvider>
-        <ExpenseProvider>
-          <InventoryProvider>
-            <AddedPatientsProvider>
-              <LabInfoProvider>
-                <PatientsProvider>
-                  <TestProvider>
-                    <BrowserRouter>
+  <BrowserRouter>
+    <AuthProvider>
+      <DoctorsProvider>
+        <SystemFiltersProvider>
+          <ExpenseProvider>
+            <InventoryProvider>
+              <AddedPatientsProvider>
+                <LabInfoProvider>
+                  <PatientsProvider>
+                    <TestProvider>
                       <App />
-                    </BrowserRouter>
-                  </TestProvider>
-                </PatientsProvider>
-              </LabInfoProvider>
-            </AddedPatientsProvider>
-          </InventoryProvider>
-        </ExpenseProvider>
-      </SystemFiltersProvider>
-    </DoctorsProvider>
-  </AuthProvider>
+                    </TestProvider>
+                  </PatientsProvider>
+                </LabInfoProvider>
+              </AddedPatientsProvider>
+            </InventoryProvider>
+          </ExpenseProvider>
+        </SystemFiltersProvider>
+      </DoctorsProvider>
+    </AuthProvider>
+  </BrowserRouter>
 )

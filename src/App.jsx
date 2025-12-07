@@ -35,6 +35,7 @@ import ExpenseManagement from "./components/ExpenseManagement";
 import RevenueSummary from "./components/RevenueSummary";
 import PrintReport from "./components/PrintReport";
 import PrintRegistration from "./components/PrintRegistration";
+import PublicReport from "./pages/PublicReport";
 
 
 const UserManagementRoute = ({ children, user }) => {
@@ -146,6 +147,10 @@ function App() {
             </CheckAuth>
           }
         />
+
+
+        {/* ✅ NEW: Public Report Route (NO AUTHENTICATION) */}
+        <Route path="/public-report" element={<PublicReport />} />
 
 
         {/* Other Routes */}

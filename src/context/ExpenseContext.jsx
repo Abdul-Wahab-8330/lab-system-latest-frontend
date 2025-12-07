@@ -1,16 +1,19 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import axios from "../api/axiosInstance";
+import { AuthContext } from './AuthProvider'; // ✅ Import AuthContext
 
 export const ExpenseContext = createContext();
 
 export function ExpenseProvider({ children }) {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(false);
+      const { isAuthenticated, user } = useContext(AuthContext); // ✅ Get auth state
 
   const API_URL = import.meta.env.VITE_API_URL;
 
   // Fetch all expenses
   const fetchExpenses = async () => {
+      if (!isAuthenticated) return;
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}/api/expenses`);
@@ -77,7 +80,9 @@ export function ExpenseProvider({ children }) {
   };
 
   useEffect(() => {
-    fetchExpenses();
+    if(isAuthenticated){
+      fetchExpenses();
+    }
   }, []);
 
   return (

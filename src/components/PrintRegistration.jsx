@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function PrintRegistration() {
   const { id } = useParams();
-  
+
   const [printPatient, setPrintPatient] = useState(null);
   const [labInfo, setLabInfo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -104,7 +104,7 @@ export default function PrintRegistration() {
 
       {/* LAB COPY */}
       <div className="mb-2 pb-6 border-b-2 border-dashed border-gray-600">
-        <div className="mb-4">
+        <div className="mb-2">
           <div className="text-center mb-3">
             <div className="inline-block px-6 py-1">
               <p className="text-sm font-bold text-blue-900">LAB COPY</p>
@@ -137,15 +137,20 @@ export default function PrintRegistration() {
             </div>
 
             <div className="flex flex-col items-center">
-              <QRCodeSVG
-                value={JSON.stringify({
-                  labName: labInfo?.labName || 'DOCTOR LAB & Imaging Center Sahiwal',
-                  address: labInfo?.address || 'Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha',
-                  phone: labInfo?.phoneNumber || '0325-0020111'
-                })}
-                size={60}
-                level="M"
-              />
+              {/*text - scan to see online */}
+              <div className="flex flex-col">
+                <div className="text-[10px]">
+                  <div>Scan to View</div>
+                </div>
+                <QRCodeSVG
+                  value={`${window.location.origin}/public-report`}
+                  size={60}
+                  level="M"
+                />
+                <div className="text-[10px]">
+                  <div>Online Report</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -262,7 +267,7 @@ export default function PrintRegistration() {
 
       {/* PATIENT COPY */}
       <div className="pt-4" style={{ pageBreakInside: 'avoid' }}>
-        <div className="mb-4">
+        <div className="mb-2">
           <div className="text-center mb-3">
             <div className="inline-block px-6 py-1">
               <p className="text-sm font-bold text-blue-900">PATIENT COPY</p>
@@ -295,15 +300,20 @@ export default function PrintRegistration() {
             </div>
 
             <div className="flex flex-col items-center">
-              <QRCodeSVG
-                value={JSON.stringify({
-                  labName: labInfo?.labName || 'DOCTOR LAB & Imaging Center Sahiwal',
-                  address: labInfo?.address || 'Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha',
-                  phone: labInfo?.phoneNumber || '0325-0020111'
-                })}
-                size={60}
-                level="M"
-              />
+              {/*text - scan to see online */}
+              <div className="flex flex-col">
+                <div className="text-[10px]">
+                  <div>Scan to View</div>
+                </div>
+                <QRCodeSVG
+                  value={`${window.location.origin}/public-report`}
+                  size={60}
+                  level="M"
+                />
+                <div className="text-[10px]">
+                  <div>Online Report</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

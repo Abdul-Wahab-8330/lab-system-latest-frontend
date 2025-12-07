@@ -1,13 +1,17 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from '../api/axiosInstance';
+import { AuthContext } from './AuthProvider'; // ✅ Import AuthContext
 
 export const DoctorsContext = createContext();
 
 export function DoctorsProvider({ children }) {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
+    const { isAuthenticated, user } = useContext(AuthContext); // ✅ Get auth state
+
 
   const fetchDoctors = async () => {
+      if (!isAuthenticated) return;
     setLoading(true);
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/doctors`);
@@ -20,7 +24,9 @@ export function DoctorsProvider({ children }) {
   };
 
   useEffect(() => {
-    fetchDoctors();
+    if(isAuthenticated){
+      fetchDoctors();
+    }
   }, []);
 
   return (

@@ -1,6 +1,7 @@
 import axios from '../api/axiosInstance';
 import { createContext, useState, useEffect } from 'react';
 import loader from '../assets/loading.gif'
+import { useLocation } from 'react-router-dom';
 
 
 export const AuthContext = createContext();
@@ -11,6 +12,7 @@ export const AuthProvider = ({ children }) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true); // prevent blank screen on first render
 
+    const location = useLocation()
 
     useEffect(() => {
         try {
@@ -62,7 +64,10 @@ export const AuthProvider = ({ children }) => {
         console.log('logged out successfully')
     }
 
-    if (loading) {
+     // ✅ FIX: Don't block public routes during auth loading
+    const isPublicRoute = location.pathname === '/public-report';
+
+    if (loading && !isPublicRoute) {
         return <div className='flex h-screen justify-center items-center text-gray-600 text-2xl'><img className='w-9 mr-4 ' src={loader} alt="" /> Loading</div>; // ✅ avoids blank login page
     }
 

@@ -8,11 +8,16 @@ import PopularTestsChart from "./PopularTestsChart";
 import { Link } from "react-router-dom";
 import { LabUsersCard, RevenueAnalyticsCard } from "./AdminDashboardCards";
 import { AuthContext } from "@/context/AuthProvider";
+import { LabInfoContext } from "@/context/LabnfoContext";
 
 function UserDashboard() {
   const { patients, fetchPatients } = useContext(PatientsContext);
-  const { tests, deleteTest, updateTest, loading } = useContext(TestContext);
+
+    const { tests, loading: testsLoading } = useContext(TestContext);
   const { user } = useContext(AuthContext);
+  const { info, loading: infoLoading } = useContext(LabInfoContext);
+
+  const isLoading = testsLoading || infoLoading;
 
   useEffect(() => {
     fetchPatients();
@@ -185,7 +190,7 @@ function UserDashboard() {
   // Memoize admin role check
   const isAdmin = useMemo(() => user?.role === 'admin', [user?.role]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex-1 flex mt-40 items-center justify-center">
         <div className="text-center">

@@ -24,7 +24,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const TestList = () => {
   const { tests, deleteTest, updateTest, loading } = useContext(TestContext);
-  const { info } = useContext(LabInfoContext);
+  const { info, loading: infoLoading } = useContext(LabInfoContext);
+  console.log('Component rendered, info:', info);
+
 
   const [search, setSearch] = useState("");
   const [searchTestCode, setSearchTestCode] = useState("");
@@ -63,7 +65,9 @@ const TestList = () => {
 
 
   const filteredTests = useMemo(() => {
-    return tests.filter((test) => {
+  if (!tests || !Array.isArray(tests)) return []; // ✅ Add safety check
+  
+  return tests.filter((test) => {
       const matchesName = test.testName.toLowerCase().includes(search.toLowerCase());
       const matchesCode = searchTestCode === "" || test.testCode.toString().includes(searchTestCode);
       const matchesCategory = searchCategory === "" || searchCategory === "all" || test.category === searchCategory;
@@ -128,7 +132,10 @@ const TestList = () => {
     }
   };
 
-  if (loading) {
+  // ✅ Check combined loading state
+const isLoading = loading || infoLoading;
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
         <div className="max-w-7xl mx-auto">

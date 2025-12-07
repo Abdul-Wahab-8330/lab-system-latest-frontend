@@ -46,9 +46,12 @@ export default function ResultAddingComponent() {
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [detailsPatient, setDetailsPatient] = useState(null);
 
+    
+
     const { fetchAddedPatients } = useContext(AddedPatientsContext);
     const { fetchPatients, patients } = useContext(PatientsContext);
     const { user } = useContext(AuthContext);
+        const [isLoading, setIsLoading] = useState(true);
     const [loading, setLoading] = useState(false)
     const [changedTests, setChangedTests] = useState([]);
     const [pendingPatients, setPendingPatients] = useState([]);
@@ -104,24 +107,49 @@ export default function ResultAddingComponent() {
     // };
 
 
-    const loadPendingPatients = async () => {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/pending`);
+    // const loadPendingPatients = async () => {
 
-        // ✅ FILTER: Remove patients that ONLY have diagnostic tests
-        // ✅ ALSO: Only show patients with incomplete results
+    //     const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/pending`);
+
+    //     // ✅ FILTER: Remove patients that ONLY have diagnostic tests
+    //     // ✅ ALSO: Only show patients with incomplete results
+    //     const filteredData = res.data.filter(patient => {
+    //         const nonDiagnosticTests = patient.tests.filter(test =>
+    //             !test.testId?.isDiagnosticTest
+    //         );
+
+    //         // Must have non-diagnostic tests AND results must be incomplete
+    //         return nonDiagnosticTests.length > 0 &&
+    //             patient.results.length < nonDiagnosticTests.length;
+    //     });
+
+    //     setPendingPatients(filteredData);
+    //     setFilteredPatients(filteredData);
+    // };
+
+
+
+    const loadPendingPatients = async () => {
+    setIsLoading(true); // ✅ ADD THIS
+    try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/pending`);
+        
         const filteredData = res.data.filter(patient => {
             const nonDiagnosticTests = patient.tests.filter(test =>
                 !test.testId?.isDiagnosticTest
             );
-
-            // Must have non-diagnostic tests AND results must be incomplete
             return nonDiagnosticTests.length > 0 &&
                 patient.results.length < nonDiagnosticTests.length;
         });
 
         setPendingPatients(filteredData);
         setFilteredPatients(filteredData);
-    };
+    } catch (error) {
+        console.error("Error loading pending patients:", error);
+    } finally {
+        setIsLoading(false); // ✅ ADD THIS
+    }
+};
 
 
     // Filter function
@@ -338,6 +366,17 @@ export default function ResultAddingComponent() {
             }
         }
     };
+
+    if (isLoading) {
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 p-2 flex items-center justify-center">
+            <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading pending results...</p>
+            </div>
+        </div>
+    );
+}
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 p-2">

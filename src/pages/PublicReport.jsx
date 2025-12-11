@@ -935,7 +935,8 @@ export default function PublicReport() {
                                                     <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
                                                       <td className="py-0.5 pl-2">{f.fieldName}</td>
                                                       <td className="text-center py-0.5">
-                                                        {(() => {
+                                                        <div className='whitespace-pre-line'>
+                                                          {(() => {
                                                           const rangeStr = f.range || "-";
                                                           const patientGender = reports.finalReport?.gender?.toUpperCase();
                                                           if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
@@ -953,6 +954,7 @@ export default function PublicReport() {
                                                           }
                                                           return rangeStr;
                                                         })()}
+                                                        </div>
                                                       </td>
                                                       <td className="text-center py-0.5">{f.unit || "."}</td>
                                                       <td className="text-center font-semibold py-0.5">
@@ -985,7 +987,8 @@ export default function PublicReport() {
                                                         <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
                                                           <td className="py-0.5 pl-2">{f.fieldName}</td>
                                                           <td className="text-center py-0.5">
-                                                            {(() => {
+                                                            <div className='whitespace-pre-line'>
+                                                              {(() => {
                                                               const rangeStr = f.range || "-";
                                                               const patientGender = reports.finalReport?.gender?.toUpperCase();
                                                               if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
@@ -1003,6 +1006,7 @@ export default function PublicReport() {
                                                               }
                                                               return rangeStr;
                                                             })()}
+                                                            </div>
                                                           </td>
                                                           <td className="text-center py-0.5">{f.unit || "."}</td>
                                                           <td className="text-center font-semibold py-0.5">

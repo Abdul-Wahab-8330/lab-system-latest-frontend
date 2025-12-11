@@ -1197,26 +1197,28 @@ export default function ResultPrintComponent() {
                                                                                         // NO CATEGORIES: Render normally (existing behavior)
                                                                                         return filledFields.map((f, fi) => (
                                                                                             <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
-                                                                                                <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                                                                <td className="py-0.5 pl-2 whitespace-pre-line">{f.fieldName}</td>
                                                                                                 <td className="text-center py-0.5">
-                                                                                                    {(() => {
-                                                                                                        const rangeStr = f.range || "-";
-                                                                                                        const patientGender = printPatient?.gender?.toUpperCase();
-                                                                                                        if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
-                                                                                                            const parts = rangeStr.split(',');
-                                                                                                            for (let part of parts) {
-                                                                                                                part = part.trim();
-                                                                                                                if (patientGender === 'MALE' && part.startsWith('M:')) {
-                                                                                                                    return part.substring(2).trim();
+                                                                                                    <div className="whitespace-pre-line">
+                                                                                                        {(() => {
+                                                                                                            const rangeStr = f.range || "-";
+                                                                                                            const patientGender = printPatient?.gender?.toUpperCase();
+                                                                                                            if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
+                                                                                                                const parts = rangeStr.split(',');
+                                                                                                                for (let part of parts) {
+                                                                                                                    part = part.trim();
+                                                                                                                    if (patientGender === 'MALE' && part.startsWith('M:')) {
+                                                                                                                        return part.substring(2).trim();
+                                                                                                                    }
+                                                                                                                    if (patientGender === 'FEMALE' && part.startsWith('F:')) {
+                                                                                                                        return part.substring(2).trim();
+                                                                                                                    }
                                                                                                                 }
-                                                                                                                if (patientGender === 'FEMALE' && part.startsWith('F:')) {
-                                                                                                                    return part.substring(2).trim();
-                                                                                                                }
+                                                                                                                return rangeStr;
                                                                                                             }
                                                                                                             return rangeStr;
-                                                                                                        }
-                                                                                                        return rangeStr;
-                                                                                                    })()}
+                                                                                                        })()}
+                                                                                                    </div>
                                                                                                 </td>
                                                                                                 <td className="text-center py-0.5">{f.unit || "."}</td>
                                                                                                 <td className="text-center font-semibold py-0.5">
@@ -1249,7 +1251,8 @@ export default function ResultPrintComponent() {
                                                                                                     <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
                                                                                                         <td className="py-0.5 pl-2">{f.fieldName}</td>
                                                                                                         <td className="text-center py-0.5">
-                                                                                                            {(() => {
+                                                                                                            <div className="whitespace-pre-line">
+                                                                                                                {(() => {
                                                                                                                 const rangeStr = f.range || "-";
                                                                                                                 const patientGender = printPatient?.gender?.toUpperCase();
                                                                                                                 if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
@@ -1267,6 +1270,7 @@ export default function ResultPrintComponent() {
                                                                                                                 }
                                                                                                                 return rangeStr;
                                                                                                             })()}
+                                                                                                            </div>
                                                                                                         </td>
                                                                                                         <td className="text-center py-0.5">{f.unit || "."}</td>
                                                                                                         <td className="text-center font-semibold py-0.5">

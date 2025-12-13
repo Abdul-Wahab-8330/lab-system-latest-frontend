@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { ROLES, getRoleDisplayName, isAdmin, getMenuForRole } from '@/utils/permissions';
 import {
   FlaskConical,
   ListChecks,
@@ -65,44 +66,50 @@ const UserDashboardLayout = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation(); // Get current route
 
-  const adminMenuItems = [
-    { id: 'dashboard', icon: Home, label: 'Dashboard', link: '/admin/dashboard' },
-    // admin options
-    { id: 'create test', icon: FlaskConical, label: 'Create New Test', link: '/admin/create-test', icon2: Crown },
-    { id: 'all tests', icon: ListChecks, label: 'Manage Tests', link: '/admin/all-tests', icon2: Crown },
-    { id: 'create user', icon: UserPlus, label: 'Create New User', link: '/admin/create-user', icon2: Crown },
-    { id: 'all users', icon: Users, label: 'Manage Users', link: '/admin/all-users', icon2: Crown },
-    { id: 'references', icon: Link2, label: 'Add Reference', link: '/admin/add-reference', icon2: Crown },
-    { id: 'edit lab info', icon: Building2, label: 'Edit Lab Info', link: '/admin/edit-labinfo', icon2: Crown },
-    { id: 'finance analytics', icon: BarChart2, label: 'Finance Analytics', link: '/admin/finance-analytics', icon2: Crown },
-    { id: 'user analytics', icon: UserCog, label: 'User Analytics', link: '/admin/user-analytics', icon2: Crown },
-    { id: 'test analytics', icon: FileChartColumn, label: 'Test Analytics', link: '/admin/test-analytics', icon2: Crown },
-    { id: 'analytics', icon: BarChart3, label: 'Patient Analytics', link: '/admin/patient-analytics', icon2: Crown },
-    { id: 'inventory', icon: LucideBoxes, label: 'Inventory Mngmnt', link: '/admin/inventory', icon2: Crown },
-    { id: 'expenses', icon: CalculatorIcon, label: 'Expense Mngmnt', link: '/admin/expenses', icon2: Crown },
-    { id: 'revenue-summary', icon: PoundSterling, label: 'Revenue Summary', link: '/admin/revenue-summary', icon2: Crown },
+  // const adminMenuItems = [
+  //   { id: 'dashboard', icon: Home, label: 'Dashboard', link: '/admin/dashboard' },
+  //   // admin options
+  //   { id: 'create test', icon: FlaskConical, label: 'Create New Test', link: '/admin/create-test', icon2: Crown },
+  //   { id: 'all tests', icon: ListChecks, label: 'Manage Tests', link: '/admin/all-tests', icon2: Crown },
+  //   { id: 'create user', icon: UserPlus, label: 'Create New User', link: '/admin/create-user', icon2: Crown },
+  //   { id: 'all users', icon: Users, label: 'Manage Users', link: '/admin/all-users', icon2: Crown },
+  //   { id: 'references', icon: Link2, label: 'Add Reference', link: '/admin/add-reference', icon2: Crown },
+  //   { id: 'edit lab info', icon: Building2, label: 'Edit Lab Info', link: '/admin/edit-labinfo', icon2: Crown },
+  //   { id: 'finance analytics', icon: BarChart2, label: 'Finance Analytics', link: '/admin/finance-analytics', icon2: Crown },
+  //   { id: 'user analytics', icon: UserCog, label: 'User Analytics', link: '/admin/user-analytics', icon2: Crown },
+  //   { id: 'test analytics', icon: FileChartColumn, label: 'Test Analytics', link: '/admin/test-analytics', icon2: Crown },
+  //   { id: 'analytics', icon: BarChart3, label: 'Patient Analytics', link: '/admin/patient-analytics', icon2: Crown },
+  //   { id: 'inventory', icon: LucideBoxes, label: 'Inventory Mngmnt', link: '/admin/inventory', icon2: Crown },
+  //   { id: 'expenses', icon: CalculatorIcon, label: 'Expense Mngmnt', link: '/admin/expenses', icon2: Crown },
+  //   { id: 'revenue-summary', icon: PoundSterling, label: 'Revenue Summary', link: '/admin/revenue-summary', icon2: Crown },
 
-    // + normal user options
-    { id: 'register patients', icon: Plus, label: 'Register Patients', link: '/user/register-patient' },
-    { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
-    { id: 'payments', icon: DollarSign, label: 'Payments', link: '/user/payments' },
-    { id: 'results', icon: Microscope, label: 'Manage Results', link: '/user/results' },
-    { id: 'final reports', icon: LineChart, label: 'Final Reports', link: '/user/result-print' },
-  ];
+  //   // + normal user options
+  //   { id: 'register patients', icon: Plus, label: 'Register Patients', link: '/user/register-patient' },
+  //   { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
+  //   { id: 'payments', icon: DollarSign, label: 'Payments', link: '/user/payments' },
+  //   { id: 'results', icon: Microscope, label: 'Manage Results', link: '/user/results' },
+  //   { id: 'final reports', icon: LineChart, label: 'Final Reports', link: '/user/result-print' },
+  // ];
 
-  const menuItems = [
-    //normal user options
-    { id: 'dashboard', icon: Home, label: 'Dashboard', link: '/user/dashboard' },
-    { id: 'register patients', icon: Plus, label: 'Register Patients', link: '/user/register-patient' },
-    { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
-    { id: 'payments', icon: DollarSign, label: 'Payments', link: '/user/payments' },
-    { id: 'results', icon: Microscope, label: 'Manage Results', link: '/user/results' },
-    { id: 'final reports', icon: LineChart, label: 'Final Reports', link: '/user/result-print' },
-  ];
+  // const menuItems = [
+  //   //normal user options
+  //   { id: 'dashboard', icon: Home, label: 'Dashboard', link: '/user/dashboard' },
+  //   { id: 'register patients', icon: Plus, label: 'Register Patients', link: '/user/register-patient' },
+  //   { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
+  //   { id: 'payments', icon: DollarSign, label: 'Payments', link: '/user/payments' },
+  //   { id: 'results', icon: Microscope, label: 'Manage Results', link: '/user/results' },
+  //   { id: 'final reports', icon: LineChart, label: 'Final Reports', link: '/user/result-print' },
+  // ];
 
   // Function to determine active tab based on current route
+  // const getActiveTabFromRoute = (pathname) => {
+  //   const allMenuItems = user?.role === 'admin' ? adminMenuItems : menuItems;
+  //   const currentItem = allMenuItems.find(item => item.link === pathname);
+  //   return currentItem ? currentItem.id : 'dashboard';
+  // };
+
   const getActiveTabFromRoute = (pathname) => {
-    const allMenuItems = user?.role === 'admin' ? adminMenuItems : menuItems;
+    const allMenuItems = getMenuForRole(user?.role);
     const currentItem = allMenuItems.find(item => item.link === pathname);
     return currentItem ? currentItem.id : 'dashboard';
   };
@@ -137,8 +144,14 @@ const UserDashboardLayout = () => {
   };
 
   // Get page title based on active tab
+  // const getPageTitle = () => {
+  //   const allMenuItems = user?.role === 'admin' ? adminMenuItems : menuItems;
+  //   const currentItem = allMenuItems.find(item => item.id === activeTab);
+  //   return currentItem ? currentItem.label : 'Dashboard';
+  // };
+
   const getPageTitle = () => {
-    const allMenuItems = user?.role === 'admin' ? adminMenuItems : menuItems;
+    const allMenuItems = getMenuForRole(user?.role);
     const currentItem = allMenuItems.find(item => item.id === activeTab);
     return currentItem ? currentItem.label : 'Dashboard';
   };
@@ -157,7 +170,8 @@ const UserDashboardLayout = () => {
         {/* Logo/Header */}
         <div className="p-3 border-b border-gray-200 ">
           <div className="flex items-center justify-center">
-            <Link onClick={() => setActiveTab('dashboard')} to={user?.role == 'admin' ? '/admin/dashboard' : '/user/dashboard'} className="flex items-center space-x-2">
+            <Link onClick={() => setActiveTab('dashboard')}
+              to={isAdmin(user?.role) ? '/admin/dashboard' : '/user/dashboard'} className="flex items-center space-x-2">
               <div>
                 <img src={info?.logoUrl} alt="" className='w-13' />
                 {/* <img src={lablogo} alt="" className='w-14' /> */}
@@ -178,7 +192,7 @@ const UserDashboardLayout = () => {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 mb-1">
-          <ul className="space-y-2">
+          {/* <ul className="space-y-2">
             {user?.role == 'admin' && adminMenuItems.map((item) => {
               const IconComponent = item.icon;
               const isActive = activeTab === item.id;
@@ -215,6 +229,31 @@ const UserDashboardLayout = () => {
                 </li>
               );
             })}
+          </ul> */}
+          <ul className="space-y-2">
+            {getMenuForRole(user?.role).map((item) => {
+              const IconComponent = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <li key={item.id}>
+                  <Link to={item.link}
+                    onClick={handleLinkClick}
+                    className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 border ${isActive
+                      ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border-blue-200 shadow-sm'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800 border-transparent'
+                      }`}
+                  >
+                    <IconComponent className="w-5 h-5 flex-shrink-0" />
+                    {sidebarOpen && (
+                      <span className="text-sm font-medium truncate flex gap-2 items-center">
+                        {item.label}
+                        {item?.icon2 && <item.icon2 size={13} className='text-amber-300' />}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
@@ -228,7 +267,9 @@ const UserDashboardLayout = () => {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-800 truncate">Dr. {user?.name}</p>
-                  <p className="text-xs text-gray-500 truncate">{user?.role === 'user' ? 'Laboratory User' : 'Lab Administrator'}</p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {getRoleDisplayName(user?.role)}
+                  </p>
                 </div>
                 <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
               </div>
@@ -277,13 +318,13 @@ const UserDashboardLayout = () => {
 
             <div className="flex items-center space-x-4">
               {/* Export Button */}
-              {user?.role == 'admin' && <Link to='/user/patients' className="lg:flex hidden items-center space-x-2 px-4 py-2 border border-gray-100 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors duration-200">
+              {isAdmin(user?.role) && <Link to='/user/patients' className="lg:flex hidden items-center space-x-2 px-4 py-2 border border-gray-100 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors duration-200">
                 <Printer className="w-4 h-4 text-gray-600" />
                 <span className="text-sm font-medium text-gray-700 flex gap-2 items-center">Reports </span>
               </Link>}
 
               {/* Add New Button */}
-              {user?.role == 'admin' ?
+              {isAdmin(user?.role) ?
                 <Link to='/admin/create-test' className="lg:flex hidden  items-center space-x-2 px-4 border border-blue-400 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-200 shadow-sm">
                   <Plus className="w-4 h-4" />
                   <span className="text-sm font-medium flex gap-2 items-center">Register Patient</span>
@@ -291,12 +332,20 @@ const UserDashboardLayout = () => {
                 :
                 <Link to='/user/register-patient' className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-200 shadow-sm">
                   <UserPlus className="w-4 h-4" />
-                  <span className="text-sm font-medium"> New Patient</span>
+                  <span className="text-sm font-medium"> Register Patient</span>
                 </Link>
               }
 
               <div className=' lg:flex hidden text-gray-600 gap-2'>
-                <div className='rounded-xl py-2 px-2 text-sm'>{user?.role == 'user' ? <span className='flex gap-2 '><User size={17} /> Lab User</span> : <span className='flex gap-2'><Crown className='text-amber-400' size={17} /> Admin</span>}</div>
+                <div className='rounded-xl py-2 px-2 text-sm'>
+                  <span className='flex gap-2 items-center'>
+                    {isAdmin(user?.role) ? (
+                      <><Crown className='text-amber-400' size={17} /> Admin</>
+                    ) : (
+                      <><User size={17} /> {getRoleDisplayName(user?.role)}</>
+                    )}
+                  </span>
+                </div>
                 <UserAvatar />
               </div>
             </div>

@@ -9,11 +9,12 @@ import { Link } from "react-router-dom";
 import { LabUsersCard, RevenueAnalyticsCard } from "./AdminDashboardCards";
 import { AuthContext } from "@/context/AuthProvider";
 import { LabInfoContext } from "@/context/LabnfoContext";
+import { isAdmin as checkIsAdmin } from '@/utils/permissions';
 
 function UserDashboard() {
   const { patients, fetchPatients } = useContext(PatientsContext);
 
-    const { tests, loading: testsLoading } = useContext(TestContext);
+  const { tests, loading: testsLoading } = useContext(TestContext);
   const { user } = useContext(AuthContext);
   const { info, loading: infoLoading } = useContext(LabInfoContext);
 
@@ -188,7 +189,7 @@ function UserDashboard() {
   }, []);
 
   // Memoize admin role check
-  const isAdmin = useMemo(() => user?.role === 'admin', [user?.role]);
+  const isAdminUser = useMemo(() => checkIsAdmin(user?.role), [user?.role]);
 
   if (isLoading) {
     return (
@@ -310,7 +311,7 @@ function UserDashboard() {
       </div>
 
       {/* admin cards */}
-      {isAdmin && (
+      {isAdminUser && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <LabUsersCard />
           <RevenueAnalyticsCard />
@@ -320,79 +321,81 @@ function UserDashboard() {
 
 
       {/* Quick Actions & Info Grid */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
-          <div className="space-y-3">
-            <button className="w-full text-left px-4 py-3 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors duration-200 flex items-center space-x-3">
-              <Users className="w-4 h-4" />
-              <Link to='/user/register-patient'>Add New Patient</Link>
-            </button>
-            <button className="w-full text-left px-4 py-3 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 transition-colors duration-200 flex items-center space-x-3">
-              <FileText className="w-4 h-4" />
-              <Link to='/user/result-print'>Generate Report</Link>
-            </button>
-            <button className="w-full text-left px-4 py-3 bg-purple-50 text-purple-700 rounded-xl hover:bg-purple-100 transition-colors duration-200 flex items-center space-x-3">
-              <TestTube className="w-4 h-4" />
-              <Link to='/user/results'>Manage Results</Link>
-            </button>
+      {user?.role == 'admin' &&
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+            <div className="space-y-3">
+              <button className="w-full text-left px-4 py-3 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors duration-200 flex items-center space-x-3">
+                <Users className="w-4 h-4" />
+                <Link to='/user/register-patient'>Add New Patient</Link>
+              </button>
+              <button className="w-full text-left px-4 py-3 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 transition-colors duration-200 flex items-center space-x-3">
+                <FileText className="w-4 h-4" />
+                <Link to='/user/result-print'>Generate Report</Link>
+              </button>
+              <button className="w-full text-left px-4 py-3 bg-purple-50 text-purple-700 rounded-xl hover:bg-purple-100 transition-colors duration-200 flex items-center space-x-3">
+                <TestTube className="w-4 h-4" />
+                <Link to='/user/results'>Manage Results</Link>
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Summary</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
-                <span className="text-sm font-medium text-gray-800">Paid Patients</span>
+          <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Summary</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
+                  <span className="text-sm font-medium text-gray-800">Paid Patients</span>
+                </div>
+                <span className="text-lg font-bold text-green-600">{stats.paidPatients}</span>
               </div>
-              <span className="text-lg font-bold text-green-600">{stats.paidPatients}</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 bg-red-500 rounded-full flex-shrink-0"></div>
-                <span className="text-sm font-medium text-gray-800">Unpaid Patients</span>
+              <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="w-3 h-3 bg-red-500 rounded-full flex-shrink-0"></div>
+                  <span className="text-sm font-medium text-gray-800">Unpaid Patients</span>
+                </div>
+                <span className="text-lg font-bold text-red-600">{stats.unpaidPatients}</span>
               </div>
-              <span className="text-lg font-bold text-red-600">{stats.unpaidPatients}</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
-                <span className="text-sm font-medium text-gray-800">Total Revenue</span>
+              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
+                  <span className="text-sm font-medium text-gray-800">Total Revenue</span>
+                </div>
+                <span className="text-lg font-bold text-blue-600">Rs.{stats.totalRevenue.toLocaleString()}</span>
               </div>
-              <span className="text-lg font-bold text-blue-600">Rs.{stats.totalRevenue.toLocaleString()}</span>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">System Status</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-2 rounded-lg">
-              <span className="text-sm text-gray-600 flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>Database</span>
-              </span>
-              <span className="text-sm text-green-600 font-semibold">Connected</span>
-            </div>
-            <div className="flex items-center justify-between p-2 rounded-lg">
-              <span className="text-sm text-gray-600 flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>Total Patients</span>
-              </span>
-              <span className="text-sm text-blue-600 font-semibold">{patients.length}</span>
-            </div>
-            <div className="flex items-center justify-between p-2 rounded-lg">
-              <span className="text-sm text-gray-600 flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span>Available Tests</span>
-              </span>
-              <span className="text-sm text-blue-600 font-semibold">{tests?.length || 0}</span>
+          <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">System Status</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-2 rounded-lg">
+                <span className="text-sm text-gray-600 flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Database</span>
+                </span>
+                <span className="text-sm text-green-600 font-semibold">Connected</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-lg">
+                <span className="text-sm text-gray-600 flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>Total Patients</span>
+                </span>
+                <span className="text-sm text-blue-600 font-semibold">{patients.length}</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-lg">
+                <span className="text-sm text-gray-600 flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span>Available Tests</span>
+                </span>
+                <span className="text-sm text-blue-600 font-semibold">{tests?.length || 0}</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      }
 
       {/* Charts - These should now receive stable props */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-1 gap-6">

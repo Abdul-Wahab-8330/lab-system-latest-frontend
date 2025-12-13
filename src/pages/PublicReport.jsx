@@ -937,23 +937,23 @@ export default function PublicReport() {
                                                       <td className="text-center py-0.5">
                                                         <div className='whitespace-pre-line'>
                                                           {(() => {
-                                                          const rangeStr = f.range || "-";
-                                                          const patientGender = reports.finalReport?.gender?.toUpperCase();
-                                                          if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
-                                                            const parts = rangeStr.split(',');
-                                                            for (let part of parts) {
-                                                              part = part.trim();
-                                                              if (patientGender === 'MALE' && part.startsWith('M:')) {
-                                                                return part.substring(2).trim();
+                                                            const rangeStr = f.range || "-";
+                                                            const patientGender = reports.finalReport?.gender?.toUpperCase();
+                                                            if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
+                                                              const parts = rangeStr.split(',');
+                                                              for (let part of parts) {
+                                                                part = part.trim();
+                                                                if (patientGender === 'MALE' && part.startsWith('M:')) {
+                                                                  return part.substring(2).trim();
+                                                                }
+                                                                if (patientGender === 'FEMALE' && part.startsWith('F:')) {
+                                                                  return part.substring(2).trim();
+                                                                }
                                                               }
-                                                              if (patientGender === 'FEMALE' && part.startsWith('F:')) {
-                                                                return part.substring(2).trim();
-                                                              }
+                                                              return rangeStr;
                                                             }
                                                             return rangeStr;
-                                                          }
-                                                          return rangeStr;
-                                                        })()}
+                                                          })()}
                                                         </div>
                                                       </td>
                                                       <td className="text-center py-0.5">{f.unit || "."}</td>
@@ -989,23 +989,23 @@ export default function PublicReport() {
                                                           <td className="text-center py-0.5">
                                                             <div className='whitespace-pre-line'>
                                                               {(() => {
-                                                              const rangeStr = f.range || "-";
-                                                              const patientGender = reports.finalReport?.gender?.toUpperCase();
-                                                              if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
-                                                                const parts = rangeStr.split(',');
-                                                                for (let part of parts) {
-                                                                  part = part.trim();
-                                                                  if (patientGender === 'MALE' && part.startsWith('M:')) {
-                                                                    return part.substring(2).trim();
+                                                                const rangeStr = f.range || "-";
+                                                                const patientGender = reports.finalReport?.gender?.toUpperCase();
+                                                                if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
+                                                                  const parts = rangeStr.split(',');
+                                                                  for (let part of parts) {
+                                                                    part = part.trim();
+                                                                    if (patientGender === 'MALE' && part.startsWith('M:')) {
+                                                                      return part.substring(2).trim();
+                                                                    }
+                                                                    if (patientGender === 'FEMALE' && part.startsWith('F:')) {
+                                                                      return part.substring(2).trim();
+                                                                    }
                                                                   }
-                                                                  if (patientGender === 'FEMALE' && part.startsWith('F:')) {
-                                                                    return part.substring(2).trim();
-                                                                  }
+                                                                  return rangeStr;
                                                                 }
                                                                 return rangeStr;
-                                                              }
-                                                              return rangeStr;
-                                                            })()}
+                                                              })()}
                                                             </div>
                                                           </td>
                                                           <td className="text-center py-0.5">{f.unit || "."}</td>
@@ -1181,8 +1181,10 @@ export default function PublicReport() {
         <form onSubmit={handleSubmit}>
           <div className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Patient Name</label>
-              <input required
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Patient Name <span className="text-gray-400 font-normal text-xs">(Optional)</span>
+              </label>
+              <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}

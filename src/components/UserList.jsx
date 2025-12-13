@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Trash2, Users, User, Shield, AlertTriangle, Loader2 } from "lucide-react";
 import { AuthContext } from "@/context/AuthProvider";
 import toast from "react-hot-toast";
+import { ROLES, getRoleDisplayName } from '@/utils/permissions';
 
 const UserList = () => {
   const { users, user, fetchUsers, deleteUser } = useContext(AuthContext);
@@ -46,18 +47,19 @@ const UserList = () => {
   };
 
   const getRoleBadge = (userRole) => {
-    if (userRole === "admin") {
-      return (
-        <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 border border-purple-200">
-          <Shield className="h-3 w-3 mr-1" />
-          Admin
-        </div>
-      );
-    }
+    const badgeStyles = {
+      [ROLES.ADMIN]: 'from-purple-500 to-indigo-600',
+      [ROLES.USER]: 'from-blue-500 to-cyan-600',
+      [ROLES.RECEPTIONIST]: 'from-green-500 to-emerald-600',
+      [ROLES.LAB_TECH]: 'from-indigo-500 to-purple-600'
+    };
+
+    const IconComponent = userRole === ROLES.ADMIN ? Shield : User;
+
     return (
-      <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 border border-blue-200">
-        <User className="h-3 w-3 mr-1" />
-        User
+      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${badgeStyles[userRole] || badgeStyles[ROLES.USER]} text-white shadow-sm`}>
+        <IconComponent className="h-3 w-3 mr-1" />
+        {getRoleDisplayName(userRole)}
       </div>
     );
   };
@@ -102,21 +104,21 @@ const UserList = () => {
                 User Directory
               </h2>
               <div className="flex gap-4">
-              {!loading && users && users.length > 0 && (
-                <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl">
-                  <span className="text-white font-medium text-sm">
-                    {totalAdmins} {totalAdmins == 1 ? 'Admin' : 'Admins'} • {users.filter(u => u.role === 'user').length} Users
-                  </span>
-                </div>
-              )}
-              {!loading && users && (
-                <div className="inline-flex items-center px-4 py-2 bg-purple-500 rounded-xl shadow-sm text-white">
-                  <Users className="h-4 w-4  mr-2" />
-                  <span className="text-sm font-medium">
-                    {users.length} {users.length === 1 ? 'User' : 'Users'} Total
-                  </span>
-                </div>
-              )}
+                {!loading && users && users.length > 0 && (
+                  <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl">
+                    <span className="text-white font-medium text-sm">
+                      {totalAdmins} {totalAdmins == 1 ? 'Admin' : 'Admins'} • {users.filter(u => u.role === 'user').length} Users
+                    </span>
+                  </div>
+                )}
+                {!loading && users && (
+                  <div className="inline-flex items-center px-4 py-2 bg-purple-500 rounded-xl shadow-sm text-white">
+                    <Users className="h-4 w-4  mr-2" />
+                    <span className="text-sm font-medium">
+                      {users.length} {users.length === 1 ? 'User' : 'Users'} Total
+                    </span>
+                  </div>
+                )}
 
               </div>
             </div>

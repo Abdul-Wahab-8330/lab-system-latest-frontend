@@ -1,7 +1,5 @@
-
-
-
 import { useContext, useState, useEffect } from "react";
+import { ROLES, getRoleDisplayName } from '@/utils/permissions';
 import axios from "../../api/axiosInstance";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,18 +67,19 @@ function CreateUserForm() {
   };
 
   const getRoleBadge = (userRole) => {
-    if (userRole === "admin") {
-      return (
-        <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-sm">
-          <Shield className="h-3 w-3 mr-1" />
-          Admin
-        </div>
-      );
-    }
+    const badgeStyles = {
+      [ROLES.ADMIN]: 'from-purple-500 to-indigo-600',
+      [ROLES.USER]: 'from-blue-500 to-cyan-600',
+      [ROLES.RECEPTIONIST]: 'from-green-500 to-emerald-600',
+      [ROLES.LAB_TECH]: 'from-indigo-500 to-purple-600'
+    };
+
+    const IconComponent = userRole === ROLES.ADMIN ? Shield : User;
+
     return (
-      <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-sm">
-        <User className="h-3 w-3 mr-1" />
-        User
+      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${badgeStyles[userRole] || badgeStyles[ROLES.USER]} text-white shadow-sm`}>
+        <IconComponent className="h-3 w-3 mr-1" />
+        {getRoleDisplayName(userRole)}
       </div>
     );
   };
@@ -108,7 +107,7 @@ function CreateUserForm() {
                 Create New User
               </h2>
             </div>
-            
+
             <CardContent className="p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-3">
@@ -166,16 +165,28 @@ function CreateUserForm() {
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
                     <SelectContent className='bg-white border-0 shadow-xl rounded-xl'>
-                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value="user">
-                        <div className="flex items-center">
-                          <User className="h-4 w-4 mr-2 text-blue-500" />
-                          User
-                        </div>
-                      </SelectItem>
-                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value="admin">
+                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.ADMIN}>
                         <div className="flex items-center">
                           <Shield className="h-4 w-4 mr-2 text-purple-500" />
-                          Admin
+                          {getRoleDisplayName(ROLES.ADMIN)}
+                        </div>
+                      </SelectItem>
+                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.USER}>
+                        <div className="flex items-center">
+                          <User className="h-4 w-4 mr-2 text-blue-500" />
+                          {getRoleDisplayName(ROLES.USER)}
+                        </div>
+                      </SelectItem>
+                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.RECEPTIONIST}>
+                        <div className="flex items-center">
+                          <User className="h-4 w-4 mr-2 text-green-500" />
+                          {getRoleDisplayName(ROLES.RECEPTIONIST)}
+                        </div>
+                      </SelectItem>
+                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.LAB_TECH}>
+                        <div className="flex items-center">
+                          <User className="h-4 w-4 mr-2 text-indigo-500" />
+                          {getRoleDisplayName(ROLES.LAB_TECH)}
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -220,7 +231,7 @@ function CreateUserForm() {
                 )}
               </h2>
             </div>
-            
+
             <CardContent className="p-0">
               {usersLoading ? (
                 <div className="p-12 text-center">
@@ -253,11 +264,10 @@ function CreateUserForm() {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-100">
                         {users.map((user, index) => (
-                          <tr 
-                            key={user._id || user.id} 
-                            className={`hover:bg-gradient-to-r hover:from-purple-50 hover:to-indigo-50 transition-all duration-200 ${
-                              index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'
-                            }`}
+                          <tr
+                            key={user._id || user.id}
+                            className={`hover:bg-gradient-to-r hover:from-purple-50 hover:to-indigo-50 transition-all duration-200 ${index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'
+                              }`}
                           >
                             <td className="px-6 py-4">
                               <div className="flex items-center">

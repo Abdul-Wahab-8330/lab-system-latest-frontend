@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
+import { isAdmin } from '@/utils/permissions';
 
 const CheckAuth = ({ children, isAuthenticated, user }) => {
   const location = useLocation();
@@ -15,12 +16,12 @@ const CheckAuth = ({ children, isAuthenticated, user }) => {
 
   // 2. If authenticated and on auth routes, redirect to role-based home
   if (isAuthenticated && path.startsWith("/auth")) {
-    const redirectPath = user?.role === "admin" ? "/admin/dashboard" : "/user/dashboard"; // Changed from /user/home
+    const redirectPath = isAdmin(user?.role) ? "/admin/dashboard" : "/user/dashboard"; // Changed from /user/home
     return <Navigate to={redirectPath} replace />;
   }
 
   // 3. Role-based access control
-  if (path.startsWith("/admin") && user?.role !== "admin") {
+  if (path.startsWith("/admin") && !isAdmin(user?.role)) {
     return <Navigate to="/unauth-page" replace />;
   }
 

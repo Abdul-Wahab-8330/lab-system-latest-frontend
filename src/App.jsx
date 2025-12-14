@@ -103,10 +103,6 @@ function App() {
           <Route path="test-analytics" element={<TestsCharts />} />
           <Route path="patient-analytics" element={<PatientCharts />} />
 
-          <Route path="inventory" element={<InventoryManagement />} />
-          <Route path="expenses" element={<ExpenseManagement />} />
-          <Route path="revenue-summary" element={<RevenueSummary />} />
-
         </Route>
 
         {/* User Routes */}
@@ -119,6 +115,9 @@ function App() {
           }
         >
           <Route path="dashboard" element={<UserDashboard />} />
+          <Route path="inventory" element={<InventoryManagement />} />
+          <Route path="expenses" element={<ExpenseManagement />} />
+          <Route path="revenue-summary" element={<RevenueSummary />} />
           <Route path="register-patient" element={<RegisterPatient />} />
           <Route path="patients" element={<PatientsList />} />
           {/* was merged with reg reports component(patient list) */}

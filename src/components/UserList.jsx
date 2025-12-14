@@ -47,17 +47,34 @@ const UserList = () => {
   };
 
   const getRoleBadge = (userRole) => {
-    const badgeStyles = {
-      [ROLES.ADMIN]: 'from-purple-500 to-indigo-600',
-      [ROLES.USER]: 'from-blue-500 to-cyan-600',
-      [ROLES.RECEPTIONIST]: 'from-green-500 to-emerald-600',
-      [ROLES.LAB_TECH]: 'from-indigo-500 to-purple-600'
+    const badgeConfig = {
+      [ROLES.ADMIN]: {
+        gradient: 'from-purple-500 to-indigo-600',
+        icon: Shield
+      },
+      [ROLES.SENIOR_RECEPTIONIST]: {
+        gradient: 'from-blue-500 to-cyan-600',
+        icon: User
+      },
+      [ROLES.JUNIOR_RECEPTIONIST]: {
+        gradient: 'from-cyan-500 to-blue-400',
+        icon: User
+      },
+      [ROLES.SENIOR_LAB_TECH]: {
+        gradient: 'from-green-500 to-emerald-600',
+        icon: User
+      },
+      [ROLES.JUNIOR_LAB_TECH]: {
+        gradient: 'from-emerald-500 to-green-400',
+        icon: User
+      }
     };
 
-    const IconComponent = userRole === ROLES.ADMIN ? Shield : User;
+    const config = badgeConfig[userRole] || badgeConfig[ROLES.JUNIOR_RECEPTIONIST];
+    const IconComponent = config.icon;
 
     return (
-      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${badgeStyles[userRole] || badgeStyles[ROLES.USER]} text-white shadow-sm`}>
+      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${config.gradient} text-white shadow-sm`}>
         <IconComponent className="h-3 w-3 mr-1" />
         {getRoleDisplayName(userRole)}
       </div>

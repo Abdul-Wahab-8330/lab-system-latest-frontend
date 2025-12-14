@@ -66,48 +66,6 @@ const UserDashboardLayout = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation(); // Get current route
 
-  // const adminMenuItems = [
-  //   { id: 'dashboard', icon: Home, label: 'Dashboard', link: '/admin/dashboard' },
-  //   // admin options
-  //   { id: 'create test', icon: FlaskConical, label: 'Create New Test', link: '/admin/create-test', icon2: Crown },
-  //   { id: 'all tests', icon: ListChecks, label: 'Manage Tests', link: '/admin/all-tests', icon2: Crown },
-  //   { id: 'create user', icon: UserPlus, label: 'Create New User', link: '/admin/create-user', icon2: Crown },
-  //   { id: 'all users', icon: Users, label: 'Manage Users', link: '/admin/all-users', icon2: Crown },
-  //   { id: 'references', icon: Link2, label: 'Add Reference', link: '/admin/add-reference', icon2: Crown },
-  //   { id: 'edit lab info', icon: Building2, label: 'Edit Lab Info', link: '/admin/edit-labinfo', icon2: Crown },
-  //   { id: 'finance analytics', icon: BarChart2, label: 'Finance Analytics', link: '/admin/finance-analytics', icon2: Crown },
-  //   { id: 'user analytics', icon: UserCog, label: 'User Analytics', link: '/admin/user-analytics', icon2: Crown },
-  //   { id: 'test analytics', icon: FileChartColumn, label: 'Test Analytics', link: '/admin/test-analytics', icon2: Crown },
-  //   { id: 'analytics', icon: BarChart3, label: 'Patient Analytics', link: '/admin/patient-analytics', icon2: Crown },
-  //   { id: 'inventory', icon: LucideBoxes, label: 'Inventory Mngmnt', link: '/admin/inventory', icon2: Crown },
-  //   { id: 'expenses', icon: CalculatorIcon, label: 'Expense Mngmnt', link: '/admin/expenses', icon2: Crown },
-  //   { id: 'revenue-summary', icon: PoundSterling, label: 'Revenue Summary', link: '/admin/revenue-summary', icon2: Crown },
-
-  //   // + normal user options
-  //   { id: 'register patients', icon: Plus, label: 'Register Patients', link: '/user/register-patient' },
-  //   { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
-  //   { id: 'payments', icon: DollarSign, label: 'Payments', link: '/user/payments' },
-  //   { id: 'results', icon: Microscope, label: 'Manage Results', link: '/user/results' },
-  //   { id: 'final reports', icon: LineChart, label: 'Final Reports', link: '/user/result-print' },
-  // ];
-
-  // const menuItems = [
-  //   //normal user options
-  //   { id: 'dashboard', icon: Home, label: 'Dashboard', link: '/user/dashboard' },
-  //   { id: 'register patients', icon: Plus, label: 'Register Patients', link: '/user/register-patient' },
-  //   { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
-  //   { id: 'payments', icon: DollarSign, label: 'Payments', link: '/user/payments' },
-  //   { id: 'results', icon: Microscope, label: 'Manage Results', link: '/user/results' },
-  //   { id: 'final reports', icon: LineChart, label: 'Final Reports', link: '/user/result-print' },
-  // ];
-
-  // Function to determine active tab based on current route
-  // const getActiveTabFromRoute = (pathname) => {
-  //   const allMenuItems = user?.role === 'admin' ? adminMenuItems : menuItems;
-  //   const currentItem = allMenuItems.find(item => item.link === pathname);
-  //   return currentItem ? currentItem.id : 'dashboard';
-  // };
-
   const getActiveTabFromRoute = (pathname) => {
     const allMenuItems = getMenuForRole(user?.role);
     const currentItem = allMenuItems.find(item => item.link === pathname);
@@ -142,13 +100,6 @@ const UserDashboardLayout = () => {
     if (parts.length === 1) return parts[0][0].toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
-
-  // Get page title based on active tab
-  // const getPageTitle = () => {
-  //   const allMenuItems = user?.role === 'admin' ? adminMenuItems : menuItems;
-  //   const currentItem = allMenuItems.find(item => item.id === activeTab);
-  //   return currentItem ? currentItem.label : 'Dashboard';
-  // };
 
   const getPageTitle = () => {
     const allMenuItems = getMenuForRole(user?.role);
@@ -192,44 +143,6 @@ const UserDashboardLayout = () => {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 mb-1">
-          {/* <ul className="space-y-2">
-            {user?.role == 'admin' && adminMenuItems.map((item) => {
-              const IconComponent = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <li key={item.id}>
-                  <Link to={item.link}
-                    onClick={handleLinkClick}
-                    className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 border ${isActive
-                      ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border-blue-200 shadow-sm'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800 border-transparent'
-                      }`}
-                  >
-                    <IconComponent className="w-5 h-5 flex-shrink-0" />
-                    {sidebarOpen && <span className="text-sm font-medium truncate flex gap-2 items-center">{item.label}{item?.icon2 ? <item.icon2 size={13} className='text-amber-300' /> : ''}</span>}
-                  </Link>
-                </li>
-              );
-            })}
-            {user?.role == 'user' && menuItems.map((item) => {
-              const IconComponent = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <li key={item.id}>
-                  <Link to={item.link}
-                    onClick={handleLinkClick}
-                    className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 border ${isActive
-                      ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border-blue-200 shadow-sm'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800 border-transparent'
-                      }`}
-                  >
-                    <IconComponent className="w-5 h-5 flex-shrink-0" />
-                    {sidebarOpen && <span className="text-sm font-medium truncate">{item.label}</span>}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul> */}
           <ul className="space-y-2">
             {getMenuForRole(user?.role).map((item) => {
               const IconComponent = item.icon;

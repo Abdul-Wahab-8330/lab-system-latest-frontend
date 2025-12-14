@@ -528,7 +528,7 @@ export default function PublicReport() {
                         <p className="text-center text-xs font-semibold mb-2">Computerized Receipt, No Signature(s) Required</p>
                         <div className="text-center text-xs text-gray-700 space-y-0.5">
                           <p className="font-medium">
-                            Phone: {labInfo?.phoneNumber || '0325-0020111'}
+                            Phone: {labInfo?.phoneNumber || '0325-0020111'} | Email: doctorlab91@gmail.com
                           </p>
                           <p className="text-[10px] leading-tight">
                             {labInfo?.address || 'Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha'}
@@ -1098,7 +1098,7 @@ export default function PublicReport() {
                             </div>
 
                             <div className="border-t border-gray-800 pt-1">
-                              <div className="flex justify-start items-end text-xs mb-2">
+                              <div className="flex justify-start items-end text-xs mb-1">
                                 <div className="">
                                   <p className="font-semibold">Dr. Mudaser Hussain</p>
                                   <p className="text-left">Consultant Pathologist</p>
@@ -1122,8 +1122,10 @@ export default function PublicReport() {
 
                               <div className="text-center text-xs">
                                 <p>
-                                  Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District
-                                  Sargodha - Contact # 0325-0020111
+                                  Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha
+                                </p>
+                                <p>
+                                  Contact # 0325-0020111 | Email: doctorlab91@gmail.com
                                 </p>
                               </div>
                             </div>

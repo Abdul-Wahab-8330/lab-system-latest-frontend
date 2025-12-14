@@ -453,7 +453,7 @@ export default function PrintRegistration() {
           <p className="text-center text-xs font-semibold mb-2">Computerized Receipt, No Signature(s) Required</p>
           <div className="text-center text-xs text-gray-700 space-y-0.5">
             <p className="font-medium">
-              Phone: {labInfo?.phoneNumber || '0325-0020111'}
+              Phone: {labInfo?.phoneNumber || '0325-0020111'} | Email: doctorlab91@gmail.com
             </p>
             <p className="text-[10px] leading-tight">
               {labInfo?.address || 'Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha'}

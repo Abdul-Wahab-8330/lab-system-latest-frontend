@@ -20,7 +20,7 @@ function CreateUserForm() {
   const [name, setName] = useState("");
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("user");
+  const [role, setRole] = useState(ROLES.JUNIOR_RECEPTIONIST);
   const { fetchUsers, users } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [usersLoading, setUsersLoading] = useState(true);
@@ -67,17 +67,34 @@ function CreateUserForm() {
   };
 
   const getRoleBadge = (userRole) => {
-    const badgeStyles = {
-      [ROLES.ADMIN]: 'from-purple-500 to-indigo-600',
-      [ROLES.USER]: 'from-blue-500 to-cyan-600',
-      [ROLES.RECEPTIONIST]: 'from-green-500 to-emerald-600',
-      [ROLES.LAB_TECH]: 'from-indigo-500 to-purple-600'
+    const badgeConfig = {
+      [ROLES.ADMIN]: {
+        gradient: 'from-purple-500 to-indigo-600',
+        icon: Shield
+      },
+      [ROLES.SENIOR_RECEPTIONIST]: {
+        gradient: 'from-blue-500 to-cyan-600',
+        icon: User
+      },
+      [ROLES.JUNIOR_RECEPTIONIST]: {
+        gradient: 'from-cyan-500 to-blue-400',
+        icon: User
+      },
+      [ROLES.SENIOR_LAB_TECH]: {
+        gradient: 'from-green-500 to-emerald-600',
+        icon: User
+      },
+      [ROLES.JUNIOR_LAB_TECH]: {
+        gradient: 'from-emerald-500 to-green-400',
+        icon: User
+      }
     };
 
-    const IconComponent = userRole === ROLES.ADMIN ? Shield : User;
+    const config = badgeConfig[userRole] || badgeConfig[ROLES.JUNIOR_RECEPTIONIST];
+    const IconComponent = config.icon;
 
     return (
-      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${badgeStyles[userRole] || badgeStyles[ROLES.USER]} text-white shadow-sm`}>
+      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${config.gradient} text-white shadow-sm`}>
         <IconComponent className="h-3 w-3 mr-1" />
         {getRoleDisplayName(userRole)}
       </div>
@@ -171,22 +188,28 @@ function CreateUserForm() {
                           {getRoleDisplayName(ROLES.ADMIN)}
                         </div>
                       </SelectItem>
-                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.USER}>
+                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.SENIOR_RECEPTIONIST}>
                         <div className="flex items-center">
                           <User className="h-4 w-4 mr-2 text-blue-500" />
-                          {getRoleDisplayName(ROLES.USER)}
+                          {getRoleDisplayName(ROLES.SENIOR_RECEPTIONIST)}
                         </div>
                       </SelectItem>
-                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.RECEPTIONIST}>
+                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.JUNIOR_RECEPTIONIST}>
+                        <div className="flex items-center">
+                          <User className="h-4 w-4 mr-2 text-cyan-500" />
+                          {getRoleDisplayName(ROLES.JUNIOR_RECEPTIONIST)}
+                        </div>
+                      </SelectItem>
+                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.SENIOR_LAB_TECH}>
                         <div className="flex items-center">
                           <User className="h-4 w-4 mr-2 text-green-500" />
-                          {getRoleDisplayName(ROLES.RECEPTIONIST)}
+                          {getRoleDisplayName(ROLES.SENIOR_LAB_TECH)}
                         </div>
                       </SelectItem>
-                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.LAB_TECH}>
+                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.JUNIOR_LAB_TECH}>
                         <div className="flex items-center">
                           <User className="h-4 w-4 mr-2 text-indigo-500" />
-                          {getRoleDisplayName(ROLES.LAB_TECH)}
+                          {getRoleDisplayName(ROLES.JUNIOR_LAB_TECH)}
                         </div>
                       </SelectItem>
                     </SelectContent>

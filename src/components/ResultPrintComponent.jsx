@@ -478,7 +478,7 @@ Click the link above to view and download your complete test results anytime.
                                                     <Printer className="inline h-4 w-4 mr-2" />
                                                     Action
                                                 </TableHead>
-                                                {user?.role === 'admin' && (
+                                                {(user?.role === 'admin' || user?.role === 'senior_lab_tech' || user?.role == 'senior_receptionist') && (
                                                     <TableHead className="font-bold text-gray-800">
                                                         <RefreshCcw className="inline h-4 w-4 mr-2" />
                                                         Reset Result
@@ -535,12 +535,10 @@ Click the link above to view and download your complete test results anytime.
                                                         </TableCell>
                                                         <TableCell>
                                                             <div className="flex gap-2">
-                                                                {(user?.role === 'admin' || user?.role === 'lab_technologist' || user?.role == 'user') && (
-                                                                    <Button className='bg-blue-600 text-white border' onClick={() => openEditDialog(p)}>
-                                                                        <Edit className="w-4 h-4 mr-1" />
-                                                                        Edit
-                                                                    </Button>
-                                                                )}
+                                                                <Button className='bg-blue-600 text-white border' onClick={() => openEditDialog(p)}>
+                                                                    <Edit className="w-4 h-4 mr-1" />
+                                                                    Edit
+                                                                </Button>
                                                                 <div className="relative">
                                                                     <Button
                                                                         size="sm"
@@ -587,7 +585,7 @@ Click the link above to view and download your complete test results anytime.
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
-                                                            {(user?.role === 'admin' || user?.role == 'user') && (
+                                                            {(user?.role === 'admin' || user?.role === 'senior_lab_tech' || user?.role == 'senior_receptionist') && (
                                                                 <Button
                                                                     variant="outline"
                                                                     size="sm"
@@ -1444,7 +1442,7 @@ Click the link above to view and download your complete test results anytime.
                                             </div>
 
                                             <div className="border-t border-gray-800 pt-1">
-                                                <div className="flex justify-start items-end text-xs mb-2">
+                                                <div className="flex justify-start items-end text-xs mb-1">
                                                     <div className="">
                                                         <p className="font-semibold">Dr. Mudaser Hussain</p>
                                                         <p className="text-left">Consultant Pathologist</p>
@@ -1468,8 +1466,10 @@ Click the link above to view and download your complete test results anytime.
 
                                                 <div className="text-center text-xs">
                                                     <p>
-                                                        Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District
-                                                        Sargodha - Contact # 0325-0020111
+                                                        Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha
+                                                    </p>
+                                                    <p>
+                                                        Contact # 0325-0020111 | Email: doctorlab91@gmail.com
                                                     </p>
                                                 </div>
                                             </div>

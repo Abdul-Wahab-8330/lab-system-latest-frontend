@@ -558,7 +558,7 @@ export default function PrintReport() {
                             </div>
 
                             <div className="border-t border-gray-800 pt-1">
-                                <div className="flex justify-start items-end text-xs mb-2">
+                                <div className="flex justify-start items-end text-xs mb-1">
                                     <div className="">
                                         <p className="font-semibold">Dr. Mudaser Hussain</p>
                                         <p className="text-left">Consultant Pathologist</p>
@@ -582,8 +582,10 @@ export default function PrintReport() {
 
                                 <div className="text-center text-xs">
                                     <p>
-                                        Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District
-                                        Sargodha - Contact # 0325-0020111
+                                        Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha
+                                    </p>
+                                    <p>
+                                        Contact # 0325-0020111 | Email: doctorlab91@gmail.com
                                     </p>
                                 </div>
                             </div>

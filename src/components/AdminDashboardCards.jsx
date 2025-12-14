@@ -3,6 +3,7 @@ import { Users, UserCheck, UserX, TrendingUp, DollarSign, Calendar, Activity, Ey
 import { AuthContext } from "@/context/AuthProvider";
 import { PatientsContext } from "@/context/PatientsContext";
 import { Link } from 'react-router-dom';
+import { isAdmin } from '@/utils/permissions';
 
 // Enhanced Lab Users Management Card
 const LabUsersCard = () => {
@@ -30,19 +31,19 @@ const LabUsersCard = () => {
     try {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      
-      const adminUsers = userData.filter(u => u.role === 'admin').length;
-      const regularUsers = userData.filter(u => u.role === 'user' || !u.role).length;
-      
+
+      const adminUsers = userData.filter(u => isAdmin(u.role)).length;
+      const nonAdminUsers = userData.filter(u => !isAdmin(u.role)).length;
+
       const newUsersThisMonth = userData.filter(u => {
         const createdAt = u.createdAt?.$date ? new Date(u.createdAt.$date) : new Date(u.createdAt);
         return createdAt >= startOfMonth;
       }).length;
-      
+
       return {
         totalUsers: userData.length,
         activeUsers: adminUsers,
-        inactiveUsers: regularUsers,
+        inactiveUsers: nonAdminUsers,
         newUsersThisMonth
       };
     } catch (error) {
@@ -61,7 +62,7 @@ const LabUsersCard = () => {
     const checkAndCalculate = () => {
       // If we already calculated, don't do it again
       if (hasCalculated) return;
-      
+
       // If users data exists, calculate immediately
       if (users && users.length > 0) {
         const stats = calculateStats(users);
@@ -70,7 +71,7 @@ const LabUsersCard = () => {
         setLoading(false);
         return;
       }
-      
+
       // If no users but fetchUsers exists, try fetching
       if (fetchUsers && !hasCalculated) {
         fetchUsers().then(() => {
@@ -166,7 +167,7 @@ const LabUsersCard = () => {
         <div className="bg-gray-50 rounded-lg p-3 hover:bg-blue-50 transition-colors duration-200">
           <div className="flex items-center gap-2 mb-1">
             <UserX className="w-4 h-4 text-blue-500" />
-            <span className="text-sm text-gray-600">Users</span>
+            <span className="text-sm text-gray-600">Staff</span>
           </div>
           <p className="text-xl font-semibold text-blue-500">{userStats.inactiveUsers}</p>
         </div>
@@ -184,7 +185,7 @@ const LabUsersCard = () => {
       </div>
 
       {/* Quick Action */}
-      <Link to='/admin/all-users' 
+      <Link to='/admin/all-users'
         className="w-full bg-blue-600 text-white hover:bg-blue-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
       >
         <Eye className="w-4 h-4" />
@@ -248,7 +249,7 @@ const RevenueAnalyticsCard = () => {
       })
       .reduce((sum, p) => sum + (p.total || 0), 0);
 
-    const growthPercentage = lastMonthRevenue > 0 
+    const growthPercentage = lastMonthRevenue > 0
       ? ((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue * 100)
       : monthlyRevenue > 0 ? 100 : 0;
 
@@ -260,16 +261,16 @@ const RevenueAnalyticsCard = () => {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
       const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
-      
+
       const dayRevenue = patientsData
         .filter(p => {
           const patientDate = parseDate(p.createdAt);
           return patientDate >= dayStart && patientDate < dayEnd;
         })
         .reduce((sum, p) => sum + (p.total || 0), 0);
-      
-      dailyTrend.push({ 
-        day: date.getDate(), 
+
+      dailyTrend.push({
+        day: date.getDate(),
         revenue: dayRevenue,
         date: date.toISOString().split('T')[0]
       });
@@ -289,7 +290,7 @@ const RevenueAnalyticsCard = () => {
     const checkAndCalculate = () => {
       // If we already calculated, don't do it again
       if (hasCalculated) return;
-      
+
       // If patients data exists, calculate immediately
       if (patients && patients.length > 0) {
         const revenue = calculateRevenue(patients);
@@ -298,7 +299,7 @@ const RevenueAnalyticsCard = () => {
         setLoading(false);
         return;
       }
-      
+
       // If no patients data yet, wait a bit and check again
       const checkTimer = setTimeout(() => {
         const contextPatients = patients; // Get latest from context

@@ -3,9 +3,10 @@
 // ============================================
 export const ROLES = {
   ADMIN: 'admin',
-  USER: 'user',
-  RECEPTIONIST: 'receptionist',
-  LAB_TECH: 'lab_technologist'
+  SENIOR_RECEPTIONIST: 'senior_receptionist',
+  JUNIOR_RECEPTIONIST: 'junior_receptionist',
+  SENIOR_LAB_TECH: 'senior_lab_tech',
+  JUNIOR_LAB_TECH: 'junior_lab_tech'
 };
 
 // ============================================
@@ -14,11 +15,12 @@ export const ROLES = {
 export const getRoleDisplayName = (role) => {
   const roleNames = {
     [ROLES.ADMIN]: 'Administrator',
-    [ROLES.USER]: 'Lab User',
-    [ROLES.RECEPTIONIST]: 'Receptionist',
-    [ROLES.LAB_TECH]: 'Lab Technologist'
+    [ROLES.SENIOR_RECEPTIONIST]: 'Senior Receptionist',
+    [ROLES.JUNIOR_RECEPTIONIST]: 'Junior Receptionist',
+    [ROLES.SENIOR_LAB_TECH]: 'Senior Lab Technologist',
+    [ROLES.JUNIOR_LAB_TECH]: 'Junior Lab Technologist'
   };
-  return roleNames[role] || 'User';
+  return roleNames[role] || 'User-';
 };
 
 // ============================================
@@ -37,7 +39,9 @@ import {
   PoundSterling, Users, UserPlus, BarChart2, Crown
 } from 'lucide-react';
 
+// ============================================
 // ADMIN: Gets everything
+// ============================================
 const adminMenuItems = [
   { id: 'dashboard', icon: Home, label: 'Dashboard', link: '/admin/dashboard' },
   // Admin-only features
@@ -51,10 +55,10 @@ const adminMenuItems = [
   { id: 'user analytics', icon: UserCog, label: 'User Analytics', link: '/admin/user-analytics', icon2: Crown },
   { id: 'test analytics', icon: FileChartColumn, label: 'Test Analytics', link: '/admin/test-analytics', icon2: Crown },
   { id: 'analytics', icon: BarChart3, label: 'Patient Analytics', link: '/admin/patient-analytics', icon2: Crown },
-  { id: 'inventory', icon: LucideBoxes, label: 'Inventory Mngmnt', link: '/admin/inventory', icon2: Crown },
-  { id: 'expenses', icon: CalculatorIcon, label: 'Expense Mngmnt', link: '/admin/expenses', icon2: Crown },
-  { id: 'revenue-summary', icon: PoundSterling, label: 'Revenue Summary', link: '/admin/revenue-summary', icon2: Crown },
   // Plus all user features
+  { id: 'inventory', icon: LucideBoxes, label: 'Inventory Mngmnt', link: '/user/inventory' },
+  { id: 'expenses', icon: CalculatorIcon, label: 'Expense Mngmnt', link: '/user/expenses'},
+  { id: 'revenue-summary', icon: PoundSterling, label: 'Revenue Summary', link: '/user/revenue-summary' },
   { id: 'register patients', icon: Plus, label: 'Register Patients', link: '/user/register-patient' },
   { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
   { id: 'payments', icon: DollarSign, label: 'Payments', link: '/user/payments' },
@@ -62,29 +66,47 @@ const adminMenuItems = [
   { id: 'final reports', icon: LineChart, label: 'Final Reports', link: '/user/result-print' },
 ];
 
-// RECEPTIONIST: Front desk duties
-const receptionistMenuItems = [
+// ============================================
+// SENIOR RECEPTIONIST
+// ============================================
+const seniorReceptionistMenuItems = [
   { id: 'dashboard', icon: Home, label: 'Dashboard', link: '/user/dashboard' },
+  { id: 'revenue-summary', icon: PoundSterling, label: 'Revenue Summary', link: '/user/revenue-summary' },
+  { id: 'expenses', icon: CalculatorIcon, label: 'Expense Mngmnt', link: '/user/expenses' },
+  { id: 'inventory', icon: LucideBoxes, label: 'Inventory Mngmnt', link: '/user/inventory' },
   { id: 'register patients', icon: Plus, label: 'Register Patients', link: '/user/register-patient' },
   { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
   { id: 'payments', icon: DollarSign, label: 'Payments', link: '/user/payments' },
   { id: 'final reports', icon: LineChart, label: 'Final Reports', link: '/user/result-print' },
 ];
 
-// LAB TECHNOLOGIST: Testing and results
-const labTechMenuItems = [
+// ============================================
+// JUNIOR RECEPTIONIST
+// ============================================
+const juniorReceptionistMenuItems = [
+  { id: 'dashboard', icon: Home, label: 'Dashboard', link: '/user/dashboard' },
+  { id: 'register patients', icon: Plus, label: 'Register Patients', link: '/user/register-patient' },
+  { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
+  { id: 'results', icon: Microscope, label: 'Manage Results', link: '/user/results' },
+  { id: 'final reports', icon: LineChart, label: 'Final Reports', link: '/user/result-print' },
+];
+
+// ============================================
+// SENIOR LAB TECHNOLOGIST
+// ============================================
+const seniorLabTechMenuItems = [
   { id: 'dashboard', icon: Home, label: 'Dashboard', link: '/user/dashboard' },
   { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
   { id: 'results', icon: Microscope, label: 'Manage Results', link: '/user/results' },
   { id: 'final reports', icon: LineChart, label: 'Final Reports', link: '/user/result-print' },
 ];
 
-// USER: Full non-admin access (legacy/fallback)
-const userMenuItems = [
+// ============================================
+// JUNIOR LAB TECHNOLOGIST
+// ============================================
+const juniorLabTechMenuItems = [
   { id: 'dashboard', icon: Home, label: 'Dashboard', link: '/user/dashboard' },
-  { id: 'register patients', icon: Plus, label: 'Register Patients', link: '/user/register-patient' },
   { id: 'reg reports', icon: FileText, label: 'Reg. Reports', link: '/user/patients' },
-  { id: 'payments', icon: DollarSign, label: 'Payments', link: '/user/payments' },
   { id: 'results', icon: Microscope, label: 'Manage Results', link: '/user/results' },
   { id: 'final reports', icon: LineChart, label: 'Final Reports', link: '/user/result-print' },
 ];
@@ -96,12 +118,17 @@ export const getMenuForRole = (role) => {
   switch (role) {
     case ROLES.ADMIN:
       return adminMenuItems;
-    case ROLES.RECEPTIONIST:
-      return receptionistMenuItems;
-    case ROLES.LAB_TECH:
-      return labTechMenuItems;
-    case ROLES.USER:
+    case ROLES.SENIOR_RECEPTIONIST:
+      return seniorReceptionistMenuItems;
+    case ROLES.JUNIOR_RECEPTIONIST:
+      return juniorReceptionistMenuItems;
+    case ROLES.SENIOR_LAB_TECH:
+      return seniorLabTechMenuItems;
+    case ROLES.JUNIOR_LAB_TECH:
+      return juniorLabTechMenuItems;
     default:
-      return userMenuItems; // Fallback for any unknown role
+      // Safety fallback for any unknown role
+      console.warn(`Unknown role: ${role}, defaulting to Junior Receptionist menu`);
+      return juniorReceptionistMenuItems;
   }
 };

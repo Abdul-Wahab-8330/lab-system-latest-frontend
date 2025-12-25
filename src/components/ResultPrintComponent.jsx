@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import TestScaleVisualization from './TestScaleVisualization';
 import axios from "../api/axiosInstance";
 import {
     DialogDescription,
@@ -1374,6 +1375,34 @@ Click the link above to view and download your complete test results anytime.
                                                                     })}
                                                                 </tbody>
                                                             </table>
+
+                                                            {/* ✅ NEW: Render Scale Visualization */}
+                                                            {testsWithData.map((test, testIndex) => {
+                                                                const testData = test.testId || test;
+                                                                const scaleConfig = testData.scaleConfig;
+
+                                                                // Get the first field's value as the result
+                                                                const firstField = test.fields?.[0];
+                                                                const resultValue = firstField?.defaultValue;
+                                                                const unit = firstField?.unit || '';
+
+                                                                // ✅ FIX: Check for thresholds instead of items
+                                                                if (!scaleConfig || !scaleConfig.thresholds || !scaleConfig.labels || !resultValue) {
+                                                                    return null;
+                                                                }
+
+                                                                return (
+                                                                    <div key={`scale-${testIndex}`} className="mt-4 mb-6">
+                                                                        <TestScaleVisualization
+                                                                            scaleConfig={scaleConfig}
+                                                                            resultValue={resultValue}
+                                                                            unit={unit}
+                                                                        />
+                                                                    </div>
+                                                                );
+                                                            })}
+
+
                                                             {/* ✅ ADD THIS AFTER </table> */}
                                                             {testsWithData.map((test, testIndex) => {
                                                                 const testData = test.testId || test;

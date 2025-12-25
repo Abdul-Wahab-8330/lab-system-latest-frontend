@@ -4,6 +4,7 @@ import { Printer, AlertCircle, CheckCircle, Clock, Download } from 'lucide-react
 import JsBarcode from 'jsbarcode';
 import { QRCodeSVG } from 'qrcode.react';
 import React from 'react';
+import TestScaleVisualization from '@/components/TestScaleVisualization';
 
 export default function PublicReport() {
 
@@ -518,7 +519,7 @@ export default function PublicReport() {
                           {/* Due Amount */}
                           <div className="flex justify-between font-semibold">
                             <span>Due Amount:</span>
-                            <span>Rs.{reports.registrationReport.dueAmount || (reports.registrationReport.paymentStatus === 'Paid' ? 0 : (reports.registrationReport.netTotal || reports.registrationReport.total))}</span>
+                            <span>Rs.{reports?.registrationReport.dueAmount ?? (reports.registrationReport.paymentStatus === 'Paid' ? 0 : (reports.registrationReport.netTotal || reports.registrationReport.total))}</span>
                           </div>
                         </div>
                       </div>
@@ -1030,7 +1031,45 @@ export default function PublicReport() {
                                         })}
                                       </tbody>
                                     </table>
-                                    {/* ✅ ADD THIS AFTER </table> */}
+
+                                    {/* ✅ ADD SCALE VISUALIZATION HERE - RIGHT AFTER </table> */}
+                                    {testsWithData.map((test, testIndex) => {
+                                      const testData = test.testId || test;
+                                      const scaleConfig = testData.scaleConfig;
+
+                                      // Get the first field's value as the result
+                                      const firstField = test.fields?.[0];
+                                      const resultValue = firstField?.defaultValue;
+                                      const unit = firstField?.unit || '';
+
+                                      // ✅ ADD THESE DEBUG LOGS
+                                      console.log('🔍 Test:', test.testName);
+                                      console.log('📊 Scale Config:', scaleConfig);
+                                      console.log('📈 Result Value:', resultValue);
+                                      console.log('🔢 Has thresholds?', scaleConfig?.thresholds);
+                                      console.log('🏷️ Has labels?', scaleConfig?.labels);
+
+                                      // Check for thresholds instead of items
+                                      if (!scaleConfig || !scaleConfig.thresholds || !scaleConfig.labels ||
+                                        !resultValue || isNaN(parseFloat(resultValue))) {
+                                        console.log('❌ Scale not rendering - missing data');
+                                        return null;
+                                      }
+
+                                      console.log('✅ Rendering scale for:', test.testName);
+
+                                      return (
+                                        <div key={`scale-${testIndex}`} className="mt-4 mb-6">
+                                          <TestScaleVisualization
+                                            scaleConfig={scaleConfig}
+                                            resultValue={resultValue}
+                                            unit={unit}
+                                          />
+                                        </div>
+                                      );
+                                    })}
+
+
                                     {testsWithData.map((test, testIndex) => {
                                       const testData = test.testId || test;
                                       const extras = testData.reportExtras;
@@ -1200,18 +1239,18 @@ export default function PublicReport() {
                 Patient Number (10 digits)
                 <span className="text-xs text-gray-500 ml-2">Format: XXXX-XX-XXXX</span>
               </label>
-              <div className="flex gap-1 sm:gap-2 justify-between">
+              <div className="flex gap-0.5 sm:gap-2 justify-between">
                 {formData.patientNumber.map((digit, index) => (
                   <React.Fragment key={index}>
                     <input
                       required
                       ref={(el) => (inputRefs.current[index] = el)}
-                      type="text"
+                      type="tel"
                       maxLength={1}
                       value={digit}
                       onChange={(e) => handlePatientNumberChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(index, e)}
-                      className="w-6 h-9 sm:w-7 sm:h-10 text-center border-2 border-gray-300 rounded-lg font-bold text-base sm:text-lg focus:border-blue-500 focus:outline-none"
+                      className="w-5 h-9 sm:w-7 sm:h-10 text-center border-2 border-gray-300 rounded-lg font-semibold text-sm sm:text-lg focus:border-blue-500 focus:outline-none"
                     />
                     {(index === 3 || index === 5) && <span className="flex items-center font-bold text-gray-400 text-sm sm:text-base">-</span>}
                   </React.Fragment>

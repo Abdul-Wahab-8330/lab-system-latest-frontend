@@ -4,6 +4,7 @@ import axios from '../api/axiosInstance';
 import JsBarcode from 'jsbarcode';
 import { QRCodeSVG } from 'qrcode.react';
 import { Loader2 } from 'lucide-react';
+import TestScaleVisualization from './TestScaleVisualization'; 
 
 export default function PrintReport() {
     const { id } = useParams();
@@ -488,6 +489,35 @@ export default function PrintReport() {
                                                     })}
                                                 </tbody>
                                             </table>
+
+
+{/* ✅ NEW: Render Scale Visualization */}
+                                            {testsWithData.map((test, testIndex) => {
+                                                const testData = test.testId || test;
+                                                const scaleConfig = testData.scaleConfig;
+
+                                                // Get the first field's value as the result
+                                                const firstField = test.fields?.[0];
+                                                const resultValue = firstField?.defaultValue;
+                                                const unit = firstField?.unit || '';
+
+                                                // ✅ Check for thresholds instead of items
+                                                if (!scaleConfig || !scaleConfig.thresholds || !scaleConfig.labels || 
+                                                    !resultValue || isNaN(parseFloat(resultValue))) {
+                                                    return null;
+                                                }
+
+                                                return (
+                                                    <div key={`scale-${testIndex}`} className="mt-4 mb-6">
+                                                        <TestScaleVisualization
+                                                            scaleConfig={scaleConfig}
+                                                            resultValue={resultValue}
+                                                            unit={unit}
+                                                        />
+                                                    </div>
+                                                );
+                                            })}
+
 
                                             {/* ✅ ADD REPORT EXTRAS - DYNAMIC NARRATIVE SECTIONS */}
                                             {testsWithData.map((test, testIndex) => {

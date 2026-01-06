@@ -5,6 +5,7 @@ import JsBarcode from 'jsbarcode';
 import { QRCodeSVG } from 'qrcode.react';
 import React from 'react';
 import TestScaleVisualization from '@/components/TestScaleVisualization';
+import VisualScaleVisualization from '@/components/VisualScaleVisualization';
 
 export default function PublicReport() {
 
@@ -1070,6 +1071,34 @@ export default function PublicReport() {
                                     })}
 
 
+                                    {/* ✅ NEW: Render Visual Scale (Vertical Thermometer) - SECOND SCALE */}
+                                    {testsWithData.map((test, testIndex) => {
+                                      const testData = test.testId || test;
+                                      const visualScale = testData.visualScale;
+
+                                      // Get the first field's value as the result
+                                      const firstField = test.fields?.[0];
+                                      const resultValue = firstField?.defaultValue;
+                                      const unit = firstField?.unit || '';
+
+                                      // Check if visualScale exists and has required data
+                                      if (!visualScale || !visualScale.thresholds || !visualScale.labels ||
+                                        !resultValue || isNaN(parseFloat(resultValue))) {
+                                        return null;
+                                      }
+
+                                      return (
+                                        <div key={`visual-scale-${testIndex}`} className="mt-4 mb-12">
+                                          <VisualScaleVisualization
+                                            visualScale={visualScale}
+                                            resultValue={resultValue}
+                                            unit={unit}
+                                          />
+                                        </div>
+                                      );
+                                    })}
+
+
                                     {testsWithData.map((test, testIndex) => {
                                       const testData = test.testId || test;
                                       const extras = testData.reportExtras;
@@ -1130,7 +1159,7 @@ export default function PublicReport() {
                       <tfoot className="print-footer">
                         <tr>
                           <td>
-                            <div className="text-center mb-1 mt-10">
+                            <div className="text-center mb-1 mt-24">
                               <p className="text-xs font-semibold">
                                 Electronically Verified Report, No Signature(s) Required.
                               </p>

@@ -21,7 +21,7 @@ import { AddedPatientsContext } from "@/context/AddedPatientsContext";
 import { AuthContext } from "@/context/AuthProvider";
 import { SystemFiltersContext } from '@/context/SystemFiltersContext';
 import GlobalDateFilter from './GlobalDateFilter';
-
+import VisualScaleVisualization from './VisualScaleVisualization';
 
 import { useRef } from "react";
 import { useReactToPrint } from 'react-to-print';
@@ -1395,6 +1395,34 @@ Click the link above to view and download your complete test results anytime.
                                                                     <div key={`scale-${testIndex}`} className="mt-4 mb-6">
                                                                         <TestScaleVisualization
                                                                             scaleConfig={scaleConfig}
+                                                                            resultValue={resultValue}
+                                                                            unit={unit}
+                                                                        />
+                                                                    </div>
+                                                                );
+                                                            })}
+
+
+
+                                                            {/* ✅ NEW: Render Visual Scale (Vertical Thermometer) */}
+                                                            {testsWithData.map((test, testIndex) => {
+                                                                const testData = test.testId || test;
+                                                                const visualScale = testData.visualScale;
+
+                                                                // Get the first field's value as the result
+                                                                const firstField = test.fields?.[0];
+                                                                const resultValue = firstField?.defaultValue;
+                                                                const unit = firstField?.unit || '';
+
+                                                                // Check if visualScale exists and has required data
+                                                                if (!visualScale || !visualScale.thresholds || !visualScale.labels || !resultValue) {
+                                                                    return null;
+                                                                }
+
+                                                                return (
+                                                                    <div key={`visual-scale-${testIndex}`} className="mt-4 mb-6">
+                                                                        <VisualScaleVisualization
+                                                                            visualScale={visualScale}
                                                                             resultValue={resultValue}
                                                                             unit={unit}
                                                                         />

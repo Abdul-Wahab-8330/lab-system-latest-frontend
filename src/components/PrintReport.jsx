@@ -4,7 +4,8 @@ import axios from '../api/axiosInstance';
 import JsBarcode from 'jsbarcode';
 import { QRCodeSVG } from 'qrcode.react';
 import { Loader2 } from 'lucide-react';
-import TestScaleVisualization from './TestScaleVisualization'; 
+import TestScaleVisualization from './TestScaleVisualization';
+import VisualScaleVisualization from './VisualScaleVisualization';
 
 export default function PrintReport() {
     const { id } = useParams();
@@ -491,7 +492,7 @@ export default function PrintReport() {
                                             </table>
 
 
-{/* ✅ NEW: Render Scale Visualization */}
+                                            {/* ✅ NEW: Render Scale Visualization */}
                                             {testsWithData.map((test, testIndex) => {
                                                 const testData = test.testId || test;
                                                 const scaleConfig = testData.scaleConfig;
@@ -502,7 +503,7 @@ export default function PrintReport() {
                                                 const unit = firstField?.unit || '';
 
                                                 // ✅ Check for thresholds instead of items
-                                                if (!scaleConfig || !scaleConfig.thresholds || !scaleConfig.labels || 
+                                                if (!scaleConfig || !scaleConfig.thresholds || !scaleConfig.labels ||
                                                     !resultValue || isNaN(parseFloat(resultValue))) {
                                                     return null;
                                                 }
@@ -511,6 +512,34 @@ export default function PrintReport() {
                                                     <div key={`scale-${testIndex}`} className="mt-4 mb-6">
                                                         <TestScaleVisualization
                                                             scaleConfig={scaleConfig}
+                                                            resultValue={resultValue}
+                                                            unit={unit}
+                                                        />
+                                                    </div>
+                                                );
+                                            })}
+
+
+                                            {/* ✅ NEW: Render Visual Scale (Vertical Thermometer) */}
+                                            {testsWithData.map((test, testIndex) => {
+                                                const testData = test.testId || test;
+                                                const visualScale = testData.visualScale;
+
+                                                // Get the first field's value as the result
+                                                const firstField = test.fields?.[0];
+                                                const resultValue = firstField?.defaultValue;
+                                                const unit = firstField?.unit || '';
+
+                                                // Check if visualScale exists and has required data
+                                                if (!visualScale || !visualScale.thresholds || !visualScale.labels ||
+                                                    !resultValue || isNaN(parseFloat(resultValue))) {
+                                                    return null;
+                                                }
+
+                                                return (
+                                                    <div key={`visual-scale-${testIndex}`} className="mt-4 mb-6">
+                                                        <VisualScaleVisualization
+                                                            visualScale={visualScale}
                                                             resultValue={resultValue}
                                                             unit={unit}
                                                         />

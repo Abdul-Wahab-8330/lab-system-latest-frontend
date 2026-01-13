@@ -485,6 +485,88 @@ export default function PrintReport() {
                                                                         ));
                                                                     }
                                                                 })()}
+
+                                                                {/* test scale  */}
+                                                                {(() => {
+                                                                    const testData = test.testId || test;
+                                                                    const scaleConfig = testData.scaleConfig;
+                                                                    const firstField = test.fields?.[0];
+                                                                    const resultValue = firstField?.defaultValue;
+                                                                    const unit = firstField?.unit || '';
+
+                                                                    if (!scaleConfig?.thresholds || !scaleConfig?.labels || !resultValue) return null;
+
+                                                                    return (
+                                                                        <tr>
+                                                                            <td colSpan="4">
+                                                                                <TestScaleVisualization
+                                                                                    scaleConfig={scaleConfig}
+                                                                                    resultValue={resultValue}
+                                                                                    unit={unit}
+                                                                                />
+                                                                            </td>
+                                                                        </tr>
+                                                                    );
+                                                                })()}
+
+                                                                {/* visual scale */}
+                                                                {(() => {
+                                                                    const testData = test.testId || test;
+                                                                    const visualScale = testData.visualScale;
+                                                                    const firstField = test.fields?.[0];
+                                                                    const resultValue = firstField?.defaultValue;
+                                                                    const unit = firstField?.unit || '';
+
+                                                                    if (!visualScale?.thresholds || !visualScale?.labels || !resultValue) return null;
+
+                                                                    return (
+                                                                        <tr>
+                                                                            <td colSpan="4">
+                                                                                <VisualScaleVisualization
+                                                                                    visualScale={visualScale}
+                                                                                    resultValue={resultValue}
+                                                                                    unit={unit}
+                                                                                />
+                                                                            </td>
+                                                                        </tr>
+                                                                    );
+                                                                })()}
+                                                                {/* report extras */}
+
+                                                                {(() => {
+                                                                    const extras = (test.testId || test)?.reportExtras;
+                                                                    if (!extras || Object.keys(extras).length === 0) return null;
+
+                                                                    return (
+                                                                        <tr>
+                                                                            <td colSpan="4">
+                                                                                {Object.entries(extras).map(([key, value]) => {
+                                                                                    if (!value || (typeof value === 'string' && !value.trim())) return null;
+
+                                                                                    const heading = key.replace(/([A-Z])/g, ' $1').toUpperCase();
+
+                                                                                    return (
+                                                                                        <div key={key} className="mb-3">
+                                                                                            <h4 className="font-bold text-sm underline mb-1">
+                                                                                                {heading}
+                                                                                            </h4>
+
+                                                                                            {typeof value === 'string' ? (
+                                                                                                <p className="text-xs whitespace-pre-line">{value}</p>
+                                                                                            ) : (
+                                                                                                <ol className="list-decimal ml-4 text-xs">
+                                                                                                    {value.map((v, i) => <li key={i}>{v}</li>)}
+                                                                                                </ol>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    );
+                                                                                })}
+                                                                            </td>
+                                                                        </tr>
+                                                                    );
+                                                                })()}
+
+
                                                             </React.Fragment>
                                                         );
                                                     })}
@@ -492,110 +574,7 @@ export default function PrintReport() {
                                             </table>
 
 
-                                            {/* ✅ NEW: Render Scale Visualization */}
-                                            {testsWithData.map((test, testIndex) => {
-                                                const testData = test.testId || test;
-                                                const scaleConfig = testData.scaleConfig;
 
-                                                // Get the first field's value as the result
-                                                const firstField = test.fields?.[0];
-                                                const resultValue = firstField?.defaultValue;
-                                                const unit = firstField?.unit || '';
-
-                                                // ✅ Check for thresholds instead of items
-                                                if (!scaleConfig || !scaleConfig.thresholds || !scaleConfig.labels ||
-                                                    !resultValue || isNaN(parseFloat(resultValue))) {
-                                                    return null;
-                                                }
-
-                                                return (
-                                                    <div key={`scale-${testIndex}`} className="mt-4 mb-6">
-                                                        <TestScaleVisualization
-                                                            scaleConfig={scaleConfig}
-                                                            resultValue={resultValue}
-                                                            unit={unit}
-                                                        />
-                                                    </div>
-                                                );
-                                            })}
-
-
-                                            {/* ✅ NEW: Render Visual Scale (Vertical Thermometer) */}
-                                            {testsWithData.map((test, testIndex) => {
-                                                const testData = test.testId || test;
-                                                const visualScale = testData.visualScale;
-
-                                                // Get the first field's value as the result
-                                                const firstField = test.fields?.[0];
-                                                const resultValue = firstField?.defaultValue;
-                                                const unit = firstField?.unit || '';
-
-                                                // Check if visualScale exists and has required data
-                                                if (!visualScale || !visualScale.thresholds || !visualScale.labels ||
-                                                    !resultValue || isNaN(parseFloat(resultValue))) {
-                                                    return null;
-                                                }
-
-                                                return (
-                                                    <div key={`visual-scale-${testIndex}`} className="mt-4 mb-6">
-                                                        <VisualScaleVisualization
-                                                            visualScale={visualScale}
-                                                            resultValue={resultValue}
-                                                            unit={unit}
-                                                        />
-                                                    </div>
-                                                );
-                                            })}
-
-
-                                            {/* ✅ ADD REPORT EXTRAS - DYNAMIC NARRATIVE SECTIONS */}
-                                            {testsWithData.map((test, testIndex) => {
-                                                const testData = test.testId || test;
-                                                const extras = testData.reportExtras;
-
-                                                if (!extras || Object.keys(extras).length === 0) {
-                                                    return null;
-                                                }
-
-                                                return (
-                                                    <div key={`extras-${testIndex}`} className="mt-4 mb-4 w-full">
-                                                        {Object.entries(extras).map(([key, value]) => {
-                                                            if (!value ||
-                                                                (typeof value === 'string' && value.trim() === '') ||
-                                                                (Array.isArray(value) && value.length === 0)) {
-                                                                return null;
-                                                            }
-
-                                                            const heading = key
-                                                                .replace(/([A-Z])/g, ' $1')
-                                                                .trim()
-                                                                .split(' ')
-                                                                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                                                                .join(' ');
-
-                                                            return (
-                                                                <div key={key} className="mb-3">
-                                                                    <h4 className="font-bold text-sm uppercase mb-1 underline text-gray-800">
-                                                                        {heading}:
-                                                                    </h4>
-
-                                                                    {typeof value === 'string' ? (
-                                                                        <p className="text-xs leading-relaxed text-gray-800 whitespace-pre-line">
-                                                                            {value}
-                                                                        </p>
-                                                                    ) : Array.isArray(value) ? (
-                                                                        <ol className="list-decimal list-inside text-xs text-gray-700 space-y-0.5 ml-2">
-                                                                            {value.map((item, i) => (
-                                                                                <li key={i} className="leading-relaxed">{item}</li>
-                                                                            ))}
-                                                                        </ol>
-                                                                    ) : null}
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                );
-                                            })}
 
 
                                         </div>

@@ -886,46 +886,6 @@ export default function PublicReport() {
                                                 </tr>
                                               )}
 
-                                              {/* Field Rows */}
-                                              {/* {filledFields.map((f, fi) => (
-                                                                                                  <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
-                                                                                                      <td className="py-0.5 pl-2">{f.fieldName}</td>
-                                                                                                      <td className="text-center py-0.5">
-                                                                                                          {(() => {
-                                                                                                              const rangeStr = f.range || "-";
-                                                                                                              const patientGender = reports.finalReport?.gender?.toUpperCase();
-              
-                                                                                                              // Check if range contains gender-specific format
-                                                                                                              if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
-                                                                                                                  // Split by comma
-                                                                                                                  const parts = rangeStr.split(',');
-              
-                                                                                                                  // Find matching gender part
-                                                                                                                  for (let part of parts) {
-                                                                                                                      part = part.trim();
-                                                                                                                      if (patientGender === 'MALE' && part.startsWith('M:')) {
-                                                                                                                          return part.substring(2).trim();
-                                                                                                                      }
-                                                                                                                      if (patientGender === 'FEMALE' && part.startsWith('F:')) {
-                                                                                                                          return part.substring(2).trim();
-                                                                                                                      }
-                                                                                                                  }
-              
-                                                                                                                  // If no match found, return first available or original
-                                                                                                                  return rangeStr;
-                                                                                                              }
-              
-                                                                                                              // No gender-specific format, return as is
-                                                                                                              return rangeStr;
-                                                                                                          })()}
-                                                                                                      </td>
-                                                                                                      <td className="text-center py-0.5">{f.unit || "."}</td>
-                                                                                                      <td className="text-center font-semibold py-0.5">
-                                                                                                          {f.defaultValue}
-                                                                                                      </td>
-                                                                                                  </tr>
-                                                                                              ))} */}
-
                                               {/* Field Rows - WITH CATEGORY SUPPORT */}
                                               {(() => {
                                                 // Check if ANY field has a category
@@ -1026,6 +986,109 @@ export default function PublicReport() {
                   REPORT EXTRAS - DYNAMIC NARRATIVE SECTIONS
                   ======================================== */}
 
+                                              {/* ===============================
+   TEST-LEVEL SCALE VISUALIZATION
+   (Must stay INSIDE test loop)
+=============================== */}
+                                              {(() => {
+                                                const testData = test.testId || test;
+                                                const scaleConfig = testData.scaleConfig;
+
+                                                // Using first field as primary numeric result
+                                                const firstField = test.fields?.[0];
+                                                const resultValue = firstField?.defaultValue;
+                                                const unit = firstField?.unit || '';
+
+                                                // Guard: render ONLY if scale is valid
+                                                if (!scaleConfig?.thresholds || !scaleConfig?.labels || !resultValue) {
+                                                  return null;
+                                                }
+
+                                                return (
+                                                  <tr>
+                                                    <td colSpan="4">
+                                                      <TestScaleVisualization
+                                                        scaleConfig={scaleConfig}
+                                                        resultValue={resultValue}
+                                                        unit={unit}
+                                                      />
+                                                    </td>
+                                                  </tr>
+                                                );
+                                              })()}
+                                              {/* ===============================
+   TEST-LEVEL VISUAL SCALE
+   (Vertical thermometer)
+=============================== */}
+                                              {(() => {
+                                                const testData = test.testId || test;
+                                                const visualScale = testData.visualScale;
+
+                                                const firstField = test.fields?.[0];
+                                                const resultValue = firstField?.defaultValue;
+                                                const unit = firstField?.unit || '';
+
+                                                // Guard: render ONLY if visual scale is valid
+                                                if (!visualScale?.thresholds || !visualScale?.labels || !resultValue) {
+                                                  return null;
+                                                }
+
+                                                return (
+                                                  <tr>
+                                                    <td colSpan="4">
+                                                      <VisualScaleVisualization
+                                                        visualScale={visualScale}
+                                                        resultValue={resultValue}
+                                                        unit={unit}
+                                                      />
+                                                    </td>
+                                                  </tr>
+                                                );
+                                              })()}
+
+                                              {/* ===============================
+   TEST-LEVEL REPORT EXTRAS
+   (Narratives, notes, interpretations)
+=============================== */}
+                                              {(() => {
+                                                const extras = (test.testId || test)?.reportExtras;
+
+                                                // Guard: skip empty extras
+                                                if (!extras || Object.keys(extras).length === 0) return null;
+
+                                                return (
+                                                  <tr>
+                                                    <td colSpan="4">
+                                                      {Object.entries(extras).map(([key, value]) => {
+                                                        if (!value || (typeof value === 'string' && !value.trim())) return null;
+
+                                                        const heading = key
+                                                          .replace(/([A-Z])/g, ' $1')
+                                                          .toUpperCase();
+
+                                                        return (
+                                                          <div key={key} className="mb-3">
+                                                            <h4 className="font-bold text-sm underline mb-1">
+                                                              {heading}
+                                                            </h4>
+
+                                                            {typeof value === 'string' ? (
+                                                              <p className="text-xs whitespace-pre-line">{value}</p>
+                                                            ) : (
+                                                              <ol className="list-decimal ml-4 text-xs">
+                                                                {value.map((item, i) => (
+                                                                  <li key={i}>{item}</li>
+                                                                ))}
+                                                              </ol>
+                                                            )}
+                                                          </div>
+                                                        );
+                                                      })}
+                                                    </td>
+                                                  </tr>
+                                                );
+                                              })()}
+
 
                                             </React.Fragment>
                                           );
@@ -1033,119 +1096,7 @@ export default function PublicReport() {
                                       </tbody>
                                     </table>
 
-                                    {/* ✅ ADD SCALE VISUALIZATION HERE - RIGHT AFTER </table> */}
-                                    {testsWithData.map((test, testIndex) => {
-                                      const testData = test.testId || test;
-                                      const scaleConfig = testData.scaleConfig;
 
-                                      // Get the first field's value as the result
-                                      const firstField = test.fields?.[0];
-                                      const resultValue = firstField?.defaultValue;
-                                      const unit = firstField?.unit || '';
-
-                                      // ✅ ADD THESE DEBUG LOGS
-                                      console.log('🔍 Test:', test.testName);
-                                      console.log('📊 Scale Config:', scaleConfig);
-                                      console.log('📈 Result Value:', resultValue);
-                                      console.log('🔢 Has thresholds?', scaleConfig?.thresholds);
-                                      console.log('🏷️ Has labels?', scaleConfig?.labels);
-
-                                      // Check for thresholds instead of items
-                                      if (!scaleConfig || !scaleConfig.thresholds || !scaleConfig.labels ||
-                                        !resultValue || isNaN(parseFloat(resultValue))) {
-                                        console.log('❌ Scale not rendering - missing data');
-                                        return null;
-                                      }
-
-                                      console.log('✅ Rendering scale for:', test.testName);
-
-                                      return (
-                                        <div key={`scale-${testIndex}`} className="mt-4 mb-6">
-                                          <TestScaleVisualization
-                                            scaleConfig={scaleConfig}
-                                            resultValue={resultValue}
-                                            unit={unit}
-                                          />
-                                        </div>
-                                      );
-                                    })}
-
-
-                                    {/* ✅ NEW: Render Visual Scale (Vertical Thermometer) - SECOND SCALE */}
-                                    {testsWithData.map((test, testIndex) => {
-                                      const testData = test.testId || test;
-                                      const visualScale = testData.visualScale;
-
-                                      // Get the first field's value as the result
-                                      const firstField = test.fields?.[0];
-                                      const resultValue = firstField?.defaultValue;
-                                      const unit = firstField?.unit || '';
-
-                                      // Check if visualScale exists and has required data
-                                      if (!visualScale || !visualScale.thresholds || !visualScale.labels ||
-                                        !resultValue || isNaN(parseFloat(resultValue))) {
-                                        return null;
-                                      }
-
-                                      return (
-                                        <div key={`visual-scale-${testIndex}`} className="mt-4 mb-12">
-                                          <VisualScaleVisualization
-                                            visualScale={visualScale}
-                                            resultValue={resultValue}
-                                            unit={unit}
-                                          />
-                                        </div>
-                                      );
-                                    })}
-
-
-                                    {testsWithData.map((test, testIndex) => {
-                                      const testData = test.testId || test;
-                                      const extras = testData.reportExtras;
-
-                                      if (!extras || Object.keys(extras).length === 0) {
-                                        return null;
-                                      }
-
-                                      return (
-                                        <div key={`extras-${testIndex}`} className="mt-4 mb-4 w-full">
-                                          {Object.entries(extras).map(([key, value]) => {
-                                            if (!value ||
-                                              (typeof value === 'string' && value.trim() === '') ||
-                                              (Array.isArray(value) && value.length === 0)) {
-                                              return null;
-                                            }
-
-                                            const heading = key
-                                              .replace(/([A-Z])/g, ' $1')
-                                              .trim()
-                                              .split(' ')
-                                              .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                                              .join(' ');
-
-                                            return (
-                                              <div key={key} className="mb-3">
-                                                <h4 className="font-bold text-sm uppercase mb-1 underline text-gray-800">
-                                                  {heading}:
-                                                </h4>
-
-                                                {typeof value === 'string' ? (
-                                                  <p className="text-xs leading-relaxed text-gray-800 whitespace-pre-line">
-                                                    {value}
-                                                  </p>
-                                                ) : Array.isArray(value) ? (
-                                                  <ol className="list-decimal list-inside text-xs text-gray-700 space-y-0.5 ml-2">
-                                                    {value.map((item, i) => (
-                                                      <li key={i} className="leading-relaxed">{item}</li>
-                                                    ))}
-                                                  </ol>
-                                                ) : null}
-                                              </div>
-                                            );
-                                          })}
-                                        </div>
-                                      );
-                                    })}
                                   </div>
                                 );
                               });
@@ -1159,7 +1110,7 @@ export default function PublicReport() {
                       <tfoot className="print-footer">
                         <tr>
                           <td>
-                            <div className="text-center mb-1 mt-24">
+                            <div className="text-center mb-1 mt-10">
                               <p className="text-xs font-semibold">
                                 Electronically Verified Report, No Signature(s) Required.
                               </p>

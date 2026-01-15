@@ -88,7 +88,7 @@ export const TestProvider = ({ children }) => {
   };
 
   const deleteTest = async (id) => {
-    await axios.delete(`${import.meta.env.VITE_API_URL}/api/tests/${id}`);
+    await axios.delete(`${import.meta.env.VITE_API_URL}/api/tests/delete/${id}`);
     const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/tests/all`);
     setTests(res.data.tests || []);
   };
@@ -105,7 +105,7 @@ export const TestProvider = ({ children }) => {
   }, [isAuthenticated]);
 
   return (
-    <TestContext.Provider value={{ tests, deleteTest, updateTest, loading }}>
+    <TestContext.Provider value={{ tests, deleteTest, updateTest, loading, fetchTests }}>
       {children}
     </TestContext.Provider>
   );

@@ -631,6 +631,23 @@ export default function PublicReport() {
                   margin: 0;
                   padding: 0;
                 }
+                  /* ✅ Keep footer repeating on each page */
+  tfoot.print-footer {
+    display: table-footer-group;
+  }
+
+  /* ✅ Ensure footer is truly at the bottom */
+  tfoot.print-footer td {
+    padding-top: 12px !important;
+    vertical-align: bottom !important;
+  }
+
+  /* ✅ Reserve exact space for footer on the last page */
+  tbody.print-content::after {
+    content: "";
+    display: table-row;
+    height: 160px; /* increase to match full footer + margins */
+  }
               }
               `}</style>
 

@@ -3,7 +3,7 @@
 
 
 import React, { useContext, useState } from "react";
-import axios from "axios";
+import axios from "@/api/axiosInstance";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

@@ -36,6 +36,7 @@ import RevenueSummary from "./components/RevenueSummary";
 import PrintReport from "./components/PrintReport";
 import PrintRegistration from "./components/PrintRegistration";
 import PublicReport from "./pages/PublicReport";
+import ChangePassword from "./components/ChangePassword";
 import { SUPER_ADMIN_USERNAME } from './config/constants';
 
 
@@ -116,6 +117,8 @@ function App() {
           <Route path="payments" element={<PaymentComponent />} />
           <Route path="results" element={<ResultAddingComponent />} />
           <Route path="result-print" element={<ResultPrintComponent />} />
+
+          <Route path="change-password" element={<ChangePassword />} />
         </Route>
 
 

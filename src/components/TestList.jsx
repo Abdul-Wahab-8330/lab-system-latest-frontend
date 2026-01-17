@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Search, Trash2, TestTube2, DollarSign, FileText, Settings, Loader2, Info, Printer, Download } from "lucide-react";
+import { MoreHorizontal, Pencil, Search, Trash2, TestTube2, DollarSign, FileText, Settings, Loader2, Info, Printer, Download, ArrowUpDown } from "lucide-react";
 import { useContext, useState, useMemo, useRef } from "react";
 import { TestContext } from "../context/TestContext";
 import toast from "react-hot-toast";
@@ -31,6 +31,7 @@ const TestList = () => {
   const [search, setSearch] = useState("");
   const [searchTestCode, setSearchTestCode] = useState("");
   const [searchCategory, setSearchCategory] = useState("");
+  const [sortBy, setSortBy] = useState("code-asc");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [currentTest, setCurrentTest] = useState(null);
@@ -65,15 +66,60 @@ const TestList = () => {
 
 
   const filteredTests = useMemo(() => {
-  if (!tests || !Array.isArray(tests)) return []; // ✅ Add safety check
-  
-  return tests.filter((test) => {
+    if (!tests || !Array.isArray(tests)) return []; // ✅ Safety check
+
+    // ============================================
+    // STEP 1: FILTER TESTS
+    // ============================================
+    const filtered = tests.filter((test) => {
       const matchesName = test.testName.toLowerCase().includes(search.toLowerCase());
       const matchesCode = searchTestCode === "" || test.testCode.toString().includes(searchTestCode);
       const matchesCategory = searchCategory === "" || searchCategory === "all" || test.category === searchCategory;
       return matchesName && matchesCode && matchesCategory;
     });
-  }, [tests, search, searchTestCode, searchCategory]);
+
+    // ============================================
+    // STEP 2: SORT TESTS BASED ON SELECTED OPTION
+    // ============================================
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "name-asc":
+          // Sort alphabetically A to Z
+          return a.testName.localeCompare(b.testName);
+
+        case "name-desc":
+          // Sort alphabetically Z to A
+          return b.testName.localeCompare(a.testName);
+
+        case "price-asc":
+          // Sort by price: Low to High
+          return a.testPrice - b.testPrice;
+
+        case "price-desc":
+          // Sort by price: High to Low
+          return b.testPrice - a.testPrice;
+
+        case "category":
+          // Sort by category alphabetically
+          return a.category.localeCompare(b.category);
+
+        case "code-asc":
+          // Sort by test code: Low to High
+          return a.testCode - b.testCode;
+
+        case "code-desc":
+          // Sort by test code: High to Low
+          return b.testCode - a.testCode;
+
+        case "default":
+        default:
+          // Default order (no sorting)
+          return 0;
+      }
+    });
+
+    return sorted;
+  }, [tests, search, searchTestCode, searchCategory, sortBy]);
 
   const handleEditClick = (test) => {
     setCurrentTest(test);
@@ -133,7 +179,7 @@ const TestList = () => {
   };
 
   // ✅ Check combined loading state
-const isLoading = loading || infoLoading;
+  const isLoading = loading || infoLoading;
 
   if (isLoading) {
     return (
@@ -196,10 +242,9 @@ const isLoading = loading || infoLoading;
           </div>
 
           <div className="p-8">
-            {/* Search Bar */}
-            {/* Search Bar */}
+            {/* Search Bar & Filters */}
             <div className="mb-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
                 {/* Search by Name */}
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -237,6 +282,47 @@ const isLoading = loading || infoLoading;
                       {Categories.map((cat) => (
                         <SelectItem key={cat} className='hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150' value={cat}>{cat}</SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* ✅ NEW - Sort Dropdown */}
+                <div>
+                  <Select
+                    value={sortBy}
+                    onValueChange={(value) => setSortBy(value)}
+                  >
+                    <SelectTrigger className="h-12 w-full border-2 border-gray-200 rounded-xl px-4 text-gray-700 bg-gray-50 focus:bg-white focus:border-purple-500 transition-all duration-200">
+                      <div className="flex items-center gap-2">
+                        <ArrowUpDown className="w-4 h-4 text-gray-500" />
+                        <SelectValue placeholder="Sort by..." />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className='bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden'>
+                      <SelectItem className='hover:bg-purple-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="default">
+                        Default Order
+                      </SelectItem>
+                      <SelectItem className='hover:bg-purple-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="name-asc">
+                        Name: A → Z
+                      </SelectItem>
+                      <SelectItem className='hover:bg-purple-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="name-desc">
+                        Name: Z → A
+                      </SelectItem>
+                      <SelectItem className='hover:bg-purple-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="price-asc">
+                        Price: Low → High
+                      </SelectItem>
+                      <SelectItem className='hover:bg-purple-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="price-desc">
+                        Price: High → Low
+                      </SelectItem>
+                      <SelectItem className='hover:bg-purple-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="category">
+                        Category (A → Z)
+                      </SelectItem>
+                      <SelectItem className='hover:bg-purple-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="code-asc">
+                        Test Code: Low → High
+                      </SelectItem>
+                      <SelectItem className='hover:bg-purple-50 px-4 py-2 cursor-pointer transition-colors duration-150' value="code-desc">
+                        Test Code: High → Low
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -46,11 +46,12 @@ import {
   BarChartBig,
   FileBarChart2,
   ChartBarStackedIcon,
-  ChartBarIncreasing
+  ChartBarIncreasing,
+  Key
 } from 'lucide-react';
 import lablogo from '../assets/lablogo.png'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { UserAvatar } from './UserAvatar';
 import { AuthContext } from '@/context/AuthProvider';
 import { LabInfoContext } from '@/context/LabnfoContext';
@@ -65,6 +66,7 @@ const UserDashboardLayout = () => {
   const { info } = useContext(LabInfoContext);
   const [open, setOpen] = useState(false);
   const location = useLocation(); // Get current route
+  const navigate = useNavigate();
 
   const getActiveTabFromRoute = (pathname) => {
     const allMenuItems = getMenuForRole(user?.role);
@@ -194,6 +196,17 @@ const UserDashboardLayout = () => {
               <Separator />
               <DropdownMenuSeparator />
               <Separator className='bg-gray-300 my-1' />
+
+              {/* ✅ NEW - Change Password Option */}
+              <DropdownMenuItem
+                className='cursor-pointer text-indigo-600 hover:bg-indigo-500 hover:text-white'
+                onClick={() => {
+                  setOpen(false); // Close dropdown
+                  navigate('/user/change-password');
+                }}
+              >
+                <Key size={16} /> Change Password
+              </DropdownMenuItem>
 
               <DropdownMenuItem className=' cursor-pointer text-red-500 hover:bg-red-500 hover:text-white' onClick={handleLogout}>
                 <LogOut /> Logout

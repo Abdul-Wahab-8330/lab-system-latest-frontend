@@ -3,11 +3,18 @@ import { useEffect, useState, useContext } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Trash2, Users, User, Shield, AlertTriangle, Loader2 } from "lucide-react";
+import { Trash2, Users, User, Shield, AlertTriangle, Loader2, Key, Copy, Eye } from "lucide-react";
 import { AuthContext } from "@/context/AuthProvider";
 import toast from "react-hot-toast";
 import { ROLES, getRoleDisplayName } from '@/utils/permissions';
 import { SUPER_ADMIN_USERNAME } from '@/config/constants';
+
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+import axios from '../api/axiosInstance';
+
+import { getPasswordStrength } from '@/utils/passwordStrength';
 
 const UserList = () => {
   const { users, user, fetchUsers, deleteUser } = useContext(AuthContext);
@@ -16,12 +23,23 @@ const UserList = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-  
+  // ============================================
+  // STATE FOR RESET PASSWORD DIALOG
+  // ============================================
+  const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
+  const [resetPasswordUser, setResetPasswordUser] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [passwordCopied, setPasswordCopied] = useState(false);
+
   // Filter out super admin for non-super admin users
   const filteredUsers = user?.userName === SUPER_ADMIN_USERNAME
-  ? users
-  : users.filter(u => u.userName !== SUPER_ADMIN_USERNAME);
-  
+    ? users
+    : users.filter(u => u.userName !== SUPER_ADMIN_USERNAME);
+
   const totalAdmins = filteredUsers.filter(u => u.role === 'admin').length;
 
   useEffect(() => {
@@ -50,6 +68,86 @@ const UserList = () => {
     } catch (error) {
       console.log(error)
       toast.error('Failed to delete user!')
+    }
+  };
+
+  // ============================================
+  // HANDLE RESET PASSWORD CLICK
+  // ============================================
+  const handleResetPasswordClick = (user) => {
+    setResetPasswordUser(user);
+    setResetPasswordDialogOpen(true);
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setPasswordCopied(false);
+  };
+
+  // ============================================
+  // COPY PASSWORD TO CLIPBOARD
+  // ============================================
+  const handleCopyPassword = () => {
+    if (newPassword) {
+      navigator.clipboard.writeText(newPassword);
+      setPasswordCopied(true);
+      toast.success('Password copied to clipboard!');
+      setTimeout(() => setPasswordCopied(false), 3000);
+    }
+  };
+
+  // ============================================
+  // VALIDATE RESET PASSWORD FORM
+  // ============================================
+  const validateResetPassword = () => {
+    if (!newPassword || !confirmNewPassword) {
+      toast.error('Both password fields are required');
+      return false;
+    }
+
+    if (newPassword.length < 3) {
+      toast.error('Password must be at least 3 characters long');
+      return false;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      toast.error('Passwords do not match');
+      return false;
+    }
+
+    return true;
+  };
+
+  // ============================================
+  // CONFIRM RESET PASSWORD
+  // ============================================
+  const confirmResetPassword = async () => {
+    // Validate form
+    if (!validateResetPassword()) return;
+
+    try {
+      if (resetPasswordUser) {
+        setResetting(true);
+
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/users/reset-password`,
+          {
+            userId: resetPasswordUser._id,
+            newPassword: newPassword,
+          }
+        );
+
+        if (response.data.success) {
+          toast.success(`Password reset successfully for ${resetPasswordUser.name}`);
+          setResetPasswordDialogOpen(false);
+          setNewPassword('');
+          setConfirmNewPassword('');
+          setResetting(false);
+        }
+      }
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to reset password';
+      toast.error(errorMessage);
+      setResetting(false);
     }
   };
 
@@ -210,17 +308,7 @@ const UserList = () => {
                           <TableCell className="py-6 px-6">
                             {getRoleBadge(u.role)}
                           </TableCell>
-                          {/* <TableCell className="text-right py-6 px-6">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 border border-transparent hover:border-red-200"
-                              onClick={() => handleDeleteClick(u)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </Button>
-                          </TableCell> */}
+
                           <TableCell className="text-right py-6 px-6">
                             {user?.userName === u.userName ? (
                               <div className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
@@ -228,15 +316,31 @@ const UserList = () => {
                                 Current User
                               </div>
                             ) : (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 border border-transparent hover:border-red-200"
-                                onClick={() => handleDeleteClick(u)}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </Button>
+                              <div className="flex items-center justify-end gap-2">
+                                {/* ✅ Reset Password Button - Only for Admin role */}
+                                {user?.role === 'admin' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 rounded-xl transition-all duration-200 border border-transparent hover:border-indigo-200"
+                                    onClick={() => handleResetPasswordClick(u)}
+                                  >
+                                    <Key className="h-4 w-4 mr-2" />
+                                    Reset Password
+                                  </Button>
+                                )}
+
+                                {/* Delete Button */}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 border border-transparent hover:border-red-200"
+                                  onClick={() => handleDeleteClick(u)}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </Button>
+                              </div>
                             )}
                           </TableCell>
                         </TableRow>
@@ -308,6 +412,167 @@ const UserList = () => {
                       <>
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete User
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          )}
+        </Dialog>
+        {/* ============================================ */}
+        {/* RESET PASSWORD DIALOG */}
+        {/* ============================================ */}
+        <Dialog open={resetPasswordDialogOpen} onOpenChange={setResetPasswordDialogOpen}>
+          {resetPasswordUser && (
+            <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border-0 overflow-hidden">
+              {/* Dialog Header */}
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
+                <DialogHeader>
+                  <DialogTitle className="text-xl font-bold text-white flex items-center">
+                    <div className="p-2 bg-indigo-400 rounded-lg mr-3">
+                      <Key className="h-5 w-5" />
+                    </div>
+                    Reset User Password
+                  </DialogTitle>
+                </DialogHeader>
+              </div>
+
+              {/* Dialog Content */}
+              <div className="p-8">
+                {/* User Info */}
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 mb-6 border border-indigo-100">
+                  <div className="flex items-center">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-r from-indigo-400 to-purple-500 flex items-center justify-center mr-3">
+                      <span className="text-sm font-semibold text-white">
+                        {resetPasswordUser.userName?.charAt(0)?.toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Resetting password for</p>
+                      <p className="font-semibold text-gray-900">
+                        {resetPasswordUser.name} (@{resetPasswordUser.userName})
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Password Form */}
+                <div className="space-y-4 mb-6">
+                  {/* New Password Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password" className="text-sm font-semibold text-gray-700">
+                      New Password
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="new-password"
+                        type={showNewPassword ? 'text' : 'password'}
+                        placeholder="Enter new password (min 3 characters)"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="h-11 border-2 border-gray-200 focus:border-indigo-500 rounded-xl pr-20"
+                      />
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                        {/* Copy Button */}
+                        {newPassword && (
+                          <button
+                            type="button"
+                            onClick={handleCopyPassword}
+                            className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            title="Copy password"
+                          >
+                            {passwordCopied ? (
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </button>
+                        )}
+                        {/* Show/Hide Button */}
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                    {/* Password Strength Indicator */}
+                    {newPassword && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-sm text-gray-600">Strength:</span>
+                        <span className={`text-sm font-semibold ${getPasswordStrength(newPassword).color}`}>
+                          {getPasswordStrength(newPassword).strength}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Confirm Password Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password" className="text-sm font-semibold text-gray-700">
+                      Confirm New Password
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="confirm-password"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="Re-enter new password"
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                        className="h-11 border-2 border-gray-200 focus:border-indigo-500 rounded-xl pr-12"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    {/* Password Match Indicator */}
+                    {confirmNewPassword && (
+                      <div className="flex items-center gap-2 mt-2">
+                        {newPassword === confirmNewPassword ? (
+                          <span className="text-sm text-green-600 font-medium">✓ Passwords match</span>
+                        ) : (
+                          <span className="text-sm text-red-600 font-medium">✗ Passwords do not match</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col-reverse sm:flex-row gap-3">
+                  <Button
+                    variant="outline"
+                    className="flex-1 h-11 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-semibold transition-all duration-200"
+                    onClick={() => {
+                      setResetPasswordDialogOpen(false);
+                      setNewPassword('');
+                      setConfirmNewPassword('');
+                    }}
+                    disabled={resetting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1 h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+                    onClick={confirmResetPassword}
+                    disabled={resetting}
+                  >
+                    {resetting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Resetting...
+                      </>
+                    ) : (
+                      <>
+                        <Key className="h-4 w-4 mr-2" />
+                        Reset Password
                       </>
                     )}
                   </Button>

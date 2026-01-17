@@ -15,6 +15,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { AuthContext } from "@/context/AuthProvider";
 import { UserPlus, Users, User, Shield, UserCheck, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { SUPER_ADMIN_USERNAME } from '@/config/constants';
 
 function CreateUserForm() {
   const [name, setName] = useState("");
@@ -24,6 +25,13 @@ function CreateUserForm() {
   const { fetchUsers, users } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [usersLoading, setUsersLoading] = useState(true);
+
+  const { user } = useContext(AuthContext);
+
+  // Filter out super admin for non-super admin users
+  const filteredUsers = user?.userName === SUPER_ADMIN_USERNAME
+    ? users
+    : users.filter(u => u.userName !== SUPER_ADMIN_USERNAME);
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -247,9 +255,9 @@ function CreateUserForm() {
                   </div>
                   Existing Users
                 </div>
-                {!usersLoading && users && (
+                {!usersLoading && filteredUsers && (
                   <div className="bg-white/20 px-3 py-1 rounded-lg text-sm font-medium">
-                    {users.length} {users.length === 1 ? 'User' : 'Users'}
+                    {filteredUsers.length} {filteredUsers.length === 1 ? 'User' : 'Users'}
                   </div>
                 )}
               </h2>
@@ -262,7 +270,7 @@ function CreateUserForm() {
                   <div className="text-gray-600 font-medium">Loading users...</div>
                   <div className="text-gray-500 text-sm mt-2">Please wait while we fetch user data</div>
                 </div>
-              ) : !users || users.length === 0 ? (
+              ) : !filteredUsers || filteredUsers.length === 0 ? (
                 <div className="p-12 text-center">
                   <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <div className="text-gray-600 font-medium mb-2">No Users Found</div>
@@ -270,7 +278,7 @@ function CreateUserForm() {
                 </div>
               ) : (
                 <div className="overflow-hidden">
-                  <div className="overflow-x-auto max-h-96">
+                  <div className="overflow-x-auto max-h-[32rem]">
                     <table className="min-w-full">
                       <thead className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-0">
                         <tr>
@@ -286,7 +294,7 @@ function CreateUserForm() {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-100">
-                        {users.map((user, index) => (
+                        {filteredUsers.map((user, index) => (
                           <tr
                             key={user._id || user.id}
                             className={`hover:bg-gradient-to-r hover:from-purple-50 hover:to-indigo-50 transition-all duration-200 ${index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'

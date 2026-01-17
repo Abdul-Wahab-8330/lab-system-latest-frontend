@@ -7,6 +7,7 @@ import { Trash2, Users, User, Shield, AlertTriangle, Loader2 } from "lucide-reac
 import { AuthContext } from "@/context/AuthProvider";
 import toast from "react-hot-toast";
 import { ROLES, getRoleDisplayName } from '@/utils/permissions';
+import { SUPER_ADMIN_USERNAME } from '@/config/constants';
 
 const UserList = () => {
   const { users, user, fetchUsers, deleteUser } = useContext(AuthContext);
@@ -15,7 +16,13 @@ const UserList = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-  const totalAdmins = users.filter(u => u.role === 'admin').length;
+  
+  // Filter out super admin for non-super admin users
+  const filteredUsers = user?.userName === SUPER_ADMIN_USERNAME
+  ? users
+  : users.filter(u => u.userName !== SUPER_ADMIN_USERNAME);
+  
+  const totalAdmins = filteredUsers.filter(u => u.role === 'admin').length;
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -121,10 +128,10 @@ const UserList = () => {
                 User Directory
               </h2>
               <div className="flex gap-4">
-                {!loading && users && users.length > 0 && (
+                {!loading && filteredUsers && filteredUsers.length > 0 && (
                   <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl">
                     <span className="text-white font-medium text-sm">
-                      {totalAdmins} {totalAdmins == 1 ? 'Admin' : 'Admins'} • {users.filter(u => u.role === 'user').length} Users
+                      {totalAdmins} {totalAdmins == 1 ? 'Admin' : 'Admins'} • {filteredUsers.filter(u => u.role === 'user' || u.role == 'senior_receptionist' || u.role == 'junior_receptionist' || u.role == 'senior_lab_tech' || u.role == 'junior_lab_tech').length} Users
                     </span>
                   </div>
                 )}
@@ -132,7 +139,7 @@ const UserList = () => {
                   <div className="inline-flex items-center px-4 py-2 bg-purple-500 rounded-xl shadow-sm text-white">
                     <Users className="h-4 w-4  mr-2" />
                     <span className="text-sm font-medium">
-                      {users.length} {users.length === 1 ? 'User' : 'Users'} Total
+                      {filteredUsers.length} {filteredUsers.length === 1 ? 'User' : 'Users'} Total
                     </span>
                   </div>
                 )}
@@ -169,7 +176,7 @@ const UserList = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users.length === 0 ? (
+                    {filteredUsers.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={4} className="text-center py-16 bg-gradient-to-br from-gray-50 to-slate-50">
                           <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
@@ -178,7 +185,7 @@ const UserList = () => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      users.map((u, index) => (
+                      filteredUsers.map((u, index) => (
                         <TableRow
                           key={u._id}
                           className={`transition-all duration-300 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:shadow-sm ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'

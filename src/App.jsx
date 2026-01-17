@@ -36,14 +36,15 @@ import RevenueSummary from "./components/RevenueSummary";
 import PrintReport from "./components/PrintReport";
 import PrintRegistration from "./components/PrintRegistration";
 import PublicReport from "./pages/PublicReport";
+import { SUPER_ADMIN_USERNAME } from './config/constants';
 
 
-const UserManagementRoute = ({ children, user }) => {
-  if (user?.userName !== 'abdulwahab123') {
-    return <AccessDenied />;
-  }
-  return children;
-};
+// const UserManagementRoute = ({ children, user }) => {
+//   if (user?.userName !== SUPER_ADMIN_USERNAME) {
+//     return <AccessDenied />;
+//   }
+//   return children;
+// };
 
 
 function App() {
@@ -82,18 +83,8 @@ function App() {
           <Route path="all-tests" element={<TestList />} />
 
 
-          <Route path="create-user" element={
-            <UserManagementRoute user={user}>
-              <CreateUserForm />
-            </UserManagementRoute>
-          }
-          />
-          <Route path="all-users" element={
-            <UserManagementRoute user={user}>
-              <UserList />
-            </UserManagementRoute>
-          }
-          />
+          <Route path="create-user" element={<CreateUserForm />} />
+          <Route path="all-users" element={<UserList />} />
 
 
           <Route path="add-reference" element={<DoctorCard />} />

@@ -5,7 +5,7 @@ import {
     DialogDescription,
     DialogFooter,
 } from "@/components/ui/dialog";
-import { RefreshCcw, AlertTriangle, ArrowRight, MessageCircle } from "lucide-react";
+import { RefreshCcw, AlertTriangle, ArrowRight, MessageCircle, Check } from "lucide-react";
 import toast from "react-hot-toast";
 import { PatientsContext } from "@/context/PatientsContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +28,14 @@ import { useReactToPrint } from 'react-to-print';
 import JsBarcode from 'jsbarcode';
 import { QRCodeSVG } from 'qrcode.react';
 import { socket } from '@/socket';
+
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 
 
 
@@ -54,6 +62,9 @@ export default function ResultPrintComponent() {
     // Dialog state for delete confirmation
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [patientToDelete, setPatientToDelete] = useState(null);
+
+    const [printSpacer, setPrintSpacer] = useState(0);
+
 
     const reportRef = useRef();
 
@@ -254,7 +265,11 @@ Click the link above to view and download your complete test results anytime.
 
     const handlePrintInNewWindow = (patient) => {
         // Open in new tab
-        window.open(`/print-report/${patient._id}`, '_blank');
+        window.open(
+            `/print-report/${patient._id}?spacer=${printSpacer}`,
+            '_blank'
+        );
+
     };
 
     const openEditDialog = async (patient) => {
@@ -540,22 +555,64 @@ Click the link above to view and download your complete test results anytime.
                                                                     <Edit className="w-4 h-4 mr-1" />
                                                                     Edit
                                                                 </Button>
-                                                                <div className="relative">
+                                                                <div className="flex shadow-sm rounded-lg overflow-hidden  border-green-600">
+                                                                    {/* MAIN PRINT BUTTON */}
                                                                     <Button
                                                                         size="sm"
-                                                                        className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                                                        className="rounded-none rounded-l-lg bg-gradient-to-r from-green-500 to-green-600
+               hover:from-green-600 hover:to-green-700 text-white font-semibold px-4"
                                                                         onClick={() => handlePrintClick(p)}
                                                                     >
                                                                         <Printer className="w-4 h-4 mr-1" />
                                                                         Print
                                                                     </Button>
-                                                                    {/* ✅ Icon-only badge */}
-                                                                    {p.results?.length < p.tests?.filter(t => !t.testId?.isDiagnosticTest).length && (
-                                                                        <div title='Some Results Remaining...' className="cursor-pointer absolute -top-1 -right-1 bg-orange-500 rounded-full p-1 border-2 border-white animate-pulse">
-                                                                            <Clock size={15} className="h-3 w-3 text-white" />
-                                                                        </div>
-                                                                    )}
+
+                                                                    {/* DROPDOWN BUTTON */}
+                                                                    <DropdownMenu>
+                                                                        <DropdownMenuTrigger asChild>
+                                                                            <Button
+                                                                                size="sm"
+                                                                                className="rounded-none rounded-r-lg bg-gradient-to-r from-green-500 to-green-600  text-white px-2
+                   border-none flex items-center gap-1"
+                                                                            >
+                                                                                <span className="text-xs font-semibold">
+                                                                                    {printSpacer === 0 ? "" : `${printSpacer}%`}
+                                                                                </span>
+                                                                                <ChevronDown className="h-4 w-4" />
+                                                                            </Button>
+                                                                        </DropdownMenuTrigger>
+
+                                                                        <DropdownMenuContent
+                                                                            align="end"
+                                                                            className="w-44 p-1 bg-white border shadow-md rounded-md"
+                                                                        >
+                                                                            {[0, 20, 30, 40, 50].map((value) => (
+                                                                                <DropdownMenuItem
+                                                                                    key={value}
+                                                                                    onClick={() => setPrintSpacer(value)}
+                                                                                    className={`
+            flex items-center justify-between rounded-sm px-2 py-2 text-sm
+            cursor-pointer transition-colors
+            ${printSpacer === value
+                                                                                            ? "bg-green-100 text-green-700 font-semibold"
+                                                                                            : "hover:bg-gray-100"
+                                                                                        }
+          `}
+                                                                                >
+                                                                                    <span>
+                                                                                        {value === 0 ? "Default spacing" : `Spacer ${value}%`}
+                                                                                    </span>
+
+                                                                                    {printSpacer === value && (
+                                                                                        <Check className="h-4 w-4 text-green-600" />
+                                                                                    )}
+                                                                                </DropdownMenuItem>
+                                                                            ))}
+                                                                        </DropdownMenuContent>
+                                                                    </DropdownMenu>
                                                                 </div>
+
+
                                                                 <Button
                                                                     size="sm"
                                                                     variant="outline"
@@ -978,6 +1035,11 @@ Click the link above to view and download your complete test results anytime.
     margin: 0;
     padding: 0;
   }
+     tr.print-spacer td {
+  border: none;
+}
+
+
 }
 `}</style>
 
@@ -1466,6 +1528,16 @@ Click the link above to view and download your complete test results anytime.
                                             })()}
                                         </td>
                                     </tr>
+                                    {printSpacer > 0 && (
+                                        <tr
+                                            className="print-spacer"
+                                            style={{ height: `${printSpacer}vh` }}
+                                        >
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                    )}
+
+
                                 </tbody>
                                 {/* ========================================
             FOOTER (Repeats Automatically)

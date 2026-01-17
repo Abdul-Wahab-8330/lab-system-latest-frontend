@@ -6,6 +6,8 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Loader2 } from 'lucide-react';
 import TestScaleVisualization from './TestScaleVisualization';
 import VisualScaleVisualization from './VisualScaleVisualization';
+import { useSearchParams } from "react-router-dom";
+
 
 export default function PrintReport() {
     const { id } = useParams();
@@ -13,6 +15,8 @@ export default function PrintReport() {
     const [printPatient, setPrintPatient] = useState(null);
     const [labInfo, setLabInfo] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [searchParams] = useSearchParams();
+    const spacer = Number(searchParams.get("spacer")) || 0;
 
     useEffect(() => {
         loadData();
@@ -583,6 +587,16 @@ export default function PrintReport() {
                             })()}
                         </td>
                     </tr>
+
+                    {spacer > 0 && (
+                        <tr
+                            className="print-spacer"
+                            style={{ height: `${spacer}vh` }}
+                        >
+                            <td>&nbsp;</td>
+                        </tr>
+                    )}
+
                 </tbody>
 
                 {/* FOOTER */}

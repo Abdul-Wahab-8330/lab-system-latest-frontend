@@ -214,7 +214,19 @@ export default function PrintRegistration() {
               </tr>
               <tr>
                 <td className="font-semibold py-0.5">Age/Sex</td>
-                <td className="py-0.5">{printPatient.age} Years / {printPatient.gender}</td>
+                <td className="py-0.5">
+                  {printPatient.age}{" "}
+                  {(
+                    printPatient.ageUnit || "years"
+                  ) === "years"
+                    ? "Years"
+                    : (printPatient.ageUnit === "months"
+                      ? "Months"
+                      : "Days")}
+                  {" / "}
+                  {printPatient.gender}
+                </td>
+
                 <td className="font-semibold py-0.5">Specimen</td>
                 <td className="py-0.5">{printPatient.tests?.[0]?.testId?.specimen || printPatient.specimen || 'Taken in Lab'}</td>
               </tr>
@@ -377,7 +389,19 @@ export default function PrintRegistration() {
               </tr>
               <tr>
                 <td className="font-semibold py-0.5">Age/Sex</td>
-                <td className="py-0.5">{printPatient.age} Years / {printPatient.gender}</td>
+                <td className="py-0.5">
+                  {printPatient.age}{" "}
+                  {(
+                    printPatient.ageUnit || "years"
+                  ) === "years"
+                    ? "Years"
+                    : (printPatient.ageUnit === "months"
+                      ? "Months"
+                      : "Days")}
+                  {" / "}
+                  {printPatient.gender}
+                </td>
+
                 <td className="font-semibold py-0.5">Specimen</td>
                 <td className="py-0.5">{printPatient.tests?.[0]?.testId?.specimen || printPatient.specimen || 'Taken in Lab'}</td>
               </tr>

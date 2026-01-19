@@ -58,6 +58,7 @@ export default function RegisterPatient() {
     const [form, setForm] = useState({
         name: "",
         age: "",
+        ageUnit: "years",
         gender: "Male",
         phone: "",
         fatherHusbandName: "",
@@ -358,6 +359,7 @@ export default function RegisterPatient() {
             const payload = {
                 name: form.name,
                 age: Number(form.age),
+                ageUnit: form.ageUnit,
                 gender: form.gender,
                 phone: form.phone,
                 fatherHusbandName: form.fatherHusbandName,
@@ -502,7 +504,7 @@ export default function RegisterPatient() {
                                                     setTimeout(() => setIsFocused(false), 200);
                                                 }}
                                                 required
-                                                className="pr-12 h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                                className="pr-12 h-12 border-2 border-gray-400 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                             />
                                             <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex gap-2">
                                                 {isSearching && (
@@ -571,15 +573,63 @@ export default function RegisterPatient() {
                                         <label className="block text-sm font-semibold text-gray-700 mb-1">
                                             Age <span className="text-red-500">*</span>
                                         </label>
-                                        <Input
-                                            placeholder="Enter age"
-                                            type="number"
-                                            value={form.age}
-                                            onChange={(e) => setForm({ ...form, age: e.target.value })}
-                                            required
-                                            className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
-                                        />
+
+                                        <div className="flex items-stretch">
+                                            {/* AGE NUMBER */}
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                placeholder="Age"
+                                                value={form.age}
+                                                onChange={(e) => setForm({ ...form, age: e.target.value })}
+                                                required
+                                                className="
+        h-12
+        rounded-r-none
+        rounded-l-xl
+        border-2
+        border-gray-400
+        focus:border-blue-500
+        focus:ring-0
+        bg-white/70
+        shadow-sm
+      "
+                                            />
+
+                                            {/* AGE UNIT */}
+                                            <Select
+                                                value={form.ageUnit}
+                                                onValueChange={(value) =>
+                                                    setForm({ ...form, ageUnit: value })
+                                                }
+                                            >
+                                                <SelectTrigger
+                                                    className="
+          h-12
+          w-[110px]
+          rounded-l-none
+          border-2
+          border-l-0
+          border-gray-400
+          focus:border-blue-500
+          focus:ring-0
+          bg-white/70
+          font-medium
+        "
+                                                >
+                                                    <SelectValue />
+                                                </SelectTrigger>
+
+                                                <SelectContent className="bg-white rounded-xl shadow-xl">
+                                                    <SelectItem value="years">Years</SelectItem>
+                                                    <SelectItem value="months">Months</SelectItem>
+                                                    <SelectItem value="days">Days</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
+
+
 
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -589,7 +639,7 @@ export default function RegisterPatient() {
                                             value={form.gender}
                                             onValueChange={(value) => setForm({ ...form, gender: value })}
                                         >
-                                            <SelectTrigger className="h-12 w-full border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
+                                            <SelectTrigger className="h-12 w-full border-2 border-gray-400 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
                                                 <SelectValue placeholder="Select Gender" />
                                             </SelectTrigger>
                                             <SelectContent className='bg-white border-0 shadow-xl rounded-xl'>
@@ -609,7 +659,7 @@ export default function RegisterPatient() {
                                             value={form.phone}
                                             onChange={(e) => setForm({ ...form, phone: e.target.value })}
                                             required
-                                            className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                            className="h-12 border-2 border-gray-400 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                         />
                                     </div>
 
@@ -622,7 +672,7 @@ export default function RegisterPatient() {
                                             placeholder="Enter father/husband name"
                                             value={form.fatherHusbandName}
                                             onChange={(e) => setForm({ ...form, fatherHusbandName: e.target.value })}
-                                            className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                            className="h-12 border-2 border-gray-400 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                         />
                                     </div>
 
@@ -635,7 +685,7 @@ export default function RegisterPatient() {
                                             placeholder="Enter NIC number"
                                             value={form.nicNo}
                                             onChange={(e) => setForm({ ...form, nicNo: e.target.value })}
-                                            className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                            className="h-12 border-2 border-gray-400 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                         />
                                     </div>
 
@@ -648,7 +698,7 @@ export default function RegisterPatient() {
                                             value={form.specimen}
                                             onValueChange={(value) => setForm({ ...form, specimen: value })}
                                         >
-                                            <SelectTrigger className="h-12 w-full border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
+                                            <SelectTrigger className="h-12 w-full border-2 border-gray-400 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
                                                 <SelectValue placeholder="Select Specimen" />
                                             </SelectTrigger>
                                             <SelectContent className='bg-white border-0 shadow-xl rounded-xl'>
@@ -681,7 +731,7 @@ export default function RegisterPatient() {
                                                         .join(' ');
                                                     setForm({ ...form, referencedBy: value });
                                                 }}
-                                                className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                                className="h-12 border-2 border-gray-400 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                             />
                                             <datalist id="doctors-datalist">
                                                 <option value="Self" />
@@ -718,7 +768,7 @@ export default function RegisterPatient() {
                                             onValueChange={(value) => setForm({ ...form, paymentStatus: value })}
                                             disabled={discountAmount > 0 || discountData.paidAmount > 0}
                                         >
-                                            <SelectTrigger className={`h-12 w-full border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70 ${(discountAmount > 0 || discountData.paidAmount > 0) ? 'opacity-60 cursor-not-allowed' : ''
+                                            <SelectTrigger className={`h-12 w-full border-2 border-gray-400 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70 ${(discountAmount > 0 || discountData.paidAmount > 0) ? 'opacity-60 cursor-not-allowed' : ''
                                                 }`}>
                                                 <SelectValue placeholder="Payment Status" />
                                             </SelectTrigger>
@@ -747,8 +797,8 @@ export default function RegisterPatient() {
                                             }}
                                             disabled={selectedTests.length === 0}
                                             className={`h-12 w-full px-4 border-2 rounded-xl shadow-sm transition-all duration-200 bg-white/70 flex items-center justify-between focus:outline-none ${selectedTests.length === 0
-                                                ? 'border-gray-200 cursor-not-allowed opacity-60'
-                                                : 'border-gray-200 hover:border-blue-500 focus:border-blue-500'
+                                                ? 'border-gray-400 cursor-not-allowed opacity-60'
+                                                : 'border-gray-400 hover:border-blue-500 focus:border-blue-500'
                                                 }`}
                                         >
                                             <span className="text-gray-700 text-sm font-medium">
@@ -778,9 +828,9 @@ export default function RegisterPatient() {
                                                     onClick={() => setShowDiscountPanel(false)}
                                                 />
 
-                                                <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl p-4 z-50 space-y-3">
+                                                <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-400 rounded-xl shadow-xl p-4 z-50 space-y-3">
                                                     {/* Total */}
-                                                    <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                                                    <div className="flex justify-between items-center pb-2 border-b border-gray-400">
                                                         <span className="text-sm font-semibold text-gray-600">Total Amount:</span>
                                                         <span className="text-lg font-bold text-gray-900">Rs.{total.toLocaleString()}</span>
                                                     </div>
@@ -839,7 +889,7 @@ export default function RegisterPatient() {
                                                     </div>
 
                                                     {/* Net Total */}
-                                                    <div className="flex justify-between items-center py-2 border-t border-b border-gray-200 bg-gray-50 px-3 rounded-lg">
+                                                    <div className="flex justify-between items-center py-2 border-t border-b border-gray-400 bg-gray-50 px-3 rounded-lg">
                                                         <span className="text-sm font-semibold text-gray-700">Net Total:</span>
                                                         <span className="text-lg font-bold text-gray-900">Rs.{netTotal.toLocaleString()}</span>
                                                     </div>
@@ -864,7 +914,7 @@ export default function RegisterPatient() {
                                                     </div>
 
                                                     {/* Due Amount */}
-                                                    <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                                                    <div className="flex justify-between items-center pt-2 border-t border-gray-400">
                                                         <span className="text-sm font-semibold text-gray-600">Due Amount:</span>
                                                         <span className="text-lg font-bold text-red-600">Rs.{dueAmount.toLocaleString()}</span>
                                                     </div>
@@ -956,7 +1006,7 @@ export default function RegisterPatient() {
 
                                                 {/* Quick Test Results Dropdown */}
                                                 {isQuickTestFocused && showQuickTestResults && quickTestResults.length > 0 && (
-                                                    <div className="absolute top-full left-0 right-0 z-50 bg-white border-2 border-green-200 rounded-xl shadow-2xl max-h-30 overflow-y-auto mt-2">
+                                                    <div className="absolute top-full left-0 right-0 z-50 bg-white border-2 border-green-300 rounded-xl shadow-2xl max-h-30 overflow-y-auto mt-2">
                                                         <div className="p-3 text-xs font-medium text-gray-500 border-b bg-gradient-to-r from-green-50 to-emerald-50">
                                                             Found {quickTestResults.length} test(s) - Press Enter to add first result
                                                         </div>
@@ -1007,7 +1057,7 @@ export default function RegisterPatient() {
                                                 )}
 
                                                 {isQuickTestFocused && showQuickTestResults && quickTestResults.length === 0 && quickTestSearch.trim().length >= 1 && !isSearchingTests && (
-                                                    <div className="absolute top-full left-0 right-0 z-50 bg-white border-2 border-green-200 rounded-xl shadow-2xl mt-2">
+                                                    <div className="absolute top-full left-0 right-0 z-50 bg-white border-2 border-green-300 rounded-xl shadow-2xl mt-2">
                                                         <div className="p-4 text-sm text-gray-500 text-center">
                                                             No tests found for "{quickTestSearch}"
                                                         </div>
@@ -1026,7 +1076,7 @@ export default function RegisterPatient() {
                                                         placeholder="Search by name, code or category..."
                                                         value={testSearchQuery}
                                                         onChange={(e) => setTestSearchQuery(e.target.value)}
-                                                        className="h-12 pl-12 pr-12 border-2 border-green-200 focus:border-green-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
+                                                        className="h-12 pl-12 pr-12 border-2 border-green-300 focus:border-green-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70"
                                                     />
                                                     <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />
                                                     {testSearchQuery && (
@@ -1052,10 +1102,10 @@ export default function RegisterPatient() {
                                                     value={categoryFilter}
                                                     onValueChange={(value) => setCategoryFilter(value)}
                                                 >
-                                                    <SelectTrigger className="h-12 w-full border-2 border-green-200 focus:border-green-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
+                                                    <SelectTrigger className="h-12 w-full border-2 border-green-300 focus:border-green-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
                                                         <SelectValue placeholder="Filter by Category" />
                                                     </SelectTrigger>
-                                                    <SelectContent className='bg-white border-0 shadow-xl rounded-xl max-h-72'>
+                                                    <SelectContent className='bg-white border border-gray-400 shadow-xl rounded-xl max-h-72'>
                                                         <SelectItem className='hover:bg-green-50 rounded-lg m-1 font-semibold' value="All">
                                                             All Categories
                                                         </SelectItem>
@@ -1229,7 +1279,7 @@ export default function RegisterPatient() {
                                             </div>
                                         </div>
 
-                                        <div className="overflow-hidden rounded-2xl border-2 border-gray-200 shadow-lg bg-white">
+                                        <div className="overflow-hidden rounded-2xl border-2 border-gray-300 shadow-lg bg-white">
                                             <table className="min-w-full">
                                                 <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                                                     <tr>
@@ -1292,7 +1342,7 @@ export default function RegisterPatient() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    className="w-full sm:w-auto py-1 px-8 border-2 border-gray-300 hover:border-gray-400 rounded-xl font-semibold transition-all duration-200"
+                                    className="w-full sm:w-auto py-1 px-8 border-2 border-gray-400 hover:border-gray-400 rounded-xl font-semibold transition-all duration-200"
                                     onClick={() => {
                                         setForm({
                                             name: "",
@@ -1324,7 +1374,7 @@ export default function RegisterPatient() {
                                 </Button>
                                 <Button disabled={loading}
                                     type="submit"
-                                    className="w-full sm:w-auto py-1 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                    className="w-full sm:w-auto py-1 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border"
                                 >
                                     <UserPlus className="h-5 w-5 mr-2" />
                                     {loading ? 'Registering...' : 'Register Patient'}

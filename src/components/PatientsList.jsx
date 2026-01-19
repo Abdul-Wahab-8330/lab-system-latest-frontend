@@ -4,7 +4,7 @@ import { PatientsContext } from "@/context/PatientsContext"; // your context
 import { Input } from "@/components/ui/input";
 import JsBarcode from 'jsbarcode';
 import { QRCodeSVG } from 'qrcode.react';
-import { isAdmin } from '@/utils/permissions'; 
+import { isAdmin } from '@/utils/permissions';
 
 import {
     Table,
@@ -77,6 +77,7 @@ export default function PatientsList() {
     const [editedPatient, setEditedPatient] = useState({
         name: '',
         age: '',
+        ageUnit: 'years',
         gender: '',
         phone: '',
         fatherHusbandName: '',
@@ -270,6 +271,7 @@ You can view your registration receipt and check for results anytime using this 
         setEditedPatient({
             name: patient.name || '',
             age: patient.age || '',
+            ageUnit: patient.ageUnit || 'years',
             gender: patient.gender || '',
             phone: patient.phone || '',
             fatherHusbandName: patient.fatherHusbandName || '',
@@ -286,6 +288,7 @@ You can view your registration receipt and check for results anytime using this 
     };
 
     const handleUpdatePatient = async () => {
+          console.log("Updating patient with:", editedPatient); // 👈 ADD THIS
         try {
             const res = await axios.patch(
                 `${import.meta.env.VITE_API_URL}/api/patients/update/${patientToEdit._id}`,
@@ -539,7 +542,13 @@ You can view your registration receipt and check for results anytime using this 
                                                                             </p>
                                                                             <p className="flex items-center text-sm">
                                                                                 <strong className="text-gray-700">Age:</strong>
-                                                                                <span className="ml-2">{patient.age}</span>
+                                                                                <span className="ml-2">{patient.age}{" "}
+                                                                                    {patient.ageUnit === "years"
+                                                                                        ? "Years"
+                                                                                        : patient.ageUnit === "months"
+                                                                                            ? "Months"
+                                                                                            : "Days"}
+                                                                                </span>
                                                                             </p>
                                                                             <p className="flex items-center text-sm">
                                                                                 <strong className="text-gray-700">Gender:</strong>
@@ -906,13 +915,30 @@ You can view your registration receipt and check for results anytime using this 
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Age
                                         </label>
-                                        <Input
-                                            type="number"
-                                            value={editedPatient.age}
-                                            onChange={(e) => handleEditChange('age', e.target.value)}
-                                            className="border-2 border-gray-200 focus:border-blue-500 rounded-lg"
-                                        />
+
+                                        <div className="flex overflow-hidden border-2 border-gray-200 rounded-lg focus-within:border-blue-500">
+                                            {/* AGE NUMBER */}
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                value={editedPatient.age}
+                                                onChange={(e) => handleEditChange('age', e.target.value)}
+                                                className="h-10 border-0 rounded-none focus:ring-0"
+                                            />
+
+                                            {/* AGE UNIT */}
+                                            <select
+                                                value={editedPatient.ageUnit}
+                                                onChange={(e) => handleEditChange('ageUnit', e.target.value)}
+                                                className="h-10 px-3 border-l border-gray-200 bg-gray-50 text-sm focus:outline-none"
+                                            >
+                                                <option value="years">Years</option>
+                                                <option value="months">Months</option>
+                                                <option value="days">Days</option>
+                                            </select>
+                                        </div>
                                     </div>
+
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1190,7 +1216,19 @@ You can view your registration receipt and check for results anytime using this 
                                         </tr>
                                         <tr>
                                             <td className="font-semibold py-0.5">Age/Sex</td>
-                                            <td className="py-0.5">{printPatient.age} Years / {printPatient.gender}</td>
+                                            <td className="py-0.5">
+                                                {printPatient.age}{" "}
+                                                {(
+                                                    printPatient.ageUnit || "years"
+                                                ) === "years"
+                                                    ? "Years"
+                                                    : (printPatient.ageUnit === "months"
+                                                        ? "Months"
+                                                        : "Days")}
+                                                {" / "}
+                                                {printPatient.gender}
+                                            </td>
+
                                             <td className="font-semibold py-0.5">Specimen</td>
                                             <td className="py-0.5">{printPatient.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</td>
                                         </tr>
@@ -1365,8 +1403,18 @@ You can view your registration receipt and check for results anytime using this 
                                         </tr>
                                         <tr>
                                             <td className="font-semibold py-0.5">Age/Sex</td>
-                                            <td className="py-0.5">{printPatient.age} Years / {printPatient.gender}</td>
-                                            <td className="font-semibold py-0.5">Specimen</td>
+                                            <td className="py-0.5">
+                                                {printPatient.age}{" "}
+                                                {(
+                                                    printPatient.ageUnit || "years"
+                                                ) === "years"
+                                                    ? "Years"
+                                                    : (printPatient.ageUnit === "months"
+                                                        ? "Months"
+                                                        : "Days")}
+                                                {" / "}
+                                                {printPatient.gender}
+                                            </td>
                                             <td className="py-0.5">{printPatient.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</td>
                                         </tr>
                                         <tr>

@@ -91,43 +91,6 @@ export default function ResultAddingComponent() {
         loadPendingPatients();
     }, []);
 
-    // const loadPendingPatients = async () => {
-    //     const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/pending`);
-
-    //     // ✅ FILTER: Remove patients that ONLY have diagnostic tests
-    //     const filteredData = res.data.filter(patient => {
-    //         const nonDiagnosticTests = patient.tests.filter(test =>
-    //             !test.testId?.isDiagnosticTest
-    //         );
-    //         return nonDiagnosticTests.length > 0; // Only show if has at least 1 non-diagnostic test
-    //     });
-
-    //     setPendingPatients(filteredData);
-    //     setFilteredPatients(filteredData);
-    // };
-
-
-    // const loadPendingPatients = async () => {
-
-    //     const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/pending`);
-
-    //     // ✅ FILTER: Remove patients that ONLY have diagnostic tests
-    //     // ✅ ALSO: Only show patients with incomplete results
-    //     const filteredData = res.data.filter(patient => {
-    //         const nonDiagnosticTests = patient.tests.filter(test =>
-    //             !test.testId?.isDiagnosticTest
-    //         );
-
-    //         // Must have non-diagnostic tests AND results must be incomplete
-    //         return nonDiagnosticTests.length > 0 &&
-    //             patient.results.length < nonDiagnosticTests.length;
-    //     });
-
-    //     setPendingPatients(filteredData);
-    //     setFilteredPatients(filteredData);
-    // };
-
-
 
     const loadPendingPatients = async () => {
     setIsLoading(true); // ✅ ADD THIS
@@ -150,6 +113,20 @@ export default function ResultAddingComponent() {
         setIsLoading(false); // ✅ ADD THIS
     }
 };
+
+const formatAge = (patient) => {
+  if (!patient?.age) return "-";
+
+  const unit =
+    patient.ageUnit === "months"
+      ? "Months"
+      : patient.ageUnit === "days"
+      ? "Days"
+      : "Years"; // default for old records
+
+  return `${patient.age} ${unit}`;
+};
+
 
 
     // Filter function
@@ -593,7 +570,7 @@ export default function ResultAddingComponent() {
                                     <div className="flex items-center">
                                         <Calendar className="h-4 w-4 mr-2 text-purple-600" />
                                         <span className="text-gray-600">Age:</span>
-                                        <span className="font-semibold text-gray-900 ml-2">{selectedPatient.age || "—"}</span>
+                                        <span className="font-semibold text-gray-900 ml-2">{formatAge(selectedPatient) || "—"}</span>
                                     </div>
                                     <div className="flex items-center">
                                         <Phone className="h-4 w-4 mr-2 text-purple-600" />
@@ -879,7 +856,7 @@ export default function ResultAddingComponent() {
                                         </div>
                                         <div>
                                             <span className="text-gray-600">Age:</span>
-                                            <span className="font-semibold text-gray-900 ml-2">{detailsPatient.age || "—"}</span>
+                                            <span className="font-semibold text-gray-900 ml-2">{formatAge(detailsPatient) || "—"}</span>
                                         </div>
                                         <div className="col-span-2">
                                             <span className="text-gray-600">Contact:</span>

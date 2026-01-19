@@ -64,6 +64,20 @@ export default function PrintReport() {
         }
     }, [loading, printPatient, labInfo, error]);
 
+    const formatAge = (patient) => {
+  if (!patient?.age) return "-";
+
+  const unit =
+    patient.ageUnit === "months"
+      ? "Months"
+      : patient.ageUnit === "days"
+      ? "Days"
+      : "Years"; // default for old records
+
+  return `${patient.age} ${unit}`;
+};
+
+
     // Add error display in render
     if (error) {
         return (
@@ -283,7 +297,7 @@ export default function PrintReport() {
                                         <tr>
                                             <td className="font-semibold py-0.5">Age/Sex</td>
                                             <td className="py-0.5">
-                                                {printPatient?.age} Years / {printPatient?.gender}
+                                                {formatAge(printPatient)} / {printPatient?.gender}
                                             </td>
                                             <td className="font-semibold py-0.5">Specimen</td>
                                             <td className="py-0.5">

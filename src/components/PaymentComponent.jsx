@@ -119,6 +119,20 @@ export default function PaymentComponent() {
         return stats;
     }, [filteredPatients]);
 
+    const formatAge = (patient) => {
+        if (!patient?.age) return "-";
+
+        const unit =
+            patient.ageUnit === "months"
+                ? "Months"
+                : patient.ageUnit === "days"
+                    ? "Days"
+                    : "Years"; // default for old records
+
+        return `${patient.age} ${unit}`;
+    };
+
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-100 p-6">
             <div className="max-w-7xl mx-auto">
@@ -193,7 +207,7 @@ export default function PaymentComponent() {
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         <Calendar className="inline h-4 w-4 mr-1" />
                                         Filter by Date
-                                        
+
                                     </label>
                                     <input
                                         type="date"
@@ -458,7 +472,8 @@ export default function PaymentComponent() {
                                                                                 </p>
                                                                                 <p className="flex items-center text-sm">
                                                                                     <strong className="text-gray-700">Age:</strong>
-                                                                                    <span className="ml-2">{patient.age}</span>
+                                                                                    <span className="ml-2">{formatAge(patient)}</span>
+
                                                                                 </p>
                                                                                 <p className="flex items-center text-sm">
                                                                                     <strong className="text-gray-700">Gender:</strong>

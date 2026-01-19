@@ -160,6 +160,19 @@ export default function ResultPrintComponent() {
         return '92' + cleaned;
     };
 
+    const formatAge = (patient) => {
+  if (!patient?.age) return "-";
+
+  const unit =
+    patient.ageUnit === "months"
+      ? "Months"
+      : patient.ageUnit === "days"
+      ? "Days"
+      : "Years"; // default for old records
+
+  return `${patient.age} ${unit}`;
+};
+
 
     const handleWhatsAppShare = (patient) => {
         const formattedPhone = formatPhoneNumber(patient.phone);
@@ -760,7 +773,7 @@ Click the link above to view and download your complete test results anytime.
                                     <div className="flex items-center">
                                         <Calendar className="h-4 w-4 mr-2 text-blue-600" />
                                         <span className="text-gray-600">Age:</span>
-                                        <span className="font-semibold text-gray-900 ml-2">{editPatient.age || "—"}</span>
+                                        <span className="font-semibold text-gray-900 ml-2">{formatAge(editPatient) || "—"}</span>
                                     </div>
                                     <div className="flex items-center">
                                         <Phone className="h-4 w-4 mr-2 text-blue-600" />
@@ -884,7 +897,7 @@ Click the link above to view and download your complete test results anytime.
                                                 </div>
                                                 <div>
                                                     <label className="font-semibold text-sm text-gray-600">Age:</label>
-                                                    <p className="text-base text-gray-900">{selectedPatient.age || "—"}</p>
+                                                    <p className="text-base text-gray-900">{formatAge(selectedPatient) || "—"}</p>
                                                 </div>
                                                 <div>
                                                     <label className="font-semibold text-sm text-gray-600">Gender:</label>
@@ -1165,7 +1178,7 @@ Click the link above to view and download your complete test results anytime.
                                                         <tr>
                                                             <td className="font-semibold py-0.5">Age/Sex</td>
                                                             <td className="py-0.5">
-                                                                {printPatient?.age} Years / {printPatient?.gender}
+                                                                {formatAge(printPatient)} / {printPatient?.gender}
                                                             </td>
                                                             {/* this is the second specimen status we add while registering patient */}
                                                             <td className="font-semibold py-0.5">Specimen</td>

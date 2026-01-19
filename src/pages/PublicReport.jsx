@@ -121,6 +121,20 @@ export default function PublicReport() {
     }
   };
 
+  const formatAge = (patient) => {
+  if (!patient?.age) return "-";
+
+  const unit =
+    patient.ageUnit === "months"
+      ? "Months"
+      : patient.ageUnit === "days"
+      ? "Days"
+      : "Years"; // default for old records
+
+  return `${patient.age} ${unit}`;
+};
+
+
   const handlePrintReg = () => {
     const element = regReportRef.current;
     const printWindow = window.open('', '_blank');
@@ -444,7 +458,7 @@ export default function PublicReport() {
                             </tr>
                             <tr>
                               <td className="font-semibold py-0.5">Age/Sex</td>
-                              <td className="py-0.5">{reports.registrationReport.age} Years / {reports.registrationReport.gender}</td>
+                              <td className="py-0.5">{formatAge(reports.registrationReport)} / {reports.registrationReport.gender}</td>
                               <td className="font-semibold py-0.5">Specimen</td>
                               <td className="py-0.5">{reports.registrationReport.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</td>
                             </tr>
@@ -777,7 +791,7 @@ export default function PublicReport() {
                                   <tr>
                                     <td className="font-semibold py-0.5">Age/Sex</td>
                                     <td className="py-0.5">
-                                      {reports.finalReport?.age} Years / {reports.finalReport?.gender}
+                                      {formatAge(reports.finalReport)} / {reports.finalReport?.gender}
                                     </td>
                                     {/* this is the second specimen status we add while registering patient */}
                                     <td className="font-semibold py-0.5">Specimen</td>

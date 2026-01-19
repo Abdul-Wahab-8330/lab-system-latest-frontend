@@ -98,6 +98,20 @@ export default function RevenueSummary() {
     return testBreakdown;
   };
 
+  const formatAge = (patient) => {
+  if (!patient?.age) return "-";
+
+  const unit =
+    patient.ageUnit === "months"
+      ? "M"
+      : patient.ageUnit === "days"
+      ? "D"
+      : "Y"; // default for old records
+
+  return `${patient.age} ${unit}`;
+};
+
+
   const groupedPatients = groupPatientsByDate(filteredPatients);
   const grandTotal = filteredPatients.reduce((sum, p) => sum + (p.netTotal !== undefined ? p.netTotal : p.total), 0);
   const grandTotalTests = filteredPatients.reduce((sum, p) => sum + p.tests.length, 0);
@@ -484,7 +498,7 @@ export default function RevenueSummary() {
                                 {patient.name}
                               </td>
                               <td className="px-2 py-1 text-gray-700 border-r border-gray-300">
-                                {patient.age}Y / {patient.gender?.charAt(0)}
+                                {formatAge(patient)} / {patient.gender?.charAt(0)}
                               </td>
                               <td className="px-2 py-1 text-gray-700 border-r border-gray-300">
                                 {patient.phone}

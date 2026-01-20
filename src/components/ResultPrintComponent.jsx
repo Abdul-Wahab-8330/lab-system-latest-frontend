@@ -35,6 +35,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import SmallTestScaleVisualization from "./SmallTestScale";
 
 
 
@@ -599,7 +600,7 @@ Click the link above to view and download your complete test results anytime.
                                                                             align="end"
                                                                             className="w-44 p-1 bg-white border shadow-md rounded-md"
                                                                         >
-                                                                            {[0, 20, 30, 40, 50].map((value) => (
+                                                                            {[0, 10, 15, 20, 30, 40, 50].map((value) => (
                                                                                 <DropdownMenuItem
                                                                                     key={value}
                                                                                     onClick={() => setPrintSpacer(value)}
@@ -1056,6 +1057,19 @@ Click the link above to view and download your complete test results anytime.
     break-inside: avoid;
   }
 
+  /* Special render fields - prevent page breaks */
+.special-field-container {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.special-field-container h4,
+.special-field-container p,
+.special-field-container > div {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
 
 }
 `}</style>
@@ -1259,144 +1273,262 @@ Click the link above to view and download your complete test results anytime.
                                                                 <h3 className="text-md font-bold uppercase">{category} REPORT</h3>
                                                             </div>
 
-                                                            {/* Table with headers (once per category) */}
-                                                            <table className=" text-xs border-collapse mb-2 " style={{ width: "83%" }}>
-                                                                <thead>
-                                                                    <tr className="border-b border-gray-800">
-                                                                        <th className="text-left pl-2 font-semibold align-bottom">TEST</th>
-                                                                        <th className="text-center font-semibold align-bottom">
-                                                                            REFERENCE RANGE
-                                                                        </th>
-                                                                        <th className="text-center font-semibold align-bottom">UNIT</th>
-                                                                        <th className="text-center font-semibold align-top">
-                                                                            <div>RESULT</div>
-                                                                            <div className="text-[10px] font-semibold">
-                                                                                {printPatient?.refNo}
-                                                                            </div>
-                                                                            <div className="text-[10px] font-normal">
-                                                                                {new Date().toLocaleDateString("en-GB", {
-                                                                                    day: "2-digit",
-                                                                                    month: "short",
-                                                                                    year: "numeric"
-                                                                                }).replace(/ /g, "-")} {" "}
-                                                                                {new Date().toLocaleTimeString("en-US", {
-                                                                                    hour: "2-digit",
-                                                                                    minute: "2-digit",
-                                                                                    hour12: true,
-                                                                                })}
-                                                                            </div>
-                                                                        </th>
-                                                                    </tr>
-                                                                </thead>
-                                                                {testsWithData.map((test, testIndex) => {
-                                                                    const filledFields =
-                                                                        test.fields?.filter(
-                                                                            f =>
-                                                                                f.defaultValue &&
-                                                                                f.defaultValue.trim() !== "" &&
-                                                                                f.defaultValue !== "—"
-                                                                        ) || [];
+                                                            {/* Mixed Rendering: Special + Table in same category */}
+                                                            {(() => {
+                                                                // Merge result fields with template specialRender config
+                                                                const testsWithConfig = testsWithData.map(test => {
+                                                                    // console.log('Test:', test.testName);
+                                                                    // console.log('test.testId:', test.testId);
+                                                                    // console.log('test.testId.fields:', test.testId?.fields);
+                                                                    // console.log('FULL testId object:', JSON.stringify(test.testId, null, 2));
+                                                                    const templateFields = test.testId?.fields || [];
 
-                                                                    return (
-                                                                        <tbody
-                                                                            key={testIndex}
-                                                                            className="test-block"
-                                                                            style={{
-                                                                                pageBreakInside: "avoid",
-                                                                                breakInside: "avoid"
-                                                                            }}
-                                                                        >
-                                                                            {/* TEST NAME */}
-                                                                            {test.testName && (
-                                                                                <tr>
-                                                                                    <td colSpan="4" className="py-2 font-semibold uppercase text-sm">
-                                                                                        {test.testName}
-                                                                                    </td>
-                                                                                </tr>
-                                                                            )}
+                                                                    const mergedFields = test.fields?.map(resultField => {
+                                                                        const templateField = templateFields.find(
+                                                                            tf => tf.fieldName === resultField.fieldName
+                                                                        );
 
-                                                                            {/* FIELDS */}
-                                                                            {filledFields.map((f, fi) => (
-                                                                                <tr
-                                                                                    key={fi}
-                                                                                    className="border-b border-gray-400"
-                                                                                    style={{ borderBottomStyle: "dashed" }}
+                                                                        // console.log(`Field: ${resultField.fieldName}`);
+                                                                        // console.log('  templateField found:', !!templateField);
+                                                                        // console.log('  specialRender:', templateField?.specialRender);
+                                                                        // console.log('  specialRender.enabled:', templateField?.specialRender?.enabled);
+
+                                                                        return {
+                                                                            ...resultField,
+                                                                            specialRender: templateField?.specialRender || { enabled: false }
+                                                                        };
+                                                                    }) || [];
+
+                                                                    return {
+                                                                        ...test,
+                                                                        fields: mergedFields
+                                                                    };
+                                                                });
+
+                                                                // Separate tests by render mode
+                                                                const specialTests = testsWithConfig.filter(test =>
+                                                                    test.fields?.some(f => f.specialRender?.enabled)
+                                                                );
+
+                                                                const normalTests = testsWithConfig.filter(test =>
+                                                                    !test.fields?.some(f => f.specialRender?.enabled)
+                                                                );
+
+                                                                return (
+                                                                    <>
+                                                                        {/* ========================================
+    SPECIAL RENDER TESTS (No Table)
+======================================== */}
+                                                                        {specialTests.map((test, testIndex) => {
+                                                                            const specialFields = test.fields.filter(
+                                                                                f => f.specialRender?.enabled &&
+                                                                                    f.defaultValue &&
+                                                                                    f.defaultValue.trim() !== "" &&
+                                                                                    f.defaultValue !== "—"
+                                                                            );
+
+                                                                            if (specialFields.length === 0) return null;
+
+                                                                            return (
+                                                                                <div
+                                                                                    key={`special-${testIndex}`}
+                                                                                    style={{
+                                                                                        pageBreakInside: "avoid",
+                                                                                        breakInside: "avoid",
+                                                                                        marginBottom: "16px",
+                                                                                        marginTop: "16px"
+                                                                                    }}
                                                                                 >
-                                                                                    <td className="py-0.5 pl-2">{f.fieldName}</td>
-                                                                                    <td className="text-center py-0.5">{f.range || "-"}</td>
-                                                                                    <td className="text-center py-0.5">{f.unit || "."}</td>
-                                                                                    <td className="text-center font-semibold py-0.5">
-                                                                                        {f.defaultValue}
-                                                                                    </td>
-                                                                                </tr>
-                                                                            ))}
+                                                                                    {/* Test Name Header */}
+                                                                                    <div className=" mt-6">
+                                                                                        <h3 className="text-sm font-semibold uppercase">{test.testName}</h3>
+                                                                                    </div>
+                                                                                    <div className="h-[1px] w-full bg-gray-400 mb-1"></div>
 
-                                                                            {/* TEST SCALE */}
-                                                                            {(() => {
-                                                                                const scaleConfig = (test.testId || test)?.scaleConfig;
-                                                                                const firstField = test.fields?.[0];
-                                                                                if (!scaleConfig || !firstField?.defaultValue) return null;
+                                                                                    {specialFields.map((field, fieldIndex) => (
+                                                                                        <div
+                                                                                            key={fieldIndex}
+                                                                                            className="special-field-container"
+                                                                                            style={{
+                                                                                                pageBreakInside: "avoid",
+                                                                                                breakInside: "avoid",
+                                                                                                marginBottom: "8px"
+                                                                                            }}
+                                                                                        >
+                                                                                            {/* Field Name */}
+                                                                                            <h4 className="font-semibold text-gray-900 text-[13px] mb-1">
+                                                                                                {field.fieldName}
+                                                                                            </h4>
 
-                                                                                return (
-                                                                                    <tr>
-                                                                                        <td colSpan="4">
-                                                                                            <TestScaleVisualization
-                                                                                                scaleConfig={scaleConfig}
-                                                                                                resultValue={firstField.defaultValue}
-                                                                                                unit={firstField.unit}
-                                                                                            />
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                );
-                                                                            })()}
+                                                                                            {/* Description and Scale in same row */}
+                                                                                            <div className="flex items-start justify-between gap-4">
+                                                                                                {/* Description - Takes most space */}
+                                                                                                {field.specialRender?.description && (
+                                                                                                    <p className="text-[11px] text-gray-900 leading-tight flex-1">
+                                                                                                        {field.specialRender.description}
+                                                                                                    </p>
+                                                                                                )}
 
-                                                                            {/* VISUAL SCALE */}
-                                                                            {(() => {
-                                                                                const visualScale = (test.testId || test)?.visualScale;
-                                                                                const firstField = test.fields?.[0];
-                                                                                if (!visualScale || !firstField?.defaultValue) return null;
-
-                                                                                return (
-                                                                                    <tr>
-                                                                                        <td colSpan="4">
-                                                                                            <VisualScaleVisualization
-                                                                                                visualScale={visualScale}
-                                                                                                resultValue={firstField.defaultValue}
-                                                                                                unit={firstField.unit}
-                                                                                            />
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                );
-                                                                            })()}
-
-                                                                            {/* REPORT EXTRAS */}
-                                                                            {(() => {
-                                                                                const extras = (test.testId || test)?.reportExtras;
-                                                                                if (!extras || Object.keys(extras).length === 0) return null;
-
-                                                                                return (
-                                                                                    <tr>
-                                                                                        <td colSpan="4">
-                                                                                            {Object.entries(extras).map(([key, value]) => {
-                                                                                                if (!value) return null;
-                                                                                                return (
-                                                                                                    <div key={key} className="mb-3">
-                                                                                                        <h4 className="font-bold text-sm underline">
-                                                                                                            {key.replace(/([A-Z])/g, " $1").toUpperCase()}
-                                                                                                        </h4>
-                                                                                                        <p className="text-xs whitespace-pre-line">{value}</p>
+                                                                                                {/* Scale - Compact, at the end */}
+                                                                                                {field.specialRender?.scaleConfig && (
+                                                                                                    <div style={{ width: '180px', flexShrink: 0 }}>
+                                                                                                        <SmallTestScaleVisualization
+                                                                                                            scaleConfig={field.specialRender.scaleConfig}
+                                                                                                            resultValue={field.defaultValue}
+                                                                                                            unit={field.unit}
+                                                                                                        />
                                                                                                     </div>
-                                                                                                );
-                                                                                            })}
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                );
-                                                                            })()}
-                                                                        </tbody>
-                                                                    );
-                                                                })}
+                                                                                                )}
+                                                                                            </div>
+                                                                                            <div className="h-[1px] w-full bg-gray-400 mt-2 mb-0"></div>
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                            );
+                                                                        })}
 
-                                                            </table>
+                                                                        {/* ========================================
+                NORMAL TABLE TESTS
+            ======================================== */}
+                                                                        {normalTests.length > 0 && (
+                                                                            <table className="text-xs border-collapse mb-2" style={{ width: "83%" }}>
+                                                                                <thead>
+                                                                                    <tr className="border-b border-gray-800">
+                                                                                        <th className="text-left pl-2 font-semibold align-bottom">TEST</th>
+                                                                                        <th className="text-center font-semibold align-bottom">
+                                                                                            REFERENCE RANGE
+                                                                                        </th>
+                                                                                        <th className="text-center font-semibold align-bottom">UNIT</th>
+                                                                                        <th className="text-center font-semibold align-top">
+                                                                                            <div>RESULT</div>
+                                                                                            <div className="text-[10px] font-semibold">
+                                                                                                {printPatient?.refNo}
+                                                                                            </div>
+                                                                                            <div className="text-[10px] font-normal">
+                                                                                                {new Date().toLocaleDateString("en-GB", {
+                                                                                                    day: "2-digit",
+                                                                                                    month: "short",
+                                                                                                    year: "numeric"
+                                                                                                }).replace(/ /g, "-")} {" "}
+                                                                                                {new Date().toLocaleTimeString("en-US", {
+                                                                                                    hour: "2-digit",
+                                                                                                    minute: "2-digit",
+                                                                                                    hour12: true,
+                                                                                                })}
+                                                                                            </div>
+                                                                                        </th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                {normalTests.map((test, testIndex) => {
+                                                                                    const filledFields = test.fields?.filter(
+                                                                                        f => f.defaultValue &&
+                                                                                            f.defaultValue.trim() !== "" &&
+                                                                                            f.defaultValue !== "—"
+                                                                                    ) || [];
+
+                                                                                    return (
+                                                                                        <tbody
+                                                                                            key={testIndex}
+                                                                                            className="test-block"
+                                                                                            style={{
+                                                                                                pageBreakInside: "avoid",
+                                                                                                breakInside: "avoid"
+                                                                                            }}
+                                                                                        >
+                                                                                            {/* TEST NAME */}
+                                                                                            {test.testName && (
+                                                                                                <tr>
+                                                                                                    <td colSpan="4" className="py-2 font-semibold uppercase text-sm">
+                                                                                                        {test.testName}
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            )}
+
+                                                                                            {/* FIELDS */}
+                                                                                            {filledFields.map((f, fi) => (
+                                                                                                <tr
+                                                                                                    key={fi}
+                                                                                                    className="border-b border-gray-400"
+                                                                                                    style={{ borderBottomStyle: "dashed" }}
+                                                                                                >
+                                                                                                    <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                                                                    <td className="text-center py-0.5">{f.range || "-"}</td>
+                                                                                                    <td className="text-center py-0.5">{f.unit || "."}</td>
+                                                                                                    <td className="text-center font-semibold py-0.5">
+                                                                                                        {f.defaultValue}
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            ))}
+
+                                                                                            {/* TEST SCALE */}
+                                                                                            {(() => {
+                                                                                                const scaleConfig = (test.testId || test)?.scaleConfig;
+                                                                                                const firstField = test.fields?.[0];
+                                                                                                if (!scaleConfig || !firstField?.defaultValue) return null;
+
+                                                                                                return (
+                                                                                                    <tr>
+                                                                                                        <td colSpan="4">
+                                                                                                            <TestScaleVisualization
+                                                                                                                scaleConfig={scaleConfig}
+                                                                                                                resultValue={firstField.defaultValue}
+                                                                                                                unit={firstField.unit}
+                                                                                                            />
+                                                                                                        </td>
+                                                                                                    </tr>
+                                                                                                );
+                                                                                            })()}
+
+                                                                                            {/* VISUAL SCALE */}
+                                                                                            {(() => {
+                                                                                                const visualScale = (test.testId || test)?.visualScale;
+                                                                                                const firstField = test.fields?.[0];
+                                                                                                if (!visualScale || !firstField?.defaultValue) return null;
+
+                                                                                                return (
+                                                                                                    <tr>
+                                                                                                        <td colSpan="4">
+                                                                                                            <VisualScaleVisualization
+                                                                                                                visualScale={visualScale}
+                                                                                                                resultValue={firstField.defaultValue}
+                                                                                                                unit={firstField.unit}
+                                                                                                            />
+                                                                                                        </td>
+                                                                                                    </tr>
+                                                                                                );
+                                                                                            })()}
+
+                                                                                            {/* REPORT EXTRAS */}
+                                                                                            {(() => {
+                                                                                                const extras = (test.testId || test)?.reportExtras;
+                                                                                                if (!extras || Object.keys(extras).length === 0) return null;
+
+                                                                                                return (
+                                                                                                    <tr>
+                                                                                                        <td colSpan="4">
+                                                                                                            {Object.entries(extras).map(([key, value]) => {
+                                                                                                                if (!value) return null;
+                                                                                                                return (
+                                                                                                                    <div key={key} className="mb-3">
+                                                                                                                        <h4 className="font-bold text-sm underline">
+                                                                                                                            {key.replace(/([A-Z])/g, " $1").toUpperCase()}
+                                                                                                                        </h4>
+                                                                                                                        <p className="text-xs whitespace-pre-line">{value}</p>
+                                                                                                                    </div>
+                                                                                                                );
+                                                                                                            })}
+                                                                                                        </td>
+                                                                                                    </tr>
+                                                                                                );
+                                                                                            })()}
+                                                                                        </tbody>
+                                                                                    );
+                                                                                })}
+                                                                            </table>
+                                                                        )}
+                                                                    </>
+                                                                );
+                                                            })()}
 
 
                                                         </div>

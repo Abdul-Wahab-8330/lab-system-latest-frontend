@@ -64,8 +64,10 @@ export default function ResultPrintComponent() {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [patientToDelete, setPatientToDelete] = useState(null);
 
-    const [printSpacer, setPrintSpacer] = useState(0);
+    const [patientSpacers, setPatientSpacers] = useState({});
 
+    // ✅ NEW: State for print with history (per patient)
+    const [loadingHistoryForPatient, setLoadingHistoryForPatient] = useState(null);
 
     const reportRef = useRef();
 
@@ -175,6 +177,153 @@ export default function ResultPrintComponent() {
     };
 
 
+    const getGenderSpecificRange = (rangeStr, gender) => {
+        if (!rangeStr) return "-";
+
+        const patientGender = gender?.toUpperCase();
+
+        if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
+            const parts = rangeStr.split(',');
+            for (let part of parts) {
+                part = part.trim();
+                if (patientGender === 'MALE' && part.startsWith('M:')) {
+                    return part.substring(2).trim();
+                }
+                if (patientGender === 'FEMALE' && part.startsWith('F:')) {
+                    return part.substring(2).trim();
+                }
+            }
+            return rangeStr; // Return full string if gender doesn't match
+        }
+
+        return rangeStr;
+    };
+
+    // ✅ NEW: Fetch patient history by phone
+    const fetchPatientHistory = async (phone, currentPatientId) => {
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_API_URL}/api/results/history/${phone}`,
+                {
+                    params: {
+                        limit: 4,
+                        excludePatientId: currentPatientId
+                    }
+                }
+            );
+            return response.data.data || [];
+        } catch (error) {
+            console.error("Error fetching history:", error);
+            toast.error("Failed to load patient history");
+            return [];
+        }
+    };
+
+    // ✅ FIXED: Process historical data per test (not globally)
+    const processHistoricalData = (currentPatient, historicalPatients) => {
+        if (!historicalPatients || historicalPatients.length === 0) {
+            return null;
+        }
+
+        let hasAnyMatchingTests = false;
+
+        // Process each test in current patient
+        const processedTests = currentPatient.tests.map(currentTest => {
+            // Skip if test has special render enabled
+            const hasSpecialRender = currentTest.fields?.some(f => f.specialRender?.enabled);
+            if (hasSpecialRender) {
+                return currentTest; // Return as-is, no history
+            }
+
+            // ✅ Build history data map: refNo -> result data
+            const historyDataMap = new Map();
+
+            historicalPatients.forEach((hp) => {
+                // First try to match by testId
+                let matchedTest = hp.tests?.find(ht =>
+                    ht.testId?._id?.toString() === currentTest.testId?._id?.toString()
+                );
+
+                // Fallback: match by test name
+                if (!matchedTest) {
+                    matchedTest = hp.tests?.find(ht =>
+                        ht.testName?.toLowerCase() === currentTest.testName?.toLowerCase()
+                    );
+                }
+
+                if (!matchedTest) {
+                    return; // Skip this historical patient for this test
+                }
+
+                // Find the result for this test
+                const result = hp.results?.find(r =>
+                    r.testId?.toString() === matchedTest.testId?._id?.toString() ||
+                    r.testName?.toLowerCase() === matchedTest.testName?.toLowerCase()
+                );
+
+                // ✅ Check if this result has ANY real data
+                const hasRealData = result?.fields?.some(f =>
+                    f.defaultValue &&
+                    f.defaultValue.trim() !== "" &&
+                    f.defaultValue !== "—"
+                );
+
+                if (hasRealData) {
+                    // Store the result mapped by refNo
+                    historyDataMap.set(hp.refNo, {
+                        date: hp.createdAt,
+                        refNo: hp.refNo,
+                        caseNo: hp.caseNo,
+                        result: result
+                    });
+                }
+            });
+
+            // If no history for this test, return as-is
+            if (historyDataMap.size === 0) {
+                return currentTest;
+            }
+
+            hasAnyMatchingTests = true;
+
+            // Convert map to array and sort by date (newest first)
+            const testHistoryColumns = Array.from(historyDataMap.values())
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            // Add historical values to each field
+            const fieldsWithHistory = currentTest.fields.map(field => {
+                const historicalValues = testHistoryColumns.map(histData => {
+                    const historicalField = histData.result.fields?.find(
+                        hf => hf.fieldName === field.fieldName
+                    );
+                    return historicalField?.defaultValue || "—";
+                });
+
+                return {
+                    ...field,
+                    historicalValues
+                };
+            });
+
+            return {
+                ...currentTest,
+                fields: fieldsWithHistory,
+                hasHistory: true,
+                historyColumns: testHistoryColumns // ✅ Store columns PER TEST
+            };
+        });
+
+        if (!hasAnyMatchingTests) {
+            return null;
+        }
+
+        return {
+            tests: processedTests,
+            hasHistory: true
+        };
+    };
+
+
     const handleWhatsAppShare = (patient) => {
         const formattedPhone = formatPhoneNumber(patient.phone);
 
@@ -262,7 +411,10 @@ Click the link above to view and download your complete test results anytime.
             const res = await axios.get(
                 `${import.meta.env.VITE_API_URL}/api/results/${patient._id}/tests`
             );
-            setPrintPatient(res.data);
+            setPrintPatient({
+                ...res.data,
+                spacer: patientSpacers[patient._id] || 0  // ADD THIS
+            });
 
             console.log('Printing results for patient:', res.data);
             console.log(printPatient?.tests?.[0]?.testId?.specimen)
@@ -277,10 +429,81 @@ Click the link above to view and download your complete test results anytime.
         }
     };
 
+    // ✅ NEW: Print with history handler
+    const handlePrintWithHistory = async (patient) => {
+        try {
+            setLoadingHistoryForPatient(patient._id);
+
+            // 1. Fetch current patient full data
+            const currentRes = await axios.get(
+                `${import.meta.env.VITE_API_URL}/api/results/${patient._id}/tests`
+            );
+
+            // 2. Fetch historical data
+            const historicalPatients = await fetchPatientHistory(patient.phone, patient._id);
+
+            console.log('📊 Historical Patients Found:', historicalPatients.length);
+            console.log('📊 Historical Patients:', historicalPatients);
+
+            // 3. Process and merge history
+            const processedHistory = processHistoricalData(currentRes.data, historicalPatients);
+
+            console.log('📊 Processed History:', processedHistory);
+
+            if (processedHistory) {
+                processedHistory.tests.forEach((test, idx) => {
+                    if (test.hasHistory) {
+                        console.log(`📊 Test ${idx} (${test.testName}):`, {
+                            historyColumns: test.historyColumns,
+                            sampleField: test.fields[0]?.historicalValues
+                        });
+                    }
+                });
+            }
+
+            // 4. Set print patient with history
+            const patientWithHistory = {
+                ...currentRes.data,
+                historicalData: processedHistory,
+                spacer: patientSpacers[patient._id] || 0  // ADD THIS
+            };
+
+            setPrintPatient(patientWithHistory);
+
+            // 5. Small delay to ensure state updates
+            setTimeout(() => {
+                handlePrintResults();
+                setLoadingHistoryForPatient(null);
+            }, 100);
+
+            // ✅ FIX: Show accurate message based on actual matches
+            if (processedHistory && processedHistory.hasHistory) {
+                const testsWithHistory = processedHistory.tests.filter(t => t.hasHistory);
+                const totalHistoryColumns = testsWithHistory.reduce((sum, t) => sum + (t.historyColumns?.length || 0), 0);
+
+                if (totalHistoryColumns > 0) {
+                    toast(`Found history for ${testsWithHistory.length} test(s)`);
+                } else {
+                    toast("Previous records found but no matching tests");
+                }
+            } else if (historicalPatients.length > 0) {
+                toast("Previous records found but no matching tests");
+            } else {
+                toast("No previous records found");
+            }
+
+        } catch (error) {
+            console.error("Error printing with history:", error);
+            toast.error("Failed to load history");
+            setLoadingHistoryForPatient(null);
+        }
+    };
+
     const handlePrintInNewWindow = (patient) => {
         // Open in new tab
+        const spacer = patientSpacers[patient._id] || 0;
         window.open(
-            `/print-report/${patient._id}?spacer=${printSpacer}`,
+            `/print-report/${patient._id}?spacer=${spacer}`,  // PASS IT
             '_blank'
         );
 
@@ -569,19 +792,71 @@ Click the link above to view and download your complete test results anytime.
                                                                     <Edit className="w-4 h-4 mr-1" />
                                                                     Edit
                                                                 </Button>
-                                                                <div className="flex shadow-sm rounded-lg overflow-hidden  border-green-600">
-                                                                    {/* MAIN PRINT BUTTON */}
-                                                                    <Button
-                                                                        size="sm"
-                                                                        className="rounded-none rounded-l-lg bg-gradient-to-r from-green-500 to-green-600
-               hover:from-green-600 hover:to-green-700 text-white font-semibold px-4"
-                                                                        onClick={() => handlePrintClick(p)}
-                                                                    >
-                                                                        <Printer className="w-4 h-4 mr-1" />
-                                                                        Print
-                                                                    </Button>
+                                                                <div className="flex shadow-sm rounded-lg overflow-hidden border-green-600">
+                                                                    {/* ✅ IMPROVED: Print dropdown with hover trigger */}
+                                                                    <DropdownMenu>
+                                                                        <DropdownMenuTrigger asChild>
+                                                                            <Button
+                                                                                size="sm"
+                                                                                className="rounded-none rounded-l-lg bg-green-600 hover:bg-green-700 text-white font-semibold px-4"
+                                                                                disabled={loadingHistoryForPatient === p._id}
+                                                                                onMouseEnter={(e) => {
+                                                                                    // Trigger dropdown on hover
+                                                                                    if (loadingHistoryForPatient !== p._id) {
+                                                                                        e.currentTarget.click();
+                                                                                    }
+                                                                                }}
+                                                                            >
+                                                                                {loadingHistoryForPatient === p._id ? (
+                                                                                    <>
+                                                                                        <RefreshCcw className="w-4 h-4 mr-1 animate-spin" />
+                                                                                        Loading...
+                                                                                    </>
+                                                                                ) : (
+                                                                                    <>
+                                                                                        <Printer className="w-4 h-4 mr-1" />
+                                                                                        Print
+                                                                                    </>
+                                                                                )}
+                                                                            </Button>
+                                                                        </DropdownMenuTrigger>
 
-                                                                    {/* DROPDOWN BUTTON */}
+                                                                        <DropdownMenuContent align="start" className="w-52 bg-white border-2 border-gray-400 shadow-lg">
+                                                                            <DropdownMenuItem
+                                                                                className="hover:bg-green-50 focus:bg-green-100 cursor-pointer py-2 transition-colors"
+                                                                                onClick={() => handlePrintClick(p)}
+                                                                            >
+                                                                                <div className="flex items-center w-full">
+                                                                                    <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mr-3">
+                                                                                        <Printer className="w-4 h-4 text-green-600" />
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <div className="font-semibold text-gray-900">Print Current</div>
+                                                                                        {/* <div className="text-xs text-gray-500">Latest results only</div> */}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </DropdownMenuItem>
+
+                                                                            <Separator className='bg-gray-400' />
+
+                                                                            <DropdownMenuItem
+                                                                                className="hover:bg-green-50 focus:bg-green-100 cursor-pointer py-2 transition-colors"
+                                                                                onClick={() => handlePrintWithHistory(p)}
+                                                                            >
+                                                                                <div className="flex items-center w-full">
+                                                                                    <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                                                                        <Clock className="w-4 h-4 text-blue-600" />
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <div className="font-semibold text-gray-900">Print with History</div>
+                                                                                        {/* <div className="text-xs text-gray-500">Include past results</div> */}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </DropdownMenuItem>
+                                                                        </DropdownMenuContent>
+                                                                    </DropdownMenu>
+
+                                                                    {/* SPACING DROPDOWN (unchanged) */}
                                                                     <DropdownMenu>
                                                                         <DropdownMenuTrigger asChild>
                                                                             <Button
@@ -590,7 +865,7 @@ Click the link above to view and download your complete test results anytime.
                    border-none flex items-center gap-1"
                                                                             >
                                                                                 <span className="text-xs font-semibold">
-                                                                                    {printSpacer === 0 ? "" : `${printSpacer}%`}
+                                                                                    {(patientSpacers[p._id] || 0) === 0 ? "" : `${patientSpacers[p._id]}%`}
                                                                                 </span>
                                                                                 <ChevronDown className="h-4 w-4" />
                                                                             </Button>
@@ -603,21 +878,21 @@ Click the link above to view and download your complete test results anytime.
                                                                             {[0, 10, 15, 20, 30, 40, 50].map((value) => (
                                                                                 <DropdownMenuItem
                                                                                     key={value}
-                                                                                    onClick={() => setPrintSpacer(value)}
+                                                                                    onClick={() => setPatientSpacers(prev => ({ ...prev, [p._id]: value }))}
                                                                                     className={`
-            flex items-center justify-between rounded-sm px-2 py-2 text-sm
-            cursor-pointer transition-colors
-            ${printSpacer === value
+                flex items-center justify-between rounded-sm px-2 py-2 text-sm
+                cursor-pointer transition-colors
+                ${(patientSpacers[p._id] || 0) === value
                                                                                             ? "bg-green-100 text-green-700 font-semibold"
                                                                                             : "hover:bg-gray-100"
                                                                                         }
-          `}
+            `}
                                                                                 >
                                                                                     <span>
                                                                                         {value === 0 ? "Default spacing" : `Spacer ${value}%`}
                                                                                     </span>
 
-                                                                                    {printSpacer === value && (
+                                                                                    {(patientSpacers[p._id] || 0) === value && (
                                                                                         <Check className="h-4 w-4 text-green-600" />
                                                                                     )}
                                                                                 </DropdownMenuItem>
@@ -1240,8 +1515,11 @@ Click the link above to view and download your complete test results anytime.
                                         <td>
                                             {/* Group tests by category */}
                                             {(() => {
+                                                // ✅ Use historical data if available, otherwise use current tests
+                                                const testsToRender = printPatient?.historicalData?.tests || printPatient?.tests || [];
+
                                                 // ✅ FILTER: Remove diagnostic tests before grouping
-                                                const nonDiagnosticTests = printPatient?.tests?.filter(test => !test.testId?.isDiagnosticTest) || [];
+                                                const nonDiagnosticTests = testsToRender.filter(test => !test.testId?.isDiagnosticTest);
 
                                                 // Group tests by category
                                                 const testsByCategory = {};
@@ -1388,144 +1666,239 @@ Click the link above to view and download your complete test results anytime.
                                                                         })}
 
                                                                         {/* ========================================
-                NORMAL TABLE TESTS
-            ======================================== */}
-                                                                        {normalTests.length > 0 && (
-                                                                            <table className="text-xs border-collapse mb-2" style={{ width: "83%" }}>
-                                                                                <thead>
-                                                                                    <tr className="border-b border-gray-800">
-                                                                                        <th className="text-left pl-2 font-semibold align-bottom">TEST</th>
-                                                                                        <th className="text-center font-semibold align-bottom">
-                                                                                            REFERENCE RANGE
-                                                                                        </th>
-                                                                                        <th className="text-center font-semibold align-bottom">UNIT</th>
-                                                                                        <th className="text-center font-semibold align-top">
-                                                                                            <div>RESULT</div>
-                                                                                            <div className="text-[10px] font-semibold">
-                                                                                                {printPatient?.refNo}
-                                                                                            </div>
-                                                                                            <div className="text-[10px] font-normal">
-                                                                                                {new Date().toLocaleDateString("en-GB", {
-                                                                                                    day: "2-digit",
-                                                                                                    month: "short",
-                                                                                                    year: "numeric"
-                                                                                                }).replace(/ /g, "-")} {" "}
-                                                                                                {new Date().toLocaleTimeString("en-US", {
-                                                                                                    hour: "2-digit",
-                                                                                                    minute: "2-digit",
-                                                                                                    hour12: true,
-                                                                                                })}
-                                                                                            </div>
-                                                                                        </th>
-                                                                                    </tr>
-                                                                                </thead>
-                                                                                {normalTests.map((test, testIndex) => {
-                                                                                    const filledFields = test.fields?.filter(
-                                                                                        f => f.defaultValue &&
-                                                                                            f.defaultValue.trim() !== "" &&
-                                                                                            f.defaultValue !== "—"
-                                                                                    ) || [];
+    NORMAL TABLE TESTS
+======================================== */}
+                                                                        {normalTests.length > 0 && (() => {
+                                                                            // ✅ Collect ALL unique history columns across ALL tests in this category
+                                                                            const allHistoryColumnsMap = new Map();
 
-                                                                                    return (
-                                                                                        <tbody
-                                                                                            key={testIndex}
-                                                                                            className="test-block"
-                                                                                            style={{
-                                                                                                pageBreakInside: "avoid",
-                                                                                                breakInside: "avoid"
-                                                                                            }}
-                                                                                        >
-                                                                                            {/* TEST NAME */}
-                                                                                            {test.testName && (
-                                                                                                <tr>
-                                                                                                    <td colSpan="4" className="py-2 font-semibold uppercase text-sm">
-                                                                                                        {test.testName}
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                            )}
+                                                                            normalTests.forEach(test => {
+                                                                                test.historyColumns?.forEach(col => {
+                                                                                    if (!allHistoryColumnsMap.has(col.refNo)) {
+                                                                                        allHistoryColumnsMap.set(col.refNo, col);
+                                                                                    }
+                                                                                });
+                                                                            });
 
-                                                                                            {/* FIELDS */}
-                                                                                            {filledFields.map((f, fi) => (
-                                                                                                <tr
-                                                                                                    key={fi}
-                                                                                                    className="border-b border-gray-400"
-                                                                                                    style={{ borderBottomStyle: "dashed" }}
-                                                                                                >
-                                                                                                    <td className="py-0.5 pl-2">{f.fieldName}</td>
-                                                                                                    <td className="text-center py-0.5">{f.range || "-"}</td>
-                                                                                                    <td className="text-center py-0.5">{f.unit || "."}</td>
-                                                                                                    <td className="text-center font-semibold py-0.5">
-                                                                                                        {f.defaultValue}
-                                                                                                    </td>
-                                                                                                </tr>
+                                                                            // Convert to array and sort by date (newest first)
+                                                                            const allHistoryColumns = Array.from(allHistoryColumnsMap.values())
+                                                                                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                                                                            return (
+                                                                                <table
+                                                                                    className="text-xs border-collapse mb-2"
+                                                                                    style={{
+                                                                                        width: allHistoryColumns.length > 0 ? "100%" : "83%"
+                                                                                    }}
+                                                                                >
+                                                                                    <thead>
+                                                                                        <tr className="border-b border-gray-800">
+                                                                                            <th className="text-left pl-2 font-semibold align-bottom">TEST</th>
+                                                                                            <th className="text-center font-semibold align-bottom">
+                                                                                                REFERENCE RANGE
+                                                                                            </th>
+                                                                                            <th className="text-center font-semibold align-bottom">UNIT</th>
+                                                                                            <th className="text-center font-semibold align-top">
+                                                                                                <div>RESULT</div>
+                                                                                                <div className="text-[10px] font-semibold">
+                                                                                                    {printPatient?.refNo}
+                                                                                                </div>
+                                                                                                <div className="text-[10px] font-normal">
+                                                                                                    {new Date().toLocaleDateString("en-GB", {
+                                                                                                        day: "2-digit",
+                                                                                                        month: "short",
+                                                                                                        year: "numeric"
+                                                                                                    }).replace(/ /g, "-")} {" "}
+                                                                                                    {new Date().toLocaleTimeString("en-US", {
+                                                                                                        hour: "2-digit",
+                                                                                                        minute: "2-digit",
+                                                                                                        hour12: true,
+                                                                                                    })}
+                                                                                                </div>
+                                                                                            </th>
+
+                                                                                            {/* ✅ NEW: Historical result columns */}
+                                                                                            {allHistoryColumns.map((col, idx) => (
+                                                                                                <th key={idx} className="text-center font-semibold align-top">
+                                                                                                    <div>RESULT</div>
+                                                                                                    <div className="text-[10px] font-semibold">
+                                                                                                        {col.refNo}
+                                                                                                    </div>
+                                                                                                    <div className="text-[10px] font-normal">
+                                                                                                        {new Date(col.date).toLocaleDateString("en-GB", {
+                                                                                                            day: "2-digit",
+                                                                                                            month: "short",
+                                                                                                            year: "numeric"
+                                                                                                        }).replace(/ /g, "-")} {" "}
+                                                                                                        {new Date(col.date).toLocaleTimeString("en-US", {
+                                                                                                            hour: "2-digit",
+                                                                                                            minute: "2-digit",
+                                                                                                            hour12: true,
+                                                                                                        })}
+                                                                                                    </div>
+                                                                                                </th>
                                                                                             ))}
+                                                                                        </tr>
+                                                                                    </thead>
+                                                                                    {normalTests.map((test, testIndex) => {
+                                                                                        const filledFields = test.fields?.filter(
+                                                                                            f => f.defaultValue &&
+                                                                                                f.defaultValue.trim() !== "" &&
+                                                                                                f.defaultValue !== "—"
+                                                                                        ) || [];
 
-                                                                                            {/* TEST SCALE */}
-                                                                                            {(() => {
-                                                                                                const scaleConfig = (test.testId || test)?.scaleConfig;
-                                                                                                const firstField = test.fields?.[0];
-                                                                                                if (!scaleConfig || !firstField?.defaultValue) return null;
+                                                                                        // ✅ Check if THIS specific test has history
+                                                                                        const testHasHistory = test.hasHistory && test.historyColumns?.length > 0;
 
-                                                                                                return (
+                                                                                        return (
+                                                                                            <tbody
+                                                                                                key={testIndex}
+                                                                                                className="test-block"
+                                                                                                style={{
+                                                                                                    pageBreakInside: "avoid",
+                                                                                                    breakInside: "avoid"
+                                                                                                }}
+                                                                                            >
+                                                                                                {/* TEST NAME */}
+                                                                                                {test.testName && (
                                                                                                     <tr>
-                                                                                                        <td colSpan="4">
-                                                                                                            <TestScaleVisualization
-                                                                                                                scaleConfig={scaleConfig}
-                                                                                                                resultValue={firstField.defaultValue}
-                                                                                                                unit={firstField.unit}
-                                                                                                            />
+                                                                                                        <td
+                                                                                                            colSpan={4 + allHistoryColumns.length}
+                                                                                                            className="py-2 font-semibold uppercase text-sm"
+                                                                                                        >
+                                                                                                            {test.testName}
                                                                                                         </td>
                                                                                                     </tr>
-                                                                                                );
-                                                                                            })()}
+                                                                                                )}
 
-                                                                                            {/* VISUAL SCALE */}
-                                                                                            {(() => {
-                                                                                                const visualScale = (test.testId || test)?.visualScale;
-                                                                                                const firstField = test.fields?.[0];
-                                                                                                if (!visualScale || !firstField?.defaultValue) return null;
-
-                                                                                                return (
-                                                                                                    <tr>
-                                                                                                        <td colSpan="4">
-                                                                                                            <VisualScaleVisualization
-                                                                                                                visualScale={visualScale}
-                                                                                                                resultValue={firstField.defaultValue}
-                                                                                                                unit={firstField.unit}
-                                                                                                            />
+                                                                                                {/* FIELDS */}
+                                                                                                {filledFields.map((f, fi) => (
+                                                                                                    <tr
+                                                                                                        key={fi}
+                                                                                                        className="border-b border-gray-400"
+                                                                                                        style={{ borderBottomStyle: "dashed" }}
+                                                                                                    >
+                                                                                                        <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                                                                        <td className="text-center py-0.5">{getGenderSpecificRange(f.range, printPatient?.gender)}</td>
+                                                                                                        <td className="text-center py-0.5">{f.unit || "."}</td>
+                                                                                                        <td className="text-center font-semibold py-0.5">
+                                                                                                            {f.defaultValue}
                                                                                                         </td>
-                                                                                                    </tr>
-                                                                                                );
-                                                                                            })()}
 
-                                                                                            {/* REPORT EXTRAS */}
-                                                                                            {(() => {
-                                                                                                const extras = (test.testId || test)?.reportExtras;
-                                                                                                if (!extras || Object.keys(extras).length === 0) return null;
+                                                                                                        {/* ✅ FIXED: Historical values for this field */}
+                                                                                                        {allHistoryColumns.map((col, colIdx) => {
+                                                                                                            // Check if this test has this specific historical column
+                                                                                                            const testHasThisColumn = test.historyColumns?.some(
+                                                                                                                tc => tc.refNo === col.refNo
+                                                                                                            );
 
-                                                                                                return (
-                                                                                                    <tr>
-                                                                                                        <td colSpan="4">
-                                                                                                            {Object.entries(extras).map(([key, value]) => {
-                                                                                                                if (!value) return null;
+                                                                                                            if (!testHasThisColumn) {
+                                                                                                                // Test doesn't have data for this historical column
                                                                                                                 return (
-                                                                                                                    <div key={key} className="mb-3">
-                                                                                                                        <h4 className="font-bold text-sm underline">
-                                                                                                                            {key.replace(/([A-Z])/g, " $1").toUpperCase()}
-                                                                                                                        </h4>
-                                                                                                                        <p className="text-xs whitespace-pre-line">{value}</p>
-                                                                                                                    </div>
+                                                                                                                    <td key={colIdx} className="text-center py-0.5 text-gray-400">
+                                                                                                                        —
+                                                                                                                    </td>
                                                                                                                 );
-                                                                                                            })}
-                                                                                                        </td>
+                                                                                                            }
+
+                                                                                                            // Find the index in this test's history columns
+                                                                                                            const testHistoryIndex = test.historyColumns.findIndex(
+                                                                                                                tc => tc.refNo === col.refNo
+                                                                                                            );
+
+                                                                                                            const histVal = testHistoryIndex !== -1
+                                                                                                                ? f.historicalValues?.[testHistoryIndex]
+                                                                                                                : "—";
+
+                                                                                                            // ✅ Check for unit mismatch
+                                                                                                            const histData = test.historyColumns[testHistoryIndex];
+                                                                                                            const histField = histData?.result?.fields?.find(
+                                                                                                                hf => hf.fieldName === f.fieldName
+                                                                                                            );
+                                                                                                            const histUnit = histField?.unit?.trim() || '';
+                                                                                                            const currentUnit = f.unit?.trim() || '';
+
+                                                                                                            // Unit mismatch = both exist, both non-empty, and different (case-insensitive)
+                                                                                                            const unitMismatch = histUnit && currentUnit &&
+                                                                                                                histUnit.toLowerCase() !== currentUnit.toLowerCase();
+
+                                                                                                            return (
+                                                                                                                <td key={colIdx} className="text-center font-semibold py-0.5">
+                                                                                                                    {histVal || "—"}
+                                                                                                                    {unitMismatch && <span className="text-red-600 font-bold ml-0.5">*</span>}
+                                                                                                                </td>
+                                                                                                            );
+                                                                                                        })}
                                                                                                     </tr>
-                                                                                                );
-                                                                                            })()}
-                                                                                        </tbody>
-                                                                                    );
-                                                                                })}
-                                                                            </table>
-                                                                        )}
+                                                                                                ))}
+
+                                                                                                {/* TEST SCALE (unchanged) */}
+                                                                                                {(() => {
+                                                                                                    const scaleConfig = (test.testId || test)?.scaleConfig;
+                                                                                                    const firstField = test.fields?.[0];
+                                                                                                    if (!scaleConfig || !firstField?.defaultValue) return null;
+
+                                                                                                    return (
+                                                                                                        <tr>
+                                                                                                            <td colSpan={4 + allHistoryColumns.length}>
+                                                                                                                <TestScaleVisualization
+                                                                                                                    scaleConfig={scaleConfig}
+                                                                                                                    resultValue={firstField.defaultValue}
+                                                                                                                    unit={firstField.unit}
+                                                                                                                />
+                                                                                                            </td>
+                                                                                                        </tr>
+                                                                                                    );
+                                                                                                })()}
+
+                                                                                                {/* VISUAL SCALE (unchanged) */}
+                                                                                                {(() => {
+                                                                                                    const visualScale = (test.testId || test)?.visualScale;
+                                                                                                    const firstField = test.fields?.[0];
+                                                                                                    if (!visualScale || !firstField?.defaultValue) return null;
+
+                                                                                                    return (
+                                                                                                        <tr>
+                                                                                                            <td colSpan={4 + allHistoryColumns.length}>
+                                                                                                                <VisualScaleVisualization
+                                                                                                                    visualScale={visualScale}
+                                                                                                                    resultValue={firstField.defaultValue}
+                                                                                                                    unit={firstField.unit}
+                                                                                                                />
+                                                                                                            </td>
+                                                                                                        </tr>
+                                                                                                    );
+                                                                                                })()}
+
+                                                                                                {/* REPORT EXTRAS (unchanged) */}
+                                                                                                {(() => {
+                                                                                                    const extras = (test.testId || test)?.reportExtras;
+                                                                                                    if (!extras || Object.keys(extras).length === 0) return null;
+
+                                                                                                    return (
+                                                                                                        <tr>
+                                                                                                            <td colSpan={4 + allHistoryColumns.length}>
+                                                                                                                {Object.entries(extras).map(([key, value]) => {
+                                                                                                                    if (!value) return null;
+                                                                                                                    return (
+                                                                                                                        <div key={key} className="mb-3 mt-2">
+                                                                                                                            <h4 className="font-bold text-sm underline">
+                                                                                                                                {key.replace(/([A-Z])/g, " $1").toUpperCase()}
+                                                                                                                            </h4>
+                                                                                                                            <p className="text-xs whitespace-pre-line">{value}</p>
+                                                                                                                        </div>
+                                                                                                                    );
+                                                                                                                })}
+                                                                                                            </td>
+                                                                                                        </tr>
+                                                                                                    );
+                                                                                                })()}
+                                                                                            </tbody>
+                                                                                        );
+                                                                                    })}
+                                                                                </table>
+                                                                            );
+                                                                        })()}
                                                                     </>
                                                                 );
                                                             })()}
@@ -1537,10 +1910,12 @@ Click the link above to view and download your complete test results anytime.
                                             })()}
                                         </td>
                                     </tr>
-                                    {printSpacer > 0 && (
+                                    {(printPatient?.spacer || 0) > 0 && (
+                                        // NEW
                                         <tr
                                             className="print-spacer"
-                                            style={{ height: `${printSpacer}vh` }}
+                                            style={{ height: `${printPatient.spacer}vh` }}
+                                        // NEW
                                         >
                                             <td>&nbsp;</td>
                                         </tr>

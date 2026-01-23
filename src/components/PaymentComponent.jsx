@@ -143,13 +143,34 @@ export default function PaymentComponent() {
                     {/* Enhanced Header */}
                     <CardHeader className="bg-gradient-to-r from-green-700 to-emerald-600 py-3 text-white">
                         <div className="flex items-center justify-between flex-wrap gap-3">
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl">
+                            <div style={{
+                                display: 'flex',             // fallback for flex
+                                alignItems: 'center',        // fallback for items-center
+                                gap: '12px'                  // fallback for gap-3
+                            }} className="flex items-center gap-3">
+                                <div style={{
+                                    display: 'flex',            // fallback flex
+                                    justifyContent: 'center',   // fallback justify-center
+                                    alignItems: 'center',       // fallback items-center
+                                    width: '48px',              // fallback w-12
+                                    height: '48px',             // fallback h-12
+                                    backgroundColor: '#008000', // fallback for bg-white/20
+                                    borderRadius: '0.5rem'      // fallback rounded-xl
+                                }} className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl">
                                     <CreditCard className="h-6 w-6 text-white" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl font-bold">Payment Management</CardTitle>
-                                    <p className="text-green-100 mt-1">Track and manage patient payments</p>
+                                    <CardTitle style={{
+                                        fontSize: '1.5rem',       // fallback for text-2xl
+                                        fontWeight: '700',        // fallback for font-bold
+                                        color: '#ffffff',         // fallback in case Tailwind fails
+                                        margin: '0'
+                                    }} className="text-2xl font-bold">Payment Management</CardTitle>
+                                    <p style={{
+                                        fontSize: '0.875rem',     // fallback for text-sm
+                                        color: '#68d391',         // fallback for green-100
+                                        marginTop: '4px'          // fallback for mt-1
+                                    }} className="text-green-100 mt-1">Track and manage patient payments</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
@@ -248,10 +269,10 @@ export default function PaymentComponent() {
                                                 <FileText className="inline h-4 w-4 mr-2" />
                                                 Case No
                                             </TableHead>
-                                            <TableHead className="font-bold text-gray-800 py-4">
+                                            {/* <TableHead className="font-bold text-gray-800 py-4">
                                                 <FileText className="inline h-4 w-4 mr-2" />
                                                 Pat No
-                                            </TableHead>
+                                            </TableHead> */}
                                             <TableHead className="font-bold text-gray-800">
                                                 <Users className="inline h-4 w-4 mr-2" />
                                                 Name
@@ -292,9 +313,9 @@ export default function PaymentComponent() {
                                                         <TableCell className="font-semibold text-emerald-700 py-4">
                                                             {patient.caseNo}
                                                         </TableCell>
-                                                        <TableCell className="font-semibold text-emerald-700 py-4">
+                                                        {/* <TableCell className="font-semibold text-emerald-700 py-4">
                                                             {patient.refNo}
-                                                        </TableCell>
+                                                        </TableCell> */}
                                                         <TableCell className="font-medium text-gray-900">
                                                             {patient.name}
                                                         </TableCell>
@@ -333,6 +354,14 @@ export default function PaymentComponent() {
                                                                         ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
                                                                         : "bg-gradient-to-r from-green-400 to-emerald-500 text-white"
                                                                     } rounded-full px-3 py-1 font-medium shadow-sm`}
+                                                                style={{
+                                                                    backgroundColor:
+                                                                        patient?.paymentStatus?.toLowerCase() === "not paid"
+                                                                            ? "#EF4444"
+                                                                            : patient?.paymentStatus?.toLowerCase() === "partially paid"
+                                                                                ? "#F59E0B"
+                                                                                : "#10B981"
+                                                                }}
                                                             >
                                                                 <DollarSign className="h-3 w-3 mr-1" />
                                                                 {patient.paymentStatus}
@@ -343,6 +372,12 @@ export default function PaymentComponent() {
                                                         </TableCell>
                                                         <TableCell>
                                                             <Badge
+                                                                style={{
+                                                                    backgroundColor:
+                                                                        patient?.resultStatus?.toLowerCase() === "pending"
+                                                                            ? "#F59E0B"
+                                                                            : "#10B981"
+                                                                }}
                                                                 className={`${patient?.resultStatus?.toLowerCase() === "pending"
                                                                     ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
                                                                     : "bg-gradient-to-r from-green-400 to-emerald-500 text-white"
@@ -357,6 +392,7 @@ export default function PaymentComponent() {
                                                                 <Dialog>
                                                                     <DialogTrigger asChild>
                                                                         <Button
+                                                                            style={{ backgroundColor: "#10B981" }}
                                                                             size="sm"
                                                                             className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                                                                         >

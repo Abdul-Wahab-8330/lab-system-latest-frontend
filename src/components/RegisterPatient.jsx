@@ -463,14 +463,24 @@ export default function RegisterPatient() {
             <div className="m-2">
 
                 <Card className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl p-0 border-0 overflow-hidden pb-2">
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-500 px-8 py-3">
-                        <h2 className="text-2xl font-semibold text-white flex items-center">
-                            <div className="px-2 py-2 flex justify-center items-center rounded-xl mr-2 bg-blue-500">
+                    <div
+                        className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-500"
+                        style={{ background: 'linear-gradient(to right, #2563EB, #6366F1)' }}
+                    >
+                        <h2
+                            className="text-2xl font-semibold text-white flex items-center"
+                            style={{ color: '#FFFFFF' }}
+                        >
+                            <div
+                                className="px-2 py-2 flex justify-center items-center rounded-xl mr-2 bg-blue-500"
+                                style={{ backgroundColor: '#3B82F6' }}
+                            >
                                 <FileText className="h-5 w-5" />
                             </div>
                             Patient Registration
                         </h2>
                     </div>
+
 
                     <CardContent className="px-8 py-1">
                         <form onSubmit={handleSubmit} className="space-y-5">
@@ -1372,13 +1382,14 @@ export default function RegisterPatient() {
                                 >
                                     Reset Form
                                 </Button>
-                                <Button disabled={loading}
+                                <button disabled={loading}
                                     type="submit"
-                                    className="w-full sm:w-auto py-1 px-8 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 border"
+                                    style={{ backgroundColor: '#2563EB', backgroundImage: 'linear-gradient(to right, #2563EB, #4F46E5)', color: '#FFFFFF' }}
+                                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-1 px-8 font-semibold rounded-xl transition-all duration-200 border hover:scale-103 shadow-lg hover:shadow-xl"
                                 >
                                     <UserPlus className="h-5 w-5 mr-2" />
                                     {loading ? 'Registering...' : 'Register Patient'}
-                                </Button>
+                                </button>
                             </div>
                         </form>
                     </CardContent>

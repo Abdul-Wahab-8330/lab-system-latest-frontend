@@ -130,10 +130,19 @@ const UserDashboardLayout = () => {
                 {/* <img src={lablogo} alt="" className='w-14' /> */}
               </div>
               {sidebarOpen && (
-                <span className="cursor-pointer text-xl font-bold bg-gray-800 bg-clip-text text-transparent whitespace-nowrap">
+                <span
+                  className="cursor-pointer text-xl font-bold whitespace-nowrap bg-gray-800 bg-clip-text text-transparent"
+                  style={{ color: '#1F2937' }} // fallback text color for legacy browsers
+                >
                   D O C T O R &nbsp;L A B
-                  <span className='block text-xs text-gray-900 italic font-extralight pt-0.5' >& Imaging Center Sahiwal</span>
+                  <span
+                    className="block text-xs italic font-extralight pt-0.5 text-gray-900"
+                    style={{ color: '#111827' }} // fallback for secondary text
+                  >
+                    & Imaging Center Sahiwal
+                  </span>
                 </span>
+
                 // <span className="cursor-pointer text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
                 //   LabSync Pro
                 //   <span className='block text-xs px-1 text-gray-400 font-extralight' >v_1.0</span>
@@ -153,6 +162,18 @@ const UserDashboardLayout = () => {
                 <li key={item.id}>
                   <Link to={item.link}
                     onClick={handleLinkClick}
+                    style={isActive
+                      ? {
+                        backgroundColor: '#EFF6FF', // fallback for from-blue-50
+                        color: '#1D4ED8',           // fallback for text-blue-700
+                        borderColor: '#BFDBFE',     // fallback for border-blue-200
+                      }
+                      : {
+                        color: '#4B5563',           // fallback for text-gray-600
+                        backgroundColor: '#F9FAFB', // fallback for hover base
+                        borderColor: 'transparent',
+                      }
+                    }
                     className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 border ${isActive
                       ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border-blue-200 shadow-sm'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800 border-transparent'
@@ -176,43 +197,63 @@ const UserDashboardLayout = () => {
         <div className={`p-4 border-t bg-white border-gray-200 ${sidebarOpen ? 'block' : 'hidden'}`}>
           <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger asChild>
-              <div className="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors duration-200 w-full">
+              <div
+                className="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors duration-200 w-full"
+                style={{ backgroundColor: '#F9FAFB', color: '#111827' }} // fallback for legacy
+              >
                 <Avatar className="cursor-pointer">
-                  <AvatarFallback className='bg-gray-900 text-sm text-white'>{getInitials(user.name)}</AvatarFallback>
+                  <AvatarFallback
+                    className="bg-gray-900 text-sm text-white"
+                    style={{ backgroundColor: '#111827', color: '#FFFFFF' }} // legacy fallback
+                  >
+                    {getInitials(user.name)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-800 truncate">Dr. {user?.name}</p>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-sm font-semibold truncate" style={{ color: '#1F2937' }}>Dr. {user?.name}</p>
+                  <p className="text-xs truncate" style={{ color: '#6B7280' }}>
                     {getRoleDisplayName(user?.role)}
                   </p>
                 </div>
-                <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                <ChevronDown className="w-4 h-4 flex-shrink-0" style={{ color: '#6B7280' }} />
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="cursor-pointer w-56 bg-gray-50 border border-gray-300 shadow-lg">
-              <DropdownMenuLabel className='flex gap-2 flex-wrap'>
+
+            <DropdownMenuContent
+              className="cursor-pointer w-56 bg-gray-50 border border-gray-300 shadow-lg"
+              style={{ backgroundColor: '#F9FAFB', color: '#111827' }} // fallback for content
+            >
+              <DropdownMenuLabel className="flex gap-2 flex-wrap" style={{ color: '#111827' }}>
                 <User size={16} /> Logged in as <span className="font-semibold px-3">{user.name}</span>
               </DropdownMenuLabel>
+
               <Separator />
               <DropdownMenuSeparator />
-              <Separator className='bg-gray-300 my-1' />
+              <Separator className="bg-gray-300 my-1" style={{ backgroundColor: '#D1D5DB' }} />
 
-              {/* ✅ NEW - Change Password Option */}
+              {/* Change Password */}
               <DropdownMenuItem
-                className='cursor-pointer text-indigo-600 hover:bg-indigo-500 hover:text-white'
+                className="cursor-pointer text-indigo-600 hover:bg-gray-100"
+                style={{ color: '#4F46E5' }} // legacy fallback for text
                 onClick={() => {
-                  setOpen(false); // Close dropdown
+                  setOpen(false);
                   navigate('/user/change-password');
                 }}
               >
                 <Key size={16} /> Change Password
               </DropdownMenuItem>
 
-              <DropdownMenuItem className=' cursor-pointer text-red-500 hover:bg-red-500 hover:text-white' onClick={handleLogout}>
+              {/* Logout */}
+              <DropdownMenuItem
+                className="cursor-pointer  hover:bg-gray-100"
+                style={{ color: '#EF4444' }} // legacy fallback for text
+                onClick={handleLogout}
+              >
                 <LogOut /> Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
         </div>
       </div>
 
@@ -244,19 +285,22 @@ const UserDashboardLayout = () => {
 
             <div className="flex items-center space-x-4">
               {/* Export Button */}
-              {isAdmin(user?.role) && <Link to='/user/patients' className="lg:flex hidden items-center space-x-2 px-4 py-2 border border-gray-100 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors duration-200">
-                <Printer className="w-4 h-4 text-gray-600" />
+              {isAdmin(user?.role) && <Link style={{ backgroundColor: '#F9FAFB', color: '#374151' }} to='/user/patients' className="lg:flex hidden items-center space-x-2 px-4 py-2 border border-gray-100 bg-gray-50 hover:bg-gray-100 hover:shadow-xs rounded-xl transition-colors duration-200">
+                <Printer style={{ color: '#4B5563' }} className="w-4 h-4 text-gray-600" />
                 <span className="text-sm font-medium text-gray-700 flex gap-2 items-center">Reports </span>
               </Link>}
 
               {/* Add New Button */}
               {isAdmin(user?.role) ?
-                <Link to='/admin/create-test' className="lg:flex hidden  items-center space-x-2 px-4 border border-blue-400 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-200 shadow-sm">
+                <Link style={{ backgroundColor: '#2563EB', color: '#FFFFFF' }}
+
+                  to='/admin/create-test' className="lg:flex hidden  items-center space-x-2 px-4 border border-blue-400 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-200 shadow-sm">
                   <Plus className="w-4 h-4" />
                   <span className="text-sm font-medium flex gap-2 items-center">Register Patient</span>
                 </Link>
                 :
-                <Link to='/user/register-patient' className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-200 shadow-sm">
+                <Link style={{ backgroundColor: '#2563EB', color: '#FFFFFF' }}
+                  to='/user/register-patient' className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors duration-200 shadow-sm">
                   <UserPlus className="w-4 h-4" />
                   <span className="text-sm font-medium"> Register Patient</span>
                 </Link>

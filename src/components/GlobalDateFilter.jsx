@@ -35,9 +35,9 @@ export default function GlobalDateFilter({ filterType }) {
     try {
       await axios.put(
         `${import.meta.env.VITE_API_URL}/api/system/filters/${filterType}`,
-        { 
-          daysLimit: parseInt(filterDays), 
-          updatedBy: user?.name || 'Admin' 
+        {
+          daysLimit: parseInt(filterDays),
+          updatedBy: user?.name || 'Admin'
         }
       );
       toast.success(`Global filter applied! Showing last ${filterDays} days for all users.`);
@@ -73,44 +73,59 @@ export default function GlobalDateFilter({ filterType }) {
   }
 
   return (
-    <div className="flex items-center gap-2 bg-white/10 rounded-xl px-3 py-2 backdrop-blur-sm border border-white/20">
+    <div className="flex items-center gap-2 rounded-xl px-3 py-2 border"
+      style={{
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderColor: 'rgba(255,255,255,0.2)'
+      }}>
       <Calendar className="h-4 w-4 text-white" />
-      <span className="text-xs text-white font-medium whitespace-nowrap">Global Filter:</span>
+      <span className="text-xs font-medium whitespace-nowrap"
+        style={{ color: '#FFFFFF' }}>Global Filter:</span>
       <Input
         type="number"
         min="1"
         placeholder="Days"
         value={filterDays}
         onChange={(e) => setFilterDays(e.target.value)}
-        className="h-9 w-20 bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30"
+        className="h-9 w-20 text-white"
+        style={{
+          backgroundColor: 'rgba(255,255,255,0.2)',
+          borderColor: 'rgba(255,255,255,0.3)',
+          color: '#FFFFFF'
+        }}
         disabled={filterLoading}
       />
-      <span className="text-xs text-white/80">days</span>
-      
+      <span className="text-xs whitespace-nowrap"
+        style={{ color: 'rgba(255,255,255,0.8)' }}>days</span>
+
       {!currentFilter?.isActive ? (
-        <Button
-          size="sm"
+        <button
+          type="button"
           onClick={handleApplyFilter}
           disabled={filterLoading || !filterDays}
-          className="bg-green-500 hover:bg-green-600 text-white h-9 shadow-lg"
-        >
+          className="h-9 px-4 text-sm font-semibold text-white rounded-lg shadow-lg transition-colors"
+          style={{ backgroundColor: '#22C55E' }}        >
           {filterLoading ? 'Applying...' : 'Apply'}
-        </Button>
+        </button>
       ) : (
-        <Button
-          size="sm"
+        <button
+          type="button"
           onClick={handleResetFilter}
           disabled={filterLoading}
-          className="bg-red-500 hover:bg-red-600 text-white h-9 shadow-lg"
-        >
+          className="h-9 px-4 text-sm font-semibold text-white rounded-lg shadow-lg transition-colors"
+          style={{ backgroundColor: '#EF4444' }}        >
           {filterLoading ? 'Resetting...' : 'Reset'}
-        </Button>
+        </button>
       )}
-      
+
       {currentFilter?.isActive && (
-        <Badge className="bg-green-400 text-green-900 font-semibold shadow-md">
+        <span className="px-3 py-1 text-xs font-semibold rounded-full shadow-md whitespace-nowrap"
+          style={{
+            backgroundColor: '#4ADE80',
+            color: '#14532D'
+          }}>
           ✓ Last {currentFilter.daysLimit} days
-        </Badge>
+        </span>
       )}
     </div>
   );

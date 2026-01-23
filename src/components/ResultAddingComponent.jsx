@@ -46,12 +46,12 @@ export default function ResultAddingComponent() {
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [detailsPatient, setDetailsPatient] = useState(null);
 
-    
+
 
     const { fetchAddedPatients } = useContext(AddedPatientsContext);
     const { fetchPatients, patients } = useContext(PatientsContext);
     const { user } = useContext(AuthContext);
-        const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const [loading, setLoading] = useState(false)
     const [changedTests, setChangedTests] = useState([]);
     const [pendingPatients, setPendingPatients] = useState([]);
@@ -93,39 +93,39 @@ export default function ResultAddingComponent() {
 
 
     const loadPendingPatients = async () => {
-    setIsLoading(true); // ✅ ADD THIS
-    try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/pending`);
-        
-        const filteredData = res.data.filter(patient => {
-            const nonDiagnosticTests = patient.tests.filter(test =>
-                !test.testId?.isDiagnosticTest
-            );
-            return nonDiagnosticTests.length > 0 &&
-                patient.results.length < nonDiagnosticTests.length;
-        });
+        setIsLoading(true); // ✅ ADD THIS
+        try {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results/pending`);
 
-        setPendingPatients(filteredData);
-        setFilteredPatients(filteredData);
-    } catch (error) {
-        console.error("Error loading pending patients:", error);
-    } finally {
-        setIsLoading(false); // ✅ ADD THIS
-    }
-};
+            const filteredData = res.data.filter(patient => {
+                const nonDiagnosticTests = patient.tests.filter(test =>
+                    !test.testId?.isDiagnosticTest
+                );
+                return nonDiagnosticTests.length > 0 &&
+                    patient.results.length < nonDiagnosticTests.length;
+            });
 
-const formatAge = (patient) => {
-  if (!patient?.age) return "-";
+            setPendingPatients(filteredData);
+            setFilteredPatients(filteredData);
+        } catch (error) {
+            console.error("Error loading pending patients:", error);
+        } finally {
+            setIsLoading(false); // ✅ ADD THIS
+        }
+    };
 
-  const unit =
-    patient.ageUnit === "months"
-      ? "Months"
-      : patient.ageUnit === "days"
-      ? "Days"
-      : "Years"; // default for old records
+    const formatAge = (patient) => {
+        if (!patient?.age) return "-";
 
-  return `${patient.age} ${unit}`;
-};
+        const unit =
+            patient.ageUnit === "months"
+                ? "Months"
+                : patient.ageUnit === "days"
+                    ? "Days"
+                    : "Years"; // default for old records
+
+        return `${patient.age} ${unit}`;
+    };
 
 
 
@@ -345,15 +345,15 @@ const formatAge = (patient) => {
     };
 
     if (isLoading) {
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 p-2 flex items-center justify-center">
-            <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading pending results...</p>
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 p-2 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading pending results...</p>
+                </div>
             </div>
-        </div>
-    );
-}
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-100 p-2">
@@ -362,13 +362,13 @@ const formatAge = (patient) => {
                     {/* Enhanced Header */}
                     <CardHeader className="bg-gradient-to-r from-purple-600 to-indigo-600 py-1 text-white">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3 py-2">
-                                <div className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl">
-                                    <ClipboardList className="h-6 w-6 text-white" />
+                            <div style={{display:'flex',alignItems:'center',gap:'12px',paddingTop:'8px',paddingBottom:'8px'}} className="flex items-center gap-3 py-2">
+                                <div style={{display:'flex',justifyContent:'center',alignItems:'center',width:'48px',height:'48px',backgroundColor:'rgba(255,255,255,0.2)',borderRadius:'0.5rem'}} className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl">
+                                    <ClipboardList style={{width:'24px',height:'24px',color:'#ffffff'}} className="h-6 w-6 text-white" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-2xl font-bold">Results Management</CardTitle>
-                                    <p className="text-purple-100 mt-1">Add and manage patient test results</p>
+                                    <CardTitle style={{fontSize:'1.5rem',fontWeight:'700',color:'#ffffff',margin:'0'}} className="text-2xl font-bold">Results Management</CardTitle>
+                                    <p style={{fontSize:'0.875rem',color:'#d6bcfa',marginTop:'4px'}} className="text-purple-100 mt-1">Add and manage patient test results</p>
                                 </div>
                             </div>
                             <Badge className="bg-white/20 text-white border-0 px-4 py-2 rounded-xl">
@@ -506,7 +506,12 @@ const formatAge = (patient) => {
                                                     <TableCell>
                                                         <Button
                                                             size="sm"
-                                                            className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                                            className="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-white rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105 hover:shadow-xl"
+                                                            style={{
+                                                                background: 'linear-gradient(to right, #8B5CF6, #4F46E5)',
+                                                                border: 'none'
+                                                            }}
+
                                                             onClick={() => openResultDialog(p)}
                                                         >
                                                             <Edit className="w-4 h-4 mr-1" />

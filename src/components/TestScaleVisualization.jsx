@@ -223,22 +223,20 @@ const TestScaleVisualization = ({ scaleConfig, resultValue, unit = '' }) => {
               }}
             />
 
-            {/* Result box with border */}
-            <div
-              className="mt-1 px-4 py-1.5 rounded-md text-xs font-bold text-white whitespace-nowrap"
-              style={{
-                backgroundColor: pointerColor,
-                transform: 'translateX(-50%)',
-                marginLeft: '50%',
-                minWidth: '80px',
-                textAlign: 'center',
-                border: `2px solid ${pointerColor}`,
-                boxShadow: `0 0 0 2px white, 0 0 0 4px ${pointerColor}`,
-                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))'
-              }}
-            >
-              {numericResult} {unit}
-            </div>
+           {/* Result value - no box */}
+<div
+  className="mt-1 font-bold whitespace-nowrap"
+  style={{
+    transform: 'translateX(-50%)',
+    marginLeft: '50%',
+    textAlign: 'center',
+    color: pointerColor,
+    fontSize: '24px',
+    textShadow: '0 1px 3px rgba(0,0,0,0.2)'
+  }}
+>
+  {numericResult} <span style={{ fontSize: '14px', fontWeight: '600' }}>{unit}</span>
+</div>
           </div>
         </div>
       </div>

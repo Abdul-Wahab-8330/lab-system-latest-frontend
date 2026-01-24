@@ -69,11 +69,37 @@ export default function ResultPrintComponent() {
     // ✅ NEW: State for print with history (per patient)
     const [loadingHistoryForPatient, setLoadingHistoryForPatient] = useState(null);
 
+    const [historySettings, setHistorySettings] = useState({
+        historyResultsCount: 4,
+        historyResultsDirection: 'left-to-right'
+    });
+
     const reportRef = useRef();
 
 
     useEffect(() => {
         loadLabInfo();
+        loadHistorySettings();
+    }, []);
+
+    // ✅ NEW: Listen for history settings updates via socket
+    useEffect(() => {
+        const handleHistorySettingsUpdate = (data) => {
+            if (data.filterType === 'results') {
+                setHistorySettings({
+                    historyResultsCount: data.historyResultsCount || 4,
+                    historyResultsDirection: data.historyResultsDirection || 'left-to-right'
+                });
+                toast.success('History settings updated!');
+            }
+        };
+
+        socket.on('historySettingsUpdated', handleHistorySettingsUpdate);
+
+        // ✅ Cleanup on unmount
+        return () => {
+            socket.off('historySettingsUpdated', handleHistorySettingsUpdate);
+        };
     }, []);
 
     // NEW: Sync addedPatients with patients context changes
@@ -206,7 +232,7 @@ export default function ResultPrintComponent() {
                 `${import.meta.env.VITE_API_URL}/api/results/history/${phone}`,
                 {
                     params: {
-                        limit: 4,
+                        limit: historySettings.historyResultsCount,
                         excludePatientId: currentPatientId
                     }
                 }
@@ -220,7 +246,7 @@ export default function ResultPrintComponent() {
     };
 
     // ✅ FIXED: Process historical data per test (not globally)
-    const processHistoricalData = (currentPatient, historicalPatients) => {
+    const processHistoricalData = (currentPatient, historicalPatients, settings) => {
         if (!historicalPatients || historicalPatients.length === 0) {
             return null;
         }
@@ -288,7 +314,14 @@ export default function ResultPrintComponent() {
 
             // Convert map to array and sort by date (newest first)
             const testHistoryColumns = Array.from(historyDataMap.values())
-                .sort((a, b) => new Date(b.date) - new Date(a.date));
+                .sort((a, b) => {
+                    // ✅ USE SETTING FOR SORT ORDER
+                    if (settings.historyResultsDirection === 'right-to-left') {
+                        return new Date(a.date) - new Date(b.date); // Oldest first
+                    } else {
+                        return new Date(b.date) - new Date(a.date); // Newest first (default)
+                    }
+                });
 
             // Add historical values to each field
             const fieldsWithHistory = currentTest.fields.map(field => {
@@ -378,6 +411,20 @@ Click the link above to view and download your complete test results anytime.
         }
     }
 
+    async function loadHistorySettings() {
+        try {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/system/filters/results`);
+            if (res.data) {
+                setHistorySettings({
+                    historyResultsCount: res.data.historyResultsCount || 4,
+                    historyResultsDirection: res.data.historyResultsDirection || 'left-to-right'
+                });
+            }
+        } catch (err) {
+            console.error("loadHistorySettings:", err);
+        }
+    }
+
 
 
     async function openPatientDetails(patient) {
@@ -446,7 +493,7 @@ Click the link above to view and download your complete test results anytime.
             console.log('📊 Historical Patients:', historicalPatients);
 
             // 3. Process and merge history
-            const processedHistory = processHistoricalData(currentRes.data, historicalPatients);
+            const processedHistory = processHistoricalData(currentRes.data, historicalPatients, historySettings);
 
             console.log('📊 Processed History:', processedHistory);
 
@@ -636,13 +683,13 @@ Click the link above to view and download your complete test results anytime.
                     {/* Enhanced Header */}
                     <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3">
                         <div className="flex items-center justify-between flex-wrap gap-3">
-                            <div style={{display:'flex',alignItems:'center',gap:'12px'}} className="flex items-center gap-3">
-                                <div style={{display:'flex',justifyContent:'center',alignItems:'center',width:'48px',height:'48px',backgroundColor:'rgba(255,255,255,0.2)',borderRadius:'0.5rem'}} className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl">
-                                    <Printer style={{width:'24px',height:'24px',color:'#ffffff'}} className="h-6 w-6 text-white" />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="flex items-center gap-3">
+                                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '48px', height: '48px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '0.5rem' }} className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl">
+                                    <Printer style={{ width: '24px', height: '24px', color: '#ffffff' }} className="h-6 w-6 text-white" />
                                 </div>
                                 <div>
-                                    <CardTitle  style={{fontSize:'1.5rem',fontWeight:'700',color:'#ffffff',margin:'0'}} className="text-2xl font-bold">Print Results</CardTitle>
-                                    <p style={{fontSize:'0.9rem',color:'#bfdbfe',marginTop:'1px'}} className="text-blue-100 mt-1">Generate & print patient reports</p>
+                                    <CardTitle style={{ fontSize: '1.5rem', fontWeight: '700', color: '#ffffff', margin: '0' }} className="text-2xl font-bold">Print Results</CardTitle>
+                                    <p style={{ fontSize: '0.9rem', color: '#bfdbfe', marginTop: '1px' }} className="text-blue-100 mt-1">Generate & print patient reports</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
@@ -1684,7 +1731,14 @@ Click the link above to view and download your complete test results anytime.
 
                                                                             // Convert to array and sort by date (newest first)
                                                                             const allHistoryColumns = Array.from(allHistoryColumnsMap.values())
-                                                                                .sort((a, b) => new Date(b.date) - new Date(a.date));
+                                                                                .sort((a, b) => {
+                                                                                    // ✅ USE SETTING FOR SORT ORDER
+                                                                                    if (historySettings.historyResultsDirection === 'right-to-left') {
+                                                                                        return new Date(a.date) - new Date(b.date); // Oldest first
+                                                                                    } else {
+                                                                                        return new Date(b.date) - new Date(a.date); // Newest first (default)
+                                                                                    }
+                                                                                });
 
                                                                             return (
                                                                                 <table
@@ -1700,24 +1754,26 @@ Click the link above to view and download your complete test results anytime.
                                                                                                 REFERENCE RANGE
                                                                                             </th>
                                                                                             <th className="text-center font-semibold align-bottom">UNIT</th>
-                                                                                            <th className="text-center font-semibold align-top">
-                                                                                                <div>RESULT</div>
-                                                                                                <div className="text-[10px] font-semibold">
-                                                                                                    {printPatient?.refNo}
-                                                                                                </div>
-                                                                                                <div className="text-[10px] font-normal">
-                                                                                                    {new Date().toLocaleDateString("en-GB", {
-                                                                                                        day: "2-digit",
-                                                                                                        month: "short",
-                                                                                                        year: "numeric"
-                                                                                                    }).replace(/ /g, "-")} {" "}
-                                                                                                    {new Date().toLocaleTimeString("en-US", {
-                                                                                                        hour: "2-digit",
-                                                                                                        minute: "2-digit",
-                                                                                                        hour12: true,
-                                                                                                    })}
-                                                                                                </div>
-                                                                                            </th>
+                                                                                            {historySettings.historyResultsDirection === 'left-to-right' && (
+                                                                                                <th className="text-center font-semibold align-top">
+                                                                                                    <div>RESULT</div>
+                                                                                                    <div className="text-[10px] font-semibold">
+                                                                                                        {printPatient?.refNo}
+                                                                                                    </div>
+                                                                                                    <div className="text-[10px] font-normal">
+                                                                                                        {new Date().toLocaleDateString("en-GB", {
+                                                                                                            day: "2-digit",
+                                                                                                            month: "short",
+                                                                                                            year: "numeric"
+                                                                                                        }).replace(/ /g, "-")} {" "}
+                                                                                                        {new Date().toLocaleTimeString("en-US", {
+                                                                                                            hour: "2-digit",
+                                                                                                            minute: "2-digit",
+                                                                                                            hour12: true,
+                                                                                                        })}
+                                                                                                    </div>
+                                                                                                </th>
+                                                                                            )}
 
                                                                                             {/* ✅ NEW: Historical result columns */}
                                                                                             {allHistoryColumns.map((col, idx) => (
@@ -1740,6 +1796,26 @@ Click the link above to view and download your complete test results anytime.
                                                                                                     </div>
                                                                                                 </th>
                                                                                             ))}
+                                                                                            {historySettings.historyResultsDirection === 'right-to-left' && (
+                                                                                                <th className="text-center font-semibold align-top">
+                                                                                                    <div>RESULT</div>
+                                                                                                    <div className="text-[10px] font-semibold">
+                                                                                                        {printPatient?.refNo} 
+                                                                                                    </div>
+                                                                                                    <div className="text-[10px] font-normal">
+                                                                                                        {new Date().toLocaleDateString("en-GB", {
+                                                                                                            day: "2-digit",
+                                                                                                            month: "short",
+                                                                                                            year: "numeric"
+                                                                                                        }).replace(/ /g, "-")} {" "}
+                                                                                                        {new Date().toLocaleTimeString("en-US", {
+                                                                                                            hour: "2-digit",
+                                                                                                            minute: "2-digit",
+                                                                                                            hour12: true,
+                                                                                                        })}
+                                                                                                    </div>
+                                                                                                </th>
+                                                                                            )}
                                                                                         </tr>
                                                                                     </thead>
                                                                                     {normalTests.map((test, testIndex) => {
@@ -1783,9 +1859,12 @@ Click the link above to view and download your complete test results anytime.
                                                                                                         <td className="py-0.5 pl-2">{f.fieldName}</td>
                                                                                                         <td className="text-center py-0.5">{getGenderSpecificRange(f.range, printPatient?.gender)}</td>
                                                                                                         <td className="text-center py-0.5">{f.unit || "."}</td>
-                                                                                                        <td className="text-center font-semibold py-0.5">
-                                                                                                            {f.defaultValue}
-                                                                                                        </td>
+                                                                                                        {/* LEFT-TO-RIGHT: Current value FIRST */}
+                                                                                                        {historySettings.historyResultsDirection === 'left-to-right' && (
+                                                                                                            <td className="text-center font-semibold py-0.5">
+                                                                                                                {f.defaultValue}
+                                                                                                            </td>
+                                                                                                        )}
 
                                                                                                         {/* ✅ FIXED: Historical values for this field */}
                                                                                                         {allHistoryColumns.map((col, colIdx) => {
@@ -1831,6 +1910,12 @@ Click the link above to view and download your complete test results anytime.
                                                                                                                 </td>
                                                                                                             );
                                                                                                         })}
+                                                                                                        {/* RIGHT-TO-LEFT: Current value LAST */}
+                                                                                                        {historySettings.historyResultsDirection === 'right-to-left' && (
+                                                                                                            <td className="text-center font-semibold py-0.5">
+                                                                                                                {f.defaultValue}
+                                                                                                            </td>
+                                                                                                        )}
                                                                                                     </tr>
                                                                                                 ))}
 

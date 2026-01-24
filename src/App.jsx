@@ -38,6 +38,7 @@ import PrintRegistration from "./components/PrintRegistration";
 import PublicReport from "./pages/PublicReport";
 import ChangePassword from "./components/ChangePassword";
 import { SUPER_ADMIN_USERNAME } from './config/constants';
+import HistoryResultsSettings from "./components/HistoryResultsSettings";
 
 
 // const UserManagementRoute = ({ children, user }) => {
@@ -119,6 +120,8 @@ function App() {
           <Route path="result-print" element={<ResultPrintComponent />} />
 
           <Route path="change-password" element={<ChangePassword />} />
+          <Route path="history-results" element={<HistoryResultsSettings />} />
+
         </Route>
 
 

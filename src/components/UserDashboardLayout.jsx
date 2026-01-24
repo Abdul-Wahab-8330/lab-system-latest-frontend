@@ -12,7 +12,8 @@ import {
   CalculatorIcon,
   DollarSignIcon,
   PoundSterling,
-  Printer
+  Printer,
+  History
 } from "lucide-react";
 
 import {
@@ -242,6 +243,21 @@ const UserDashboardLayout = () => {
               >
                 <Key size={16} /> Change Password
               </DropdownMenuItem>
+
+              {/* only for admin */}
+              {/* ✅ NEW - History Settings (Admin Only) */}
+              {user?.role === 'admin' && (
+                <>
+                  <DropdownMenuItem
+                    style={{ color: '#2563EB' }}
+                    className='cursor-pointer text-blue-600 hover:bg-gray-200'
+                    onClick={() => navigate('/user/history-results')}
+                  >
+                    <History size={16} /> History Settings
+                  </DropdownMenuItem>
+                  <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
+                </>
+              )}
 
               {/* Logout */}
               <DropdownMenuItem

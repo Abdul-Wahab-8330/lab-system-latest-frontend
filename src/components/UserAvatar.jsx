@@ -14,7 +14,7 @@ import {
 import { AuthContext } from "@/context/AuthProvider"
 import { Separator } from "./ui/separator"
 
-import { LogOut, Settings, User, Key } from "lucide-react"
+import { LogOut, Settings, User, Key, History } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 export function UserAvatar() {
@@ -36,13 +36,13 @@ export function UserAvatar() {
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger title={user?.name} asChild className='bg-gray-900 text-white '  style={{ backgroundColor: '#111827', color: '#FFFFFF' }}>
+            <DropdownMenuTrigger title={user?.name} asChild className='bg-gray-900 text-white ' style={{ backgroundColor: '#111827', color: '#FFFFFF' }}>
                 <Avatar className="cursor-pointer">
                     <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent style={{ backgroundColor: '#F9FAFB', color: '#000000' }} className="cursor-pointer w-56 bg-gray-50 border border-gray-300 shadow-lg">
-                <DropdownMenuLabel style={{ color: '#4B5563' }}  className='flex gap-2 text-gray-600 flex-wrap'>
+                <DropdownMenuLabel style={{ color: '#4B5563' }} className='flex gap-2 text-gray-600 flex-wrap'>
                     <User size={16} /> Logged in as <span className="font-semibold text-sm px-3">{user.name}</span>
                 </DropdownMenuLabel>
                 <Separator />
@@ -57,7 +57,21 @@ export function UserAvatar() {
                     <Key size={16} /> Change Password
                 </DropdownMenuItem>
 
-                <DropdownMenuItem style={{ color: '#EF4444' }}  className='hover:bg-gray-200 cursor-pointer text-red-500' onClick={handleLogout}>
+                {/* ✅ NEW - History Settings (Admin Only) */}
+                {user?.role === 'admin' && (
+                    <>
+                        <DropdownMenuItem
+                            style={{ color: '#2563EB' }}
+                            className='cursor-pointer text-blue-600 hover:bg-gray-200'
+                            onClick={() => navigate('/user/history-results')}
+                        >
+                            <History size={16} /> History Settings
+                        </DropdownMenuItem>
+                        <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
+                    </>
+                )}
+
+                <DropdownMenuItem style={{ color: '#EF4444' }} className='hover:bg-gray-200 cursor-pointer text-red-500' onClick={handleLogout}>
                     <LogOut /> Logout
                 </DropdownMenuItem>
             </DropdownMenuContent>

@@ -44,7 +44,8 @@ const TestList = () => {
     performed: "",
     reported: "",
     fields: [],
-    isDiagnosticTest: false
+    isDiagnosticTest: false,
+    isNarrativeFormat: false
   });
   const [updateLoading, setUpdateLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -133,6 +134,7 @@ const TestList = () => {
       reported: test.reported,
       fields: [...test.fields],
       isDiagnosticTest: test.isDiagnosticTest || false,
+      isNarrativeFormat: test.isNarrativeFormat || false
     });
     setEditDialogOpen(true);
   };
@@ -591,8 +593,9 @@ const TestList = () => {
                         required
                       />
                     </div>
-                    {/* ✅ NEW: Diagnostic Test Checkbox */}
-                    <div className="space-y-2 md:col-span-2">
+                    {/* ✅ Diagnostic Test & Narrative Format Checkboxes */}
+                    <div className="space-y-3 md:col-span-2">
+                      {/* Diagnostic Test Checkbox */}
                       <div title="Checked tests will not appear in result entry and final report sections" className="flex cursor-pointer items-center space-x-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
                         <input
                           type="checkbox"
@@ -603,17 +606,34 @@ const TestList = () => {
                           }
                           className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
-                        <div className="flex-1" >
+                        <div className="flex-1">
                           <label
                             htmlFor="isDiagnosticTest"
                             className="text-sm font-semibold text-gray-800 cursor-pointer flex items-center gap-2"
                           >
-
-                            Is it a Diagnostic Test ? <Info size={13} className="inline-block" />
+                            Is it a Diagnostic Test? <Info size={13} className="inline-block" />
                           </label>
-                          {/* <p className="text-xs text-gray-600 mt-1">
-                            <Info size={11} className="inline-block"/> Checked tests will not appear in result entry and final report sections
-                          </p> */}
+                        </div>
+                      </div>
+
+                      {/* Narrative Format Checkbox */}
+                      <div title="Checked tests will use narrative/descriptive format instead of table format in reports" className="flex cursor-pointer items-center space-x-3 bg-purple-50 border border-purple-200 rounded-xl p-4">
+                        <input
+                          type="checkbox"
+                          id="isNarrativeFormat"
+                          checked={editForm.isNarrativeFormat || false}
+                          onChange={(e) =>
+                            setEditForm({ ...editForm, isNarrativeFormat: e.target.checked })
+                          }
+                          className="h-5 w-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                        />
+                        <div className="flex-1">
+                          <label
+                            htmlFor="isNarrativeFormat"
+                            className="text-sm font-semibold text-gray-800 cursor-pointer flex items-center gap-2"
+                          >
+                            Use Narrative/Descriptive Format? <Info size={13} className="inline-block" />
+                          </label>
                         </div>
                       </div>
                     </div>

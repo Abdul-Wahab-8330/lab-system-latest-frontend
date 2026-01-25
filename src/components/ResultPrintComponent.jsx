@@ -256,8 +256,11 @@ export default function ResultPrintComponent() {
         // Process each test in current patient
         const processedTests = currentPatient.tests.map(currentTest => {
             // Skip if test has special render enabled
+            // ✅ Skip if test has special render OR narrative format enabled
             const hasSpecialRender = currentTest.fields?.some(f => f.specialRender?.enabled);
-            if (hasSpecialRender) {
+            const isNarrative = currentTest.testId?.isNarrativeFormat;
+
+            if (hasSpecialRender || isNarrative) {
                 return currentTest; // Return as-is, no history
             }
 
@@ -1632,13 +1635,19 @@ Click the link above to view and download your complete test results anytime.
                                                                     };
                                                                 });
 
-                                                                // Separate tests by render mode
+                                                                // ✅ NEW: Separate tests by render mode (3 types now)
                                                                 const specialTests = testsWithConfig.filter(test =>
                                                                     test.fields?.some(f => f.specialRender?.enabled)
                                                                 );
 
-                                                                const normalTests = testsWithConfig.filter(test =>
+                                                                const narrativeTests = testsWithConfig.filter(test =>
+                                                                    test.testId?.isNarrativeFormat &&
                                                                     !test.fields?.some(f => f.specialRender?.enabled)
+                                                                );
+
+                                                                const normalTests = testsWithConfig.filter(test =>
+                                                                    !test.fields?.some(f => f.specialRender?.enabled) &&
+                                                                    !test.testId?.isNarrativeFormat
                                                                 );
 
                                                                 return (
@@ -1710,6 +1719,65 @@ Click the link above to view and download your complete test results anytime.
                                                                                             <div className="h-[1px] w-full bg-gray-400 mt-2 mb-0"></div>
                                                                                         </div>
                                                                                     ))}
+                                                                                </div>
+                                                                            );
+                                                                        })}
+
+                                                                        {/* ========================================
+    NARRATIVE/DESCRIPTIVE TESTS (No Table)
+======================================== */}
+                                                                        {narrativeTests.map((test, testIndex) => {
+                                                                            const filledFields = test.fields.filter(
+                                                                                f => f.defaultValue &&
+                                                                                    f.defaultValue.trim() !== "" &&
+                                                                                    f.defaultValue !== "—"
+                                                                            );
+
+                                                                            if (filledFields.length === 0) return null;
+
+                                                                            return (
+                                                                                <div
+                                                                                    key={`narrative-${testIndex}`}
+                                                                                    style={{
+                                                                                        pageBreakInside: "avoid",
+                                                                                        breakInside: "avoid",
+                                                                                        marginBottom: "16px",
+                                                                                        marginTop: "16px"
+                                                                                    }}
+                                                                                >
+                                                                                    {/* Test Name Header */}
+                                                                                    <div className="mt-6">
+                                                                                        <h3 className="text-sm font-semibold uppercase">{test.testName}</h3>
+                                                                                    </div>
+                                                                                    <div className="h-[1px] w-full bg-gray-400 mb-4"></div>
+
+                                                                                    {/* Narrative Fields */}
+                                                                                    {filledFields.map((field, fieldIndex) => (
+                                                                                        <div
+                                                                                            key={fieldIndex}
+                                                                                            style={{
+                                                                                                pageBreakInside: "avoid",
+                                                                                                breakInside: "avoid",
+                                                                                                marginBottom: "12px"
+                                                                                            }}
+                                                                                        >
+                                                                                            {/* Field Name as Heading */}
+                                                                                            <h4 className="font-semibold text-gray-900 text-sm mb-1">
+                                                                                                {field.fieldName}
+                                                                                            </h4>
+
+                                                                                            {/* Field Value as Description */}
+                                                                                            <p className="text-xs text-gray-900 leading-relaxed whitespace-pre-line">
+                                                                                                {field.defaultValue}
+                                                                                            </p>
+
+                                                                                            {/* Separator between fields */}
+                                                                                            {/* {fieldIndex < filledFields.length - 1 && (
+                                                                                                <div className="h-[1px] w-full bg-gray-300 mt-2"></div>
+                                                                                            )} */}
+                                                                                        </div>
+                                                                                    ))}
+                                                                                    
                                                                                 </div>
                                                                             );
                                                                         })}
@@ -1800,7 +1868,7 @@ Click the link above to view and download your complete test results anytime.
                                                                                                 <th className="text-center font-semibold align-top">
                                                                                                     <div>RESULT</div>
                                                                                                     <div className="text-[10px] font-semibold">
-                                                                                                        {printPatient?.refNo} 
+                                                                                                        {printPatient?.refNo}
                                                                                                     </div>
                                                                                                     <div className="text-[10px] font-normal">
                                                                                                         {new Date().toLocaleDateString("en-GB", {

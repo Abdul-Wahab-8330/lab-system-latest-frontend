@@ -1777,7 +1777,7 @@ Click the link above to view and download your complete test results anytime.
                                                                                             )} */}
                                                                                         </div>
                                                                                     ))}
-                                                                                    
+
                                                                                 </div>
                                                                             );
                                                                         })}
@@ -1918,74 +1918,159 @@ Click the link above to view and download your complete test results anytime.
                                                                                                 )}
 
                                                                                                 {/* FIELDS */}
-                                                                                                {filledFields.map((f, fi) => (
-                                                                                                    <tr
-                                                                                                        key={fi}
-                                                                                                        className="border-b border-gray-400"
-                                                                                                        style={{ borderBottomStyle: "dashed" }}
-                                                                                                    >
-                                                                                                        <td className="py-0.5 pl-2">{f.fieldName}</td>
-                                                                                                        <td className="text-center py-0.5">{getGenderSpecificRange(f.range, printPatient?.gender)}</td>
-                                                                                                        <td className="text-center py-0.5">{f.unit || "."}</td>
-                                                                                                        {/* LEFT-TO-RIGHT: Current value FIRST */}
-                                                                                                        {historySettings.historyResultsDirection === 'left-to-right' && (
-                                                                                                            <td className="text-center font-semibold py-0.5">
-                                                                                                                {f.defaultValue}
-                                                                                                            </td>
-                                                                                                        )}
+                                                                                                {(() => {
+                                                                                                    // Check if ANY field has a category
+                                                                                                    const hasCategories = filledFields.some(f => f.category);
 
-                                                                                                        {/* ✅ FIXED: Historical values for this field */}
-                                                                                                        {allHistoryColumns.map((col, colIdx) => {
-                                                                                                            // Check if this test has this specific historical column
-                                                                                                            const testHasThisColumn = test.historyColumns?.some(
-                                                                                                                tc => tc.refNo === col.refNo
-                                                                                                            );
+                                                                                                    if (!hasCategories) {
+                                                                                                        // NO CATEGORIES: Render normally (existing behavior)
+                                                                                                        return filledFields.map((f, fi) => (
+                                                                                                            <tr
+                                                                                                                key={fi}
+                                                                                                                className="border-b border-gray-400"
+                                                                                                                style={{ borderBottomStyle: "dashed" }}
+                                                                                                            >
+                                                                                                                <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                                                                                <td className="text-center py-0.5">{getGenderSpecificRange(f.range, printPatient?.gender)}</td>
+                                                                                                                <td className="text-center py-0.5">{f.unit || "."}</td>
 
-                                                                                                            if (!testHasThisColumn) {
-                                                                                                                // Test doesn't have data for this historical column
-                                                                                                                return (
-                                                                                                                    <td key={colIdx} className="text-center py-0.5 text-gray-400">
-                                                                                                                        —
+                                                                                                                {historySettings.historyResultsDirection === 'left-to-right' && (
+                                                                                                                    <td className="text-center font-semibold py-0.5">
+                                                                                                                        {f.defaultValue}
                                                                                                                     </td>
-                                                                                                                );
+                                                                                                                )}
+
+                                                                                                                {allHistoryColumns.map((col, colIdx) => {
+                                                                                                                    const testHasThisColumn = test.historyColumns?.some(
+                                                                                                                        tc => tc.refNo === col.refNo
+                                                                                                                    );
+
+                                                                                                                    if (!testHasThisColumn) {
+                                                                                                                        return (
+                                                                                                                            <td key={colIdx} className="text-center py-0.5 text-gray-400">
+                                                                                                                                —
+                                                                                                                            </td>
+                                                                                                                        );
+                                                                                                                    }
+
+                                                                                                                    const testHistoryIndex = test.historyColumns.findIndex(
+                                                                                                                        tc => tc.refNo === col.refNo
+                                                                                                                    );
+
+                                                                                                                    const histVal = testHistoryIndex !== -1
+                                                                                                                        ? f.historicalValues?.[testHistoryIndex]
+                                                                                                                        : "—";
+
+                                                                                                                    const histData = test.historyColumns[testHistoryIndex];
+                                                                                                                    const histField = histData?.result?.fields?.find(
+                                                                                                                        hf => hf.fieldName === f.fieldName
+                                                                                                                    );
+                                                                                                                    const histUnit = histField?.unit?.trim() || '';
+                                                                                                                    const currentUnit = f.unit?.trim() || '';
+
+                                                                                                                    const unitMismatch = histUnit && currentUnit &&
+                                                                                                                        histUnit.toLowerCase() !== currentUnit.toLowerCase();
+
+                                                                                                                    return (
+                                                                                                                        <td key={colIdx} className="text-center font-semibold py-0.5">
+                                                                                                                            {histVal || "—"}
+                                                                                                                            {unitMismatch && <span className="text-red-600 font-bold ml-0.5">*</span>}
+                                                                                                                        </td>
+                                                                                                                    );
+                                                                                                                })}
+
+                                                                                                                {historySettings.historyResultsDirection === 'right-to-left' && (
+                                                                                                                    <td className="text-center font-semibold py-0.5">
+                                                                                                                        {f.defaultValue}
+                                                                                                                    </td>
+                                                                                                                )}
+                                                                                                            </tr>
+                                                                                                        ));
+                                                                                                    } else {
+                                                                                                        // HAS CATEGORIES: Group by category
+                                                                                                        const fieldsByCategory = {};
+                                                                                                        filledFields.forEach(f => {
+                                                                                                            const cat = f.category || "Other";
+                                                                                                            if (!fieldsByCategory[cat]) {
+                                                                                                                fieldsByCategory[cat] = [];
                                                                                                             }
+                                                                                                            fieldsByCategory[cat].push(f);
+                                                                                                        });
 
-                                                                                                            // Find the index in this test's history columns
-                                                                                                            const testHistoryIndex = test.historyColumns.findIndex(
-                                                                                                                tc => tc.refNo === col.refNo
-                                                                                                            );
+                                                                                                        return Object.entries(fieldsByCategory).map(([category, fields], catIdx) => (
+                                                                                                            <React.Fragment key={catIdx}>
+                                                                                                                <tr>
+                                                                                                                    <td colSpan={4 + allHistoryColumns.length} className="py-1.5 font-bold text-xs uppercase bg-gray-50">
+                                                                                                                        {category}
+                                                                                                                    </td>
+                                                                                                                </tr>
 
-                                                                                                            const histVal = testHistoryIndex !== -1
-                                                                                                                ? f.historicalValues?.[testHistoryIndex]
-                                                                                                                : "—";
+                                                                                                                {fields.map((f, fi) => (
+                                                                                                                    <tr
+                                                                                                                        key={fi}
+                                                                                                                        className="border-b border-gray-400"
+                                                                                                                        style={{ borderBottomStyle: "dashed" }}
+                                                                                                                    >
+                                                                                                                        <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                                                                                        <td className="text-center py-0.5">{getGenderSpecificRange(f.range, printPatient?.gender)}</td>
+                                                                                                                        <td className="text-center py-0.5">{f.unit || "."}</td>
 
-                                                                                                            // ✅ Check for unit mismatch
-                                                                                                            const histData = test.historyColumns[testHistoryIndex];
-                                                                                                            const histField = histData?.result?.fields?.find(
-                                                                                                                hf => hf.fieldName === f.fieldName
-                                                                                                            );
-                                                                                                            const histUnit = histField?.unit?.trim() || '';
-                                                                                                            const currentUnit = f.unit?.trim() || '';
+                                                                                                                        {historySettings.historyResultsDirection === 'left-to-right' && (
+                                                                                                                            <td className="text-center font-semibold py-0.5">
+                                                                                                                                {f.defaultValue}
+                                                                                                                            </td>
+                                                                                                                        )}
 
-                                                                                                            // Unit mismatch = both exist, both non-empty, and different (case-insensitive)
-                                                                                                            const unitMismatch = histUnit && currentUnit &&
-                                                                                                                histUnit.toLowerCase() !== currentUnit.toLowerCase();
+                                                                                                                        {allHistoryColumns.map((col, colIdx) => {
+                                                                                                                            const testHasThisColumn = test.historyColumns?.some(
+                                                                                                                                tc => tc.refNo === col.refNo
+                                                                                                                            );
 
-                                                                                                            return (
-                                                                                                                <td key={colIdx} className="text-center font-semibold py-0.5">
-                                                                                                                    {histVal || "—"}
-                                                                                                                    {unitMismatch && <span className="text-red-600 font-bold ml-0.5">*</span>}
-                                                                                                                </td>
-                                                                                                            );
-                                                                                                        })}
-                                                                                                        {/* RIGHT-TO-LEFT: Current value LAST */}
-                                                                                                        {historySettings.historyResultsDirection === 'right-to-left' && (
-                                                                                                            <td className="text-center font-semibold py-0.5">
-                                                                                                                {f.defaultValue}
-                                                                                                            </td>
-                                                                                                        )}
-                                                                                                    </tr>
-                                                                                                ))}
+                                                                                                                            if (!testHasThisColumn) {
+                                                                                                                                return (
+                                                                                                                                    <td key={colIdx} className="text-center py-0.5 text-gray-400">
+                                                                                                                                        —
+                                                                                                                                    </td>
+                                                                                                                                );
+                                                                                                                            }
+
+                                                                                                                            const testHistoryIndex = test.historyColumns.findIndex(
+                                                                                                                                tc => tc.refNo === col.refNo
+                                                                                                                            );
+
+                                                                                                                            const histVal = testHistoryIndex !== -1
+                                                                                                                                ? f.historicalValues?.[testHistoryIndex]
+                                                                                                                                : "—";
+
+                                                                                                                            const histData = test.historyColumns[testHistoryIndex];
+                                                                                                                            const histField = histData?.result?.fields?.find(
+                                                                                                                                hf => hf.fieldName === f.fieldName
+                                                                                                                            );
+                                                                                                                            const histUnit = histField?.unit?.trim() || '';
+                                                                                                                            const currentUnit = f.unit?.trim() || '';
+
+                                                                                                                            const unitMismatch = histUnit && currentUnit &&
+                                                                                                                                histUnit.toLowerCase() !== currentUnit.toLowerCase();
+
+                                                                                                                            return (
+                                                                                                                                <td key={colIdx} className="text-center font-semibold py-0.5">
+                                                                                                                                    {histVal || "—"}
+                                                                                                                                    {unitMismatch && <span className="text-red-600 font-bold ml-0.5">*</span>}
+                                                                                                                                </td>
+                                                                                                                            );
+                                                                                                                        })}
+
+                                                                                                                        {historySettings.historyResultsDirection === 'right-to-left' && (
+                                                                                                                            <td className="text-center font-semibold py-0.5">
+                                                                                                                                {f.defaultValue}
+                                                                                                                            </td>
+                                                                                                                        )}
+                                                                                                                    </tr>
+                                                                                                                ))}
+                                                                                                            </React.Fragment>
+                                                                                                        ));
+                                                                                                    }
+                                                                                                })()}
 
                                                                                                 {/* TEST SCALE (unchanged) */}
                                                                                                 {(() => {

@@ -6,6 +6,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import React from 'react';
 import TestScaleVisualization from '@/components/TestScaleVisualization';
 import VisualScaleVisualization from '@/components/VisualScaleVisualization';
+import SmallTestScaleVisualization from '@/components/SmallTestScale';
 
 export default function PublicReport() {
 
@@ -40,6 +41,10 @@ export default function PublicReport() {
   });
   const [labInfo, setLabInfo] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [historySettings, setHistorySettings] = useState({
+    historyResultsCount: 4,
+    historyResultsDirection: 'left-to-right'
+  });
 
   const inputRefs = useRef([]);
   const regReportRef = useRef();
@@ -47,6 +52,7 @@ export default function PublicReport() {
 
   useEffect(() => {
     fetchLabInfo();
+    loadHistorySettings();
   }, []);
 
   useEffect(() => {
@@ -121,19 +127,134 @@ export default function PublicReport() {
     }
   };
 
+  const loadHistorySettings = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/system/filters/results`);
+      if (res.ok) {
+        const data = await res.json();
+        setHistorySettings({
+          historyResultsCount: data.historyResultsCount || 4,
+          historyResultsDirection: data.historyResultsDirection || 'left-to-right'
+        });
+      }
+    } catch (err) {
+      console.error('Error loading history settings:', err);
+    }
+  };
+
   const formatAge = (patient) => {
-  if (!patient?.age) return "-";
+    if (!patient?.age) return "-";
 
-  const unit =
-    patient.ageUnit === "months"
-      ? "Months"
-      : patient.ageUnit === "days"
-      ? "Days"
-      : "Years"; // default for old records
+    const unit =
+      patient.ageUnit === "months"
+        ? "Months"
+        : patient.ageUnit === "days"
+          ? "Days"
+          : "Years"; // default for old records
 
-  return `${patient.age} ${unit}`;
-};
+    return `${patient.age} ${unit}`;
+  };
 
+
+
+  // Process historical data per test
+  const processHistoricalData = (currentPatient, historicalPatients, settings) => {
+    if (!historicalPatients || historicalPatients.length === 0) {
+      return null;
+    }
+
+    let hasAnyMatchingTests = false;
+
+    const processedTests = currentPatient.tests.map(currentTest => {
+      const hasSpecialRender = currentTest.testId?.fields?.some(f => f.specialRender?.enabled);
+      const isNarrative = currentTest.testId?.isNarrativeFormat;
+
+      if (hasSpecialRender || isNarrative) {
+        return currentTest;
+      }
+
+      const historyDataMap = new Map();
+
+      historicalPatients.forEach((hp) => {
+        let matchedTest = hp.tests?.find(ht =>
+          ht.testId?._id?.toString() === currentTest.testId?._id?.toString()
+        );
+
+        if (!matchedTest) {
+          matchedTest = hp.tests?.find(ht =>
+            ht.testName?.toLowerCase() === currentTest.testName?.toLowerCase()
+          );
+        }
+
+        if (!matchedTest) return;
+
+        const result = hp.results?.find(r =>
+          r.testId?.toString() === matchedTest.testId?._id?.toString() ||
+          r.testName?.toLowerCase() === matchedTest.testName?.toLowerCase()
+        );
+
+        const hasRealData = result?.fields?.some(f =>
+          f.defaultValue &&
+          f.defaultValue.trim() !== "" &&
+          f.defaultValue !== "—"
+        );
+
+        if (hasRealData) {
+          historyDataMap.set(hp.refNo, {
+            date: hp.createdAt,
+            refNo: hp.refNo,
+            caseNo: hp.caseNo,
+            result: result
+          });
+        }
+      });
+
+      if (historyDataMap.size === 0) {
+        return currentTest;
+      }
+
+      hasAnyMatchingTests = true;
+
+      const testHistoryColumns = Array.from(historyDataMap.values())
+        .sort((a, b) => {
+          if (settings.historyResultsDirection === 'right-to-left') {
+            return new Date(a.date) - new Date(b.date);
+          } else {
+            return new Date(b.date) - new Date(a.date);
+          }
+        });
+
+      const fieldsWithHistory = currentTest.fields.map(field => {
+        const historicalValues = testHistoryColumns.map(histData => {
+          const historicalField = histData.result.fields?.find(
+            hf => hf.fieldName === field.fieldName
+          );
+          return historicalField?.defaultValue || "—";
+        });
+
+        return {
+          ...field,
+          historicalValues
+        };
+      });
+
+      return {
+        ...currentTest,
+        fields: fieldsWithHistory,
+        hasHistory: true,
+        historyColumns: testHistoryColumns
+      };
+    });
+
+    if (!hasAnyMatchingTests) {
+      return null;
+    }
+
+    return {
+      tests: processedTests,
+      hasHistory: true
+    };
+  };
 
   const handlePrintReg = () => {
     const element = regReportRef.current;
@@ -224,18 +345,20 @@ export default function PublicReport() {
     if (blocked) {
       const blockTime = localStorage.getItem('reportBlockedUntil');
       if (blockTime) {
-        const remaining = Math.ceil((parseInt(blockTime) - Date.now()) / 60000); // minutes remaining
+        const remaining = Math.ceil((parseInt(blockTime) - Date.now()) / 60000);
         setError(`Too many failed attempts. Please try again after ${remaining} minute(s).`);
       } else {
         setError('Too many failed attempts. Please try again after 15 minutes.');
       }
       return;
     }
+
     const patientNum = formData.patientNumber.join('');
     if (patientNum.length !== 10) {
       setError('Please enter complete 10-digit patient number');
       return;
     }
+
     const formattedNumber = `${patientNum.slice(0, 4)}-${patientNum.slice(4, 6)}-${patientNum.slice(6, 10)}`;
     setLoading(true);
     setError('');
@@ -252,7 +375,34 @@ export default function PublicReport() {
       });
 
       const data = await res.json();
+
+      console.log('📊 Full response data:', data);
+
       if (data.success) {
+        // ✅ Process history if it exists in the response
+        if (data.finalReport?.historicalPatients) {
+          console.log('🔄 Processing history...');
+          console.log('📦 Historical patients count:', data.finalReport.historicalPatients.length);
+          console.log('⚙️ History settings:', historySettings);
+
+          const processedHistory = processHistoricalData(
+            data.finalReport,
+            data.finalReport.historicalPatients,
+            historySettings
+          );
+
+          console.log('📈 Processed history:', processedHistory);
+
+          if (processedHistory) {
+            data.finalReport.historicalData = processedHistory;
+            console.log('✅ History attached successfully');
+          } else {
+            console.log('⚠️ No matching tests found in history');
+          }
+        } else {
+          console.log('ℹ️ No historical data available');
+        }
+
         setReports(data);
         setAttempts(0);
         localStorage.removeItem('reportAttempts');
@@ -261,12 +411,13 @@ export default function PublicReport() {
         throw new Error(data.message);
       }
     } catch (err) {
+      console.error('❌ Error:', err);
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
       localStorage.setItem('reportAttempts', newAttempts.toString());
 
       if (newAttempts >= 5) {
-        const blockUntil = Date.now() + (15 * 60 * 1000); // 15 minutes from now
+        const blockUntil = Date.now() + (15 * 60 * 1000);
         localStorage.setItem('reportBlockedUntil', blockUntil.toString());
         setBlocked(true);
         setError('Too many failed attempts. Access blocked for 15 minutes.');
@@ -580,91 +731,91 @@ export default function PublicReport() {
                 <div style={{ display: isMobile ? 'none' : 'block' }}>
                   <div ref={finalReportRef} className="bg-white">
                     <style>{`
-              @media print {
-                @page {
-                  size: A4 portrait;
-                  margin: 5mm 8mm;
-                }
-              
-                html, body {
-                  height: 100%;
-                  margin: 0;
-                  padding: 0;
-                }
-              
-                body {
-                  print-color-adjust: exact;
-                  -webkit-print-color-adjust: exact;
-                }
-              
-                /* Main table takes full page height */
-                table.main-wrapper {
-                  width: 100%;
-                  border-collapse: collapse;
-                  min-height: 100vh;
-                  display: table;
-                }
-              
-                /* Header stays at top */
-                thead.print-header {
-                  display: table-header-group;
-                }
-              
-                /* Content fills available space */
-                tbody.print-content {
-                  display: table-row-group;
-                  height: 100%;
-                }
-              
-                tbody.print-content tr {
-                  height: 100%;
-                }
-              
-                tbody.print-content td {
-                  vertical-align: top;
-                  height: 100%;
-                }
-              
-                /* Footer sticks to bottom */
-                tfoot.print-footer {
-                  display: table-footer-group;
-                  vertical-align: bottom;
-                }
-              
-                .print-footer td {
-                  vertical-align: bottom;
-                }
-              
-                /* Avoid content breaking */
-                .test-section {
-                  page-break-inside: avoid;
-                  break-inside: avoid;
-                }
-              
-                .no-margin {
-                  margin: 0;
-                  padding: 0;
-                }
-                  /* ✅ Keep footer repeating on each page */
-  tfoot.print-footer {
-    display: table-footer-group;
-  }
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 5mm 8mm;
+    }
+  
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+  
+    body {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+  
+    table.main-wrapper {
+      width: 100%;
+      border-collapse: collapse;
+      min-height: 100vh;
+      display: table;
+    }
+  
+    thead.print-header {
+      display: table-header-group;
+    }
+  
+    tbody.print-content {
+      display: table-row-group;
+      height: 100%;
+    }
+  
+    tbody.print-content tr {
+      height: 100%;
+    }
+  
+    tbody.print-content td {
+      vertical-align: top;
+      height: 100%;
+    }
+  
+    tfoot.print-footer {
+      display: table-footer-group;
+      vertical-align: bottom;
+    }
+  
+    .print-footer td {
+      vertical-align: bottom;
+    }
+  
+    .test-section {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
 
-  /* ✅ Ensure footer is truly at the bottom */
-  tfoot.print-footer td {
-    padding-top: 12px !important;
-    vertical-align: bottom !important;
-  }
+    tbody.test-block {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
 
-  /* ✅ Reserve exact space for footer on the last page */
-  tbody.print-content::after {
-    content: "";
-    display: table-row;
-    height: 160px; /* increase to match full footer + margins */
-  }
-              }
-              `}</style>
+    .special-field-container {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
 
+    .special-field-container h4,
+    .special-field-container p,
+    .special-field-container > div {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+  
+    .no-margin {
+      margin: 0;
+      padding: 0;
+    }
+
+    tbody.print-content::after {
+      content: "";
+      display: table-row;
+      height: 160px;
+    }
+  }
+`}</style>
                     {/* ✅ TABLE WRAPPER FOR PROPER PRINTING */}
                     <table className="main-wrapper w-full border-collapse no-margin">
 
@@ -835,10 +986,10 @@ export default function PublicReport() {
                           <td>
                             {/* Group tests by category */}
                             {(() => {
-                              // ✅ FILTER: Remove diagnostic tests before grouping
-                              const nonDiagnosticTests = reports.finalReport?.tests?.filter(test => !test.testId?.isDiagnosticTest) || [];
+                              // Use historical data if available
+                              const testsToRender = reports.finalReport?.historicalData?.tests || reports.finalReport?.tests || [];
+                              const nonDiagnosticTests = testsToRender.filter(test => !test.testId?.isDiagnosticTest);
 
-                              // Group tests by category
                               const testsByCategory = {};
                               nonDiagnosticTests.forEach(test => {
                                 const category = test.testId?.category || "OTHER TESTS";
@@ -848,9 +999,7 @@ export default function PublicReport() {
                                 testsByCategory[category].push(test);
                               });
 
-                              // Render each category
                               return Object.entries(testsByCategory).map(([category, categoryTests], catIndex) => {
-                                // Filter tests that have filled fields
                                 const testsWithData = categoryTests.filter(test =>
                                   test.fields?.some(f =>
                                     f.defaultValue &&
@@ -868,266 +1017,552 @@ export default function PublicReport() {
                                       <h3 className="text-md font-bold uppercase">{category} REPORT</h3>
                                     </div>
 
-                                    {/* Table with headers (once per category) */}
-                                    <table className=" text-xs border-collapse mb-2 " style={{ width: "83%" }}>
-                                      <thead>
-                                        <tr className="border-b border-gray-800">
-                                          <th className="text-left pl-2 font-semibold align-bottom">TEST</th>
-                                          <th className="text-center font-semibold align-bottom">
-                                            REFERENCE RANGE
-                                          </th>
-                                          <th className="text-center font-semibold align-bottom">UNIT</th>
-                                          <th className="text-center font-semibold align-top">
-                                            <div>RESULT</div>
-                                            <div className="text-[10px] font-semibold">
-                                              {reports.finalReport?.refNo}
-                                            </div>
-                                            <div className="text-[10px] font-normal">
-                                              {new Date().toLocaleDateString("en-GB", {
-                                                day: "2-digit",
-                                                month: "short",
-                                                year: "numeric"
-                                              }).replace(/ /g, "-")} {" "}
-                                              {new Date().toLocaleTimeString("en-US", {
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                                hour12: true,
-                                              })}
-                                            </div>
-                                          </th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {/* Render all tests under this category */}
-                                        {testsWithData.map((test, testIndex) => {
-                                          const filledFields = test.fields?.filter(
-                                            f => f.defaultValue &&
-                                              f.defaultValue.trim() !== "" &&
-                                              f.defaultValue !== "—"
-                                          ) || [];
+                                    {/* Mixed Rendering: Special + Narrative + Table */}
+                                    {(() => {
+                                      // Merge result fields with template specialRender config
+                                      const testsWithConfig = testsWithData.map(test => {
+                                        const templateFields = test.testId?.fields || [];
+                                        const mergedFields = test.fields?.map(resultField => {
+                                          const templateField = templateFields.find(
+                                            tf => tf.fieldName === resultField.fieldName
+                                          );
+                                          return {
+                                            ...resultField,
+                                            specialRender: templateField?.specialRender || { enabled: false }
+                                          };
+                                        }) || [];
 
-                                          return (
-                                            <React.Fragment key={testIndex}>
-                                              {/* Test Name Row (if test has name) */}
-                                              {test.testName && test.testName.trim() && (
-                                                <tr>
-                                                  <td colSpan="4" className="py-2 font-semibold uppercase text-sm">
-                                                    {test.testName}
-                                                  </td>
-                                                </tr>
-                                              )}
+                                        return {
+                                          ...test,
+                                          fields: mergedFields
+                                        };
+                                      });
 
-                                              {/* Field Rows - WITH CATEGORY SUPPORT */}
-                                              {(() => {
-                                                // Check if ANY field has a category
-                                                const hasCategories = filledFields.some(f => f.category);
+                                      // Separate tests by render mode
+                                      const specialTests = testsWithConfig.filter(test =>
+                                        test.fields?.some(f => f.specialRender?.enabled)
+                                      );
 
-                                                if (!hasCategories) {
-                                                  // NO CATEGORIES: Render normally (existing behavior)
-                                                  return filledFields.map((f, fi) => (
-                                                    <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
-                                                      <td className="py-0.5 pl-2">{f.fieldName}</td>
-                                                      <td className="text-center py-0.5">
-                                                        <div className='whitespace-pre-line'>
-                                                          {(() => {
-                                                            const rangeStr = f.range || "-";
-                                                            const patientGender = reports.finalReport?.gender?.toUpperCase();
-                                                            if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
-                                                              const parts = rangeStr.split(',');
-                                                              for (let part of parts) {
-                                                                part = part.trim();
-                                                                if (patientGender === 'MALE' && part.startsWith('M:')) {
-                                                                  return part.substring(2).trim();
-                                                                }
-                                                                if (patientGender === 'FEMALE' && part.startsWith('F:')) {
-                                                                  return part.substring(2).trim();
-                                                                }
-                                                              }
-                                                              return rangeStr;
-                                                            }
-                                                            return rangeStr;
-                                                          })()}
+                                      const narrativeTests = testsWithConfig.filter(test =>
+                                        test.testId?.isNarrativeFormat &&
+                                        !test.fields?.some(f => f.specialRender?.enabled)
+                                      );
+
+                                      const normalTests = testsWithConfig.filter(test =>
+                                        !test.fields?.some(f => f.specialRender?.enabled) &&
+                                        !test.testId?.isNarrativeFormat
+                                      );
+
+                                      return (
+                                        <>
+                                          {/* SPECIAL RENDER TESTS */}
+                                          {specialTests.map((test, testIndex) => {
+                                            const specialFields = test.fields.filter(
+                                              f => f.specialRender?.enabled &&
+                                                f.defaultValue &&
+                                                f.defaultValue.trim() !== "" &&
+                                                f.defaultValue !== "—"
+                                            );
+
+                                            if (specialFields.length === 0) return null;
+
+                                            return (
+                                              <div
+                                                key={`special-${testIndex}`}
+                                                style={{
+                                                  pageBreakInside: "avoid",
+                                                  breakInside: "avoid",
+                                                  marginBottom: "16px",
+                                                  marginTop: "16px"
+                                                }}
+                                              >
+                                                <div className="mt-6">
+                                                  <h3 className="text-sm font-semibold uppercase">{test.testName}</h3>
+                                                </div>
+                                                <div className="h-[1px] w-full bg-gray-400 mb-1"></div>
+
+                                                {specialFields.map((field, fieldIndex) => (
+                                                  <div
+                                                    key={fieldIndex}
+                                                    className="special-field-container"
+                                                    style={{
+                                                      pageBreakInside: "avoid",
+                                                      breakInside: "avoid",
+                                                      marginBottom: "8px"
+                                                    }}
+                                                  >
+                                                    <h4 className="font-semibold text-gray-900 text-[13px] mb-1">
+                                                      {field.fieldName}
+                                                    </h4>
+
+                                                    <div className="flex items-start justify-between gap-4">
+                                                      {field.specialRender?.description && (
+                                                        <p className="text-[11px] text-gray-900 leading-tight flex-1">
+                                                          {field.specialRender.description}
+                                                        </p>
+                                                      )}
+
+                                                      {field.specialRender?.scaleConfig && (
+                                                        <div style={{ width: '180px', flexShrink: 0 }}>
+                                                          <SmallTestScaleVisualization
+                                                            scaleConfig={field.specialRender.scaleConfig}
+                                                            resultValue={field.defaultValue}
+                                                            unit={field.unit}
+                                                          />
                                                         </div>
-                                                      </td>
-                                                      <td className="text-center py-0.5">{f.unit || "."}</td>
-                                                      <td className="text-center font-semibold py-0.5">
-                                                        {f.defaultValue}
-                                                      </td>
-                                                    </tr>
-                                                  ));
+                                                      )}
+                                                    </div>
+                                                    <div className="h-[1px] w-full bg-gray-400 mt-2 mb-0"></div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            );
+                                          })}
+
+                                          {/* NARRATIVE TESTS */}
+                                          {narrativeTests.map((test, testIndex) => {
+                                            const filledFields = test.fields.filter(
+                                              f => f.defaultValue &&
+                                                f.defaultValue.trim() !== "" &&
+                                                f.defaultValue !== "—"
+                                            );
+
+                                            if (filledFields.length === 0) return null;
+
+                                            return (
+                                              <div
+                                                key={`narrative-${testIndex}`}
+                                                style={{
+                                                  pageBreakInside: "avoid",
+                                                  breakInside: "avoid",
+                                                  marginBottom: "16px",
+                                                  marginTop: "16px"
+                                                }}
+                                              >
+                                                <div className="mt-6">
+                                                  <h3 className="text-sm font-semibold uppercase">{test.testName}</h3>
+                                                </div>
+                                                <div className="h-[1px] w-full bg-gray-400 mb-4"></div>
+
+                                                {filledFields.map((field, fieldIndex) => (
+                                                  <div
+                                                    key={fieldIndex}
+                                                    style={{
+                                                      pageBreakInside: "avoid",
+                                                      breakInside: "avoid",
+                                                      marginBottom: "12px"
+                                                    }}
+                                                  >
+                                                    <h4 className="font-semibold text-gray-900 text-sm mb-1">
+                                                      {field.fieldName}
+                                                    </h4>
+
+                                                    <p className="text-xs text-gray-900 leading-relaxed whitespace-pre-line">
+                                                      {field.defaultValue}
+                                                    </p>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            );
+                                          })}
+
+                                          {/* NORMAL TABLE TESTS */}
+                                          {normalTests.length > 0 && (() => {
+                                            // Collect all unique history columns
+                                            const allHistoryColumnsMap = new Map();
+
+                                            normalTests.forEach(test => {
+                                              test.historyColumns?.forEach(col => {
+                                                if (!allHistoryColumnsMap.has(col.refNo)) {
+                                                  allHistoryColumnsMap.set(col.refNo, col);
+                                                }
+                                              });
+                                            });
+
+                                            const allHistoryColumns = Array.from(allHistoryColumnsMap.values())
+                                              .sort((a, b) => {
+                                                if (historySettings.historyResultsDirection === 'right-to-left') {
+                                                  return new Date(a.date) - new Date(b.date);
                                                 } else {
-                                                  // HAS CATEGORIES: Group by category
-                                                  const fieldsByCategory = {};
-                                                  filledFields.forEach(f => {
-                                                    const cat = f.category || "Other";
-                                                    if (!fieldsByCategory[cat]) {
-                                                      fieldsByCategory[cat] = [];
-                                                    }
-                                                    fieldsByCategory[cat].push(f);
-                                                  });
+                                                  return new Date(b.date) - new Date(a.date);
+                                                }
+                                              });
 
-                                                  return Object.entries(fieldsByCategory).map(([category, fields], catIdx) => (
-                                                    <React.Fragment key={catIdx}>
-                                                      {/* Category Heading */}
-                                                      <tr>
-                                                        <td colSpan="4" className="py-1.5 font-bold text-xs uppercase bg-gray-50">
-                                                          {category}
-                                                        </td>
-                                                      </tr>
+                                            return (
+                                              <table
+                                                className="text-xs border-collapse mb-2"
+                                                style={{
+                                                  width: allHistoryColumns.length > 0 ? "100%" : "83%"
+                                                }}
+                                              >
+                                                <thead>
+                                                  <tr className="border-b border-gray-800">
+                                                    <th className="text-left pl-2 font-semibold align-bottom">TEST</th>
+                                                    <th className="text-center font-semibold align-bottom">REFERENCE RANGE</th>
+                                                    <th className="text-center font-semibold align-bottom">UNIT</th>
 
-                                                      {/* Fields in this category */}
-                                                      {fields.map((f, fi) => (
-                                                        <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
-                                                          <td className="py-0.5 pl-2">{f.fieldName}</td>
-                                                          <td className="text-center py-0.5">
-                                                            <div className='whitespace-pre-line'>
-                                                              {(() => {
-                                                                const rangeStr = f.range || "-";
-                                                                const patientGender = reports.finalReport?.gender?.toUpperCase();
-                                                                if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
-                                                                  const parts = rangeStr.split(',');
-                                                                  for (let part of parts) {
-                                                                    part = part.trim();
-                                                                    if (patientGender === 'MALE' && part.startsWith('M:')) {
-                                                                      return part.substring(2).trim();
-                                                                    }
-                                                                    if (patientGender === 'FEMALE' && part.startsWith('F:')) {
-                                                                      return part.substring(2).trim();
-                                                                    }
-                                                                  }
-                                                                  return rangeStr;
-                                                                }
-                                                                return rangeStr;
-                                                              })()}
-                                                            </div>
-                                                          </td>
-                                                          <td className="text-center py-0.5">{f.unit || "."}</td>
-                                                          <td className="text-center font-semibold py-0.5">
-                                                            {f.defaultValue}
+                                                    {historySettings.historyResultsDirection === 'left-to-right' && (
+                                                      <th className="text-center font-semibold align-top">
+                                                        <div>RESULT</div>
+                                                        <div className="text-[10px] font-semibold">
+                                                          {reports.finalReport?.refNo}
+                                                        </div>
+                                                        <div className="text-[10px] font-normal">
+                                                          {new Date().toLocaleDateString("en-GB", {
+                                                            day: "2-digit",
+                                                            month: "short",
+                                                            year: "numeric"
+                                                          }).replace(/ /g, "-")} {" "}
+                                                          {new Date().toLocaleTimeString("en-US", {
+                                                            hour: "2-digit",
+                                                            minute: "2-digit",
+                                                            hour12: true,
+                                                          })}
+                                                        </div>
+                                                      </th>
+                                                    )}
+
+                                                    {allHistoryColumns.map((col, idx) => (
+                                                      <th key={idx} className="text-center font-semibold align-top">
+                                                        <div>RESULT</div>
+                                                        <div className="text-[10px] font-semibold">
+                                                          {col.refNo}
+                                                        </div>
+                                                        <div className="text-[10px] font-normal">
+                                                          {new Date(col.date).toLocaleDateString("en-GB", {
+                                                            day: "2-digit",
+                                                            month: "short",
+                                                            year: "numeric"
+                                                          }).replace(/ /g, "-")} {" "}
+                                                          {new Date(col.date).toLocaleTimeString("en-US", {
+                                                            hour: "2-digit",
+                                                            minute: "2-digit",
+                                                            hour12: true,
+                                                          })}
+                                                        </div>
+                                                      </th>
+                                                    ))}
+
+                                                    {historySettings.historyResultsDirection === 'right-to-left' && (
+                                                      <th className="text-center font-semibold align-top">
+                                                        <div>RESULT</div>
+                                                        <div className="text-[10px] font-semibold">
+                                                          {reports.finalReport?.refNo}
+                                                        </div>
+                                                        <div className="text-[10px] font-normal">
+                                                          {new Date().toLocaleDateString("en-GB", {
+                                                            day: "2-digit",
+                                                            month: "short",
+                                                            year: "numeric"
+                                                          }).replace(/ /g, "-")} {" "}
+                                                          {new Date().toLocaleTimeString("en-US", {
+                                                            hour: "2-digit",
+                                                            minute: "2-digit",
+                                                            hour12: true,
+                                                          })}
+                                                        </div>
+                                                      </th>
+                                                    )}
+                                                  </tr>
+                                                </thead>
+
+                                                {normalTests.map((test, testIndex) => {
+                                                  const filledFields = test.fields?.filter(
+                                                    f => f.defaultValue &&
+                                                      f.defaultValue.trim() !== "" &&
+                                                      f.defaultValue !== "—"
+                                                  ) || [];
+
+                                                  return (
+                                                    <tbody
+                                                      key={testIndex}
+                                                      className="test-block"
+                                                      style={{
+                                                        pageBreakInside: "avoid",
+                                                        breakInside: "avoid"
+                                                      }}
+                                                    >
+                                                      {test.testName && (
+                                                        <tr>
+                                                          <td colSpan={4 + allHistoryColumns.length} className="py-2 font-semibold uppercase text-sm">
+                                                            {test.testName}
                                                           </td>
                                                         </tr>
-                                                      ))}
-                                                    </React.Fragment>
-                                                  ));
-                                                }
-                                              })()}
+                                                      )}
 
+                                                      {(() => {
+                                                        const hasCategories = filledFields.some(f => f.category);
 
-                                              {/* ========================================
-                  REPORT EXTRAS - DYNAMIC NARRATIVE SECTIONS
-                  ======================================== */}
+                                                        if (!hasCategories) {
+                                                          return filledFields.map((f, fi) => (
+                                                            <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
+                                                              <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                              <td className="text-center py-0.5">
+                                                                <div className='whitespace-pre-line'>
+                                                                  {(() => {
+                                                                    const rangeStr = f.range || "-";
+                                                                    const patientGender = reports.finalReport?.gender?.toUpperCase();
+                                                                    if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
+                                                                      const parts = rangeStr.split(',');
+                                                                      for (let part of parts) {
+                                                                        part = part.trim();
+                                                                        if (patientGender === 'MALE' && part.startsWith('M:')) {
+                                                                          return part.substring(2).trim();
+                                                                        }
+                                                                        if (patientGender === 'FEMALE' && part.startsWith('F:')) {
+                                                                          return part.substring(2).trim();
+                                                                        }
+                                                                      }
+                                                                      return rangeStr;
+                                                                    }
+                                                                    return rangeStr;
+                                                                  })()}
+                                                                </div>
+                                                              </td>
+                                                              <td className="text-center py-0.5">{f.unit || "."}</td>
 
-                                              {/* ===============================
-   TEST-LEVEL SCALE VISUALIZATION
-   (Must stay INSIDE test loop)
-=============================== */}
-                                              {(() => {
-                                                const testData = test.testId || test;
-                                                const scaleConfig = testData.scaleConfig;
+                                                              {historySettings.historyResultsDirection === 'left-to-right' && (
+                                                                <td className="text-center font-semibold py-0.5">
+                                                                  {f.defaultValue}
+                                                                </td>
+                                                              )}
 
-                                                // Using first field as primary numeric result
-                                                const firstField = test.fields?.[0];
-                                                const resultValue = firstField?.defaultValue;
-                                                const unit = firstField?.unit || '';
+                                                              {allHistoryColumns.map((col, colIdx) => {
+                                                                const testHasThisColumn = test.historyColumns?.some(
+                                                                  tc => tc.refNo === col.refNo
+                                                                );
 
-                                                // Guard: render ONLY if scale is valid
-                                                if (!scaleConfig?.thresholds || !scaleConfig?.labels || !resultValue) {
-                                                  return null;
-                                                }
+                                                                if (!testHasThisColumn) {
+                                                                  return (
+                                                                    <td key={colIdx} className="text-center py-0.5 text-gray-400">
+                                                                      —
+                                                                    </td>
+                                                                  );
+                                                                }
 
-                                                return (
-                                                  <tr>
-                                                    <td colSpan="4">
-                                                      <TestScaleVisualization
-                                                        scaleConfig={scaleConfig}
-                                                        resultValue={resultValue}
-                                                        unit={unit}
-                                                      />
-                                                    </td>
-                                                  </tr>
-                                                );
-                                              })()}
-                                              {/* ===============================
-   TEST-LEVEL VISUAL SCALE
-   (Vertical thermometer)
-=============================== */}
-                                              {(() => {
-                                                const testData = test.testId || test;
-                                                const visualScale = testData.visualScale;
+                                                                const testHistoryIndex = test.historyColumns.findIndex(
+                                                                  tc => tc.refNo === col.refNo
+                                                                );
 
-                                                const firstField = test.fields?.[0];
-                                                const resultValue = firstField?.defaultValue;
-                                                const unit = firstField?.unit || '';
+                                                                const histVal = testHistoryIndex !== -1
+                                                                  ? f.historicalValues?.[testHistoryIndex]
+                                                                  : "—";
 
-                                                // Guard: render ONLY if visual scale is valid
-                                                if (!visualScale?.thresholds || !visualScale?.labels || !resultValue) {
-                                                  return null;
-                                                }
+                                                                const histData = test.historyColumns[testHistoryIndex];
+                                                                const histField = histData?.result?.fields?.find(
+                                                                  hf => hf.fieldName === f.fieldName
+                                                                );
+                                                                const histUnit = histField?.unit?.trim() || '';
+                                                                const currentUnit = f.unit?.trim() || '';
 
-                                                return (
-                                                  <tr>
-                                                    <td colSpan="4">
-                                                      <VisualScaleVisualization
-                                                        visualScale={visualScale}
-                                                        resultValue={resultValue}
-                                                        unit={unit}
-                                                      />
-                                                    </td>
-                                                  </tr>
-                                                );
-                                              })()}
+                                                                const unitMismatch = histUnit && currentUnit &&
+                                                                  histUnit.toLowerCase() !== currentUnit.toLowerCase();
 
-                                              {/* ===============================
-   TEST-LEVEL REPORT EXTRAS
-   (Narratives, notes, interpretations)
-=============================== */}
-                                              {(() => {
-                                                const extras = (test.testId || test)?.reportExtras;
+                                                                return (
+                                                                  <td key={colIdx} className="text-center font-semibold py-0.5">
+                                                                    {histVal || "—"}
+                                                                    {unitMismatch && <span className="text-red-600 font-bold ml-0.5">*</span>}
+                                                                  </td>
+                                                                );
+                                                              })}
 
-                                                // Guard: skip empty extras
-                                                if (!extras || Object.keys(extras).length === 0) return null;
+                                                              {historySettings.historyResultsDirection === 'right-to-left' && (
+                                                                <td className="text-center font-semibold py-0.5">
+                                                                  {f.defaultValue}
+                                                                </td>
+                                                              )}
+                                                            </tr>
+                                                          ));
+                                                        } else {
+                                                          const fieldsByCategory = {};
+                                                          filledFields.forEach(f => {
+                                                            const cat = f.category || "Other";
+                                                            if (!fieldsByCategory[cat]) {
+                                                              fieldsByCategory[cat] = [];
+                                                            }
+                                                            fieldsByCategory[cat].push(f);
+                                                          });
 
-                                                return (
-                                                  <tr>
-                                                    <td colSpan="4">
-                                                      {Object.entries(extras).map(([key, value]) => {
-                                                        if (!value || (typeof value === 'string' && !value.trim())) return null;
+                                                          return Object.entries(fieldsByCategory).map(([category, fields], catIdx) => (
+                                                            <React.Fragment key={catIdx}>
+                                                              <tr>
+                                                                <td colSpan={4 + allHistoryColumns.length} className="py-1.5 font-bold text-xs uppercase bg-gray-50">
+                                                                  {category}
+                                                                </td>
+                                                              </tr>
 
-                                                        const heading = key
-                                                          .replace(/([A-Z])/g, ' $1')
-                                                          .toUpperCase();
+                                                              {fields.map((f, fi) => (
+                                                                <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
+                                                                  <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                                  <td className="text-center py-0.5">
+                                                                    <div className='whitespace-pre-line'>
+                                                                      {(() => {
+                                                                        const rangeStr = f.range || "-";
+                                                                        const patientGender = reports.finalReport?.gender?.toUpperCase();
+                                                                        if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
+                                                                          const parts = rangeStr.split(',');
+                                                                          for (let part of parts) {
+                                                                            part = part.trim();
+                                                                            if (patientGender === 'MALE' && part.startsWith('M:')) {
+                                                                              return part.substring(2).trim();
+                                                                            }
+                                                                            if (patientGender === 'FEMALE' && part.startsWith('F:')) {
+                                                                              return part.substring(2).trim();
+                                                                            }
+                                                                          }
+                                                                          return rangeStr;
+                                                                        }
+                                                                        return rangeStr;
+                                                                      })()}
+                                                                    </div>
+                                                                  </td>
+                                                                  <td className="text-center py-0.5">{f.unit || "."}</td>
+
+                                                                  {historySettings.historyResultsDirection === 'left-to-right' && (
+                                                                    <td className="text-center font-semibold py-0.5">
+                                                                      {f.defaultValue}
+                                                                    </td>
+                                                                  )}
+
+                                                                  {allHistoryColumns.map((col, colIdx) => {
+                                                                    const testHasThisColumn = test.historyColumns?.some(
+                                                                      tc => tc.refNo === col.refNo
+                                                                    );
+
+                                                                    if (!testHasThisColumn) {
+                                                                      return (
+                                                                        <td key={colIdx} className="text-center py-0.5 text-gray-400">
+                                                                          —
+                                                                        </td>
+                                                                      );
+                                                                    }
+
+                                                                    const testHistoryIndex = test.historyColumns.findIndex(
+                                                                      tc => tc.refNo === col.refNo
+                                                                    );
+
+                                                                    const histVal = testHistoryIndex !== -1
+                                                                      ? f.historicalValues?.[testHistoryIndex]
+                                                                      : "—";
+
+                                                                    const histData = test.historyColumns[testHistoryIndex];
+                                                                    const histField = histData?.result?.fields?.find(
+                                                                      hf => hf.fieldName === f.fieldName
+                                                                    );
+                                                                    const histUnit = histField?.unit?.trim() || '';
+                                                                    const currentUnit = f.unit?.trim() || '';
+
+                                                                    const unitMismatch = histUnit && currentUnit &&
+                                                                      histUnit.toLowerCase() !== currentUnit.toLowerCase();
+
+                                                                    return (
+                                                                      <td key={colIdx} className="text-center font-semibold py-0.5">
+                                                                        {histVal || "—"}
+                                                                        {unitMismatch && <span className="text-red-600 font-bold ml-0.5">*</span>}
+                                                                      </td>
+                                                                    );
+                                                                  })}
+
+                                                                  {historySettings.historyResultsDirection === 'right-to-left' && (
+                                                                    <td className="text-center font-semibold py-0.5">
+                                                                      {f.defaultValue}
+                                                                    </td>
+                                                                  )}
+                                                                </tr>
+                                                              ))}
+                                                            </React.Fragment>
+                                                          ));
+                                                        }
+                                                      })()}
+
+                                                      {/* TEST SCALE */}
+                                                      {(() => {
+                                                        const testData = test.testId || test;
+                                                        const scaleConfig = testData.scaleConfig;
+                                                        const firstField = test.fields?.[0];
+                                                        const resultValue = firstField?.defaultValue;
+                                                        const unit = firstField?.unit || '';
+
+                                                        if (!scaleConfig?.thresholds || !scaleConfig?.labels || !resultValue) return null;
 
                                                         return (
-                                                          <div key={key} className="mb-3">
-                                                            <h4 className="font-bold text-sm underline mb-1">
-                                                              {heading}
-                                                            </h4>
-
-                                                            {typeof value === 'string' ? (
-                                                              <p className="text-xs whitespace-pre-line">{value}</p>
-                                                            ) : (
-                                                              <ol className="list-decimal ml-4 text-xs">
-                                                                {value.map((item, i) => (
-                                                                  <li key={i}>{item}</li>
-                                                                ))}
-                                                              </ol>
-                                                            )}
-                                                          </div>
+                                                          <tr>
+                                                            <td colSpan={4 + allHistoryColumns.length}>
+                                                              <TestScaleVisualization
+                                                                scaleConfig={scaleConfig}
+                                                                resultValue={resultValue}
+                                                                unit={unit}
+                                                              />
+                                                            </td>
+                                                          </tr>
                                                         );
-                                                      })}
-                                                    </td>
-                                                  </tr>
-                                                );
-                                              })()}
+                                                      })()}
 
+                                                      {/* VISUAL SCALE */}
+                                                      {(() => {
+                                                        const testData = test.testId || test;
+                                                        const visualScale = testData.visualScale;
+                                                        const firstField = test.fields?.[0];
+                                                        const resultValue = firstField?.defaultValue;
+                                                        const unit = firstField?.unit || '';
 
-                                            </React.Fragment>
-                                          );
-                                        })}
-                                      </tbody>
-                                    </table>
+                                                        if (!visualScale?.thresholds || !visualScale?.labels || !resultValue) return null;
 
+                                                        return (
+                                                          <tr>
+                                                            <td colSpan={4 + allHistoryColumns.length}>
+                                                              <VisualScaleVisualization
+                                                                visualScale={visualScale}
+                                                                resultValue={resultValue}
+                                                                unit={unit}
+                                                              />
+                                                            </td>
+                                                          </tr>
+                                                        );
+                                                      })()}
 
+                                                      {/* REPORT EXTRAS */}
+                                                      {(() => {
+                                                        const extras = (test.testId || test)?.reportExtras;
+                                                        if (!extras || Object.keys(extras).length === 0) return null;
+
+                                                        return (
+                                                          <tr>
+                                                            <td colSpan={4 + allHistoryColumns.length}>
+                                                              {Object.entries(extras).map(([key, value]) => {
+                                                                if (!value || (typeof value === 'string' && !value.trim())) return null;
+
+                                                                const heading = key.replace(/([A-Z])/g, ' $1').toUpperCase();
+
+                                                                return (
+                                                                  <div key={key} className="mb-3 mt-2">
+                                                                    <h4 className="font-bold text-sm underline mb-1">
+                                                                      {heading}
+                                                                    </h4>
+
+                                                                    {typeof value === 'string' ? (
+                                                                      <p className="text-xs whitespace-pre-line">{value}</p>
+                                                                    ) : (
+                                                                      <ol className="list-decimal ml-4 text-xs">
+                                                                        {value.map((v, i) => <li key={i}>{v}</li>)}
+                                                                      </ol>
+                                                                    )}
+                                                                  </div>
+                                                                );
+                                                              })}
+                                                            </td>
+                                                          </tr>
+                                                        );
+                                                      })()}
+                                                    </tbody>
+                                                  );
+                                                })}
+                                              </table>
+                                            );
+                                          })()}
+                                        </>
+                                      );
+                                    })()}
                                   </div>
                                 );
                               });

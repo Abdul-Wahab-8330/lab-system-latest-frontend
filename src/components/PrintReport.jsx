@@ -7,6 +7,7 @@ import { Loader2 } from 'lucide-react';
 import TestScaleVisualization from './TestScaleVisualization';
 import VisualScaleVisualization from './VisualScaleVisualization';
 import { useSearchParams } from "react-router-dom";
+import SmallTestScaleVisualization from './SmallTestScale';
 
 
 export default function PrintReport() {
@@ -65,17 +66,17 @@ export default function PrintReport() {
     }, [loading, printPatient, labInfo, error]);
 
     const formatAge = (patient) => {
-  if (!patient?.age) return "-";
+        if (!patient?.age) return "-";
 
-  const unit =
-    patient.ageUnit === "months"
-      ? "Months"
-      : patient.ageUnit === "days"
-      ? "Days"
-      : "Years"; // default for old records
+        const unit =
+            patient.ageUnit === "months"
+                ? "Months"
+                : patient.ageUnit === "days"
+                    ? "Days"
+                    : "Years"; // default for old records
 
-  return `${patient.age} ${unit}`;
-};
+        return `${patient.age} ${unit}`;
+    };
 
 
     // Add error display in render
@@ -175,6 +176,27 @@ export default function PrintReport() {
             margin: 0;
             padding: 0;
           }
+
+          tbody.test-block {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .special-field-container {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .special-field-container h4,
+  .special-field-container p,
+  .special-field-container > div {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  tr.print-spacer td {
+    border: none;
+  }
         }
       `}</style>
 
@@ -335,8 +357,8 @@ export default function PrintReport() {
                         <td>
                             {/* Group tests by category */}
                             {(() => {
-                                // ✅ FILTER: Extra safety - remove diagnostic tests before grouping
-                                const nonDiagnosticTests = printPatient?.tests?.filter(test => test.testId?.isDiagnosticTest !== true) || [];
+                                const testsToRender = printPatient?.tests || [];
+                                const nonDiagnosticTests = testsToRender.filter(test => !test.testId?.isDiagnosticTest);
 
                                 const testsByCategory = {};
                                 nonDiagnosticTests.forEach(test => {
@@ -360,241 +382,409 @@ export default function PrintReport() {
 
                                     return (
                                         <div key={catIndex} className="test-section mb-3 pt-8">
+                                            {/* Category Header */}
                                             <div className="my-2 -mb-5">
                                                 <h3 className="text-md font-bold uppercase">{category} REPORT</h3>
                                             </div>
 
-                                            <table className="text-xs border-collapse mb-2" style={{ width: "83%" }}>
-                                                <thead>
-                                                    <tr className="border-b border-gray-800">
-                                                        <th className="text-left pl-2 font-semibold align-bottom">TEST</th>
-                                                        <th className="text-center font-semibold align-bottom">
-                                                            REFERENCE RANGE
-                                                        </th>
-                                                        <th className="text-center font-semibold align-bottom">UNIT</th>
-                                                        <th className="text-center font-semibold align-top">
-                                                            <div>RESULT</div>
-                                                            <div className="text-[10px] font-semibold">
-                                                                {printPatient?.refNo}
-                                                            </div>
-                                                            <div className="text-[10px] font-normal">
-                                                                {new Date().toLocaleDateString("en-GB", {
-                                                                    day: "2-digit",
-                                                                    month: "short",
-                                                                    year: "numeric"
-                                                                }).replace(/ /g, "-")} {" "}
-                                                                {new Date().toLocaleTimeString("en-US", {
-                                                                    hour: "2-digit",
-                                                                    minute: "2-digit",
-                                                                    hour12: true,
-                                                                })}
-                                                            </div>
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {testsWithData.map((test, testIndex) => {
-                                                        const filledFields = test.fields?.filter(
-                                                            f => f.defaultValue &&
-                                                                f.defaultValue.trim() !== "" &&
-                                                                f.defaultValue !== "—"
-                                                        ) || [];
+                                            {/* Mixed Rendering: Special + Narrative + Table */}
+                                            {(() => {
+                                                // Merge result fields with template specialRender config
+                                                const testsWithConfig = testsWithData.map(test => {
+                                                    const templateFields = test.testId?.fields || [];
+                                                    const mergedFields = test.fields?.map(resultField => {
+                                                        const templateField = templateFields.find(
+                                                            tf => tf.fieldName === resultField.fieldName
+                                                        );
+                                                        return {
+                                                            ...resultField,
+                                                            specialRender: templateField?.specialRender || { enabled: false }
+                                                        };
+                                                    }) || [];
 
-                                                        return (
-                                                            <React.Fragment key={testIndex}>
-                                                                {test.testName && test.testName.trim() && (
-                                                                    <tr>
-                                                                        <td colSpan="4" className="py-2 font-semibold uppercase text-sm">
-                                                                            {test.testName}
-                                                                        </td>
-                                                                    </tr>
-                                                                )}
+                                                    return {
+                                                        ...test,
+                                                        fields: mergedFields
+                                                    };
+                                                });
 
-                                                                {(() => {
-                                                                    // Check if ANY field has a category
-                                                                    const hasCategories = filledFields.some(f => f.category);
+                                                // Separate tests by render mode
+                                                const specialTests = testsWithConfig.filter(test =>
+                                                    test.fields?.some(f => f.specialRender?.enabled)
+                                                );
 
-                                                                    if (!hasCategories) {
-                                                                        // NO CATEGORIES: Render normally (existing behavior)
-                                                                        return filledFields.map((f, fi) => (
-                                                                            <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
-                                                                                <td className="py-0.5 pl-2">{f.fieldName}</td>
-                                                                                <td className="text-center py-0.5">
-                                                                                    <div className='whitespace-pre-line'>
-                                                                                        {(() => {
-                                                                                            const rangeStr = f.range || "-";
-                                                                                            const patientGender = printPatient?.gender?.toUpperCase();
-                                                                                            if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
-                                                                                                const parts = rangeStr.split(',');
-                                                                                                for (let part of parts) {
-                                                                                                    part = part.trim();
-                                                                                                    if (patientGender === 'MALE' && part.startsWith('M:')) {
-                                                                                                        return part.substring(2).trim();
-                                                                                                    }
-                                                                                                    if (patientGender === 'FEMALE' && part.startsWith('F:')) {
-                                                                                                        return part.substring(2).trim();
-                                                                                                    }
-                                                                                                }
-                                                                                                return rangeStr;
-                                                                                            }
-                                                                                            return rangeStr;
-                                                                                        })()}
+                                                const narrativeTests = testsWithConfig.filter(test =>
+                                                    test.testId?.isNarrativeFormat &&
+                                                    !test.fields?.some(f => f.specialRender?.enabled)
+                                                );
+
+                                                const normalTests = testsWithConfig.filter(test =>
+                                                    !test.fields?.some(f => f.specialRender?.enabled) &&
+                                                    !test.testId?.isNarrativeFormat
+                                                );
+
+                                                return (
+                                                    <>
+                                                        {/* ========================================
+                                            SPECIAL RENDER TESTS (No Table)
+                                        ======================================== */}
+                                                        {specialTests.map((test, testIndex) => {
+                                                            const specialFields = test.fields.filter(
+                                                                f => f.specialRender?.enabled &&
+                                                                    f.defaultValue &&
+                                                                    f.defaultValue.trim() !== "" &&
+                                                                    f.defaultValue !== "—"
+                                                            );
+
+                                                            if (specialFields.length === 0) return null;
+
+                                                            return (
+                                                                <div
+                                                                    key={`special-${testIndex}`}
+                                                                    style={{
+                                                                        pageBreakInside: "avoid",
+                                                                        breakInside: "avoid",
+                                                                        marginBottom: "16px",
+                                                                        marginTop: "16px"
+                                                                    }}
+                                                                >
+                                                                    {/* Test Name Header */}
+                                                                    <div className="mt-6">
+                                                                        <h3 className="text-sm font-semibold uppercase">{test.testName}</h3>
+                                                                    </div>
+                                                                    <div className="h-[1px] w-full bg-gray-400 mb-1"></div>
+
+                                                                    {specialFields.map((field, fieldIndex) => (
+                                                                        <div
+                                                                            key={fieldIndex}
+                                                                            className="special-field-container"
+                                                                            style={{
+                                                                                pageBreakInside: "avoid",
+                                                                                breakInside: "avoid",
+                                                                                marginBottom: "8px"
+                                                                            }}
+                                                                        >
+                                                                            {/* Field Name */}
+                                                                            <h4 className="font-semibold text-gray-900 text-[13px] mb-1">
+                                                                                {field.fieldName}
+                                                                            </h4>
+
+                                                                            {/* Description and Scale in same row */}
+                                                                            <div className="flex items-start justify-between gap-4">
+                                                                                {/* Description */}
+                                                                                {field.specialRender?.description && (
+                                                                                    <p className="text-[11px] text-gray-900 leading-tight flex-1">
+                                                                                        {field.specialRender.description}
+                                                                                    </p>
+                                                                                )}
+
+                                                                                {/* Scale */}
+                                                                                {field.specialRender?.scaleConfig && (
+                                                                                    <div style={{ width: '180px', flexShrink: 0 }}>
+                                                                                        <SmallTestScaleVisualization
+                                                                                            scaleConfig={field.specialRender.scaleConfig}
+                                                                                            resultValue={field.defaultValue}
+                                                                                            unit={field.unit}
+                                                                                        />
                                                                                     </div>
-                                                                                </td>
-                                                                                <td className="text-center py-0.5">{f.unit || "."}</td>
-                                                                                <td className="text-center font-semibold py-0.5">
-                                                                                    {f.defaultValue}
-                                                                                </td>
-                                                                            </tr>
-                                                                        ));
-                                                                    } else {
-                                                                        // HAS CATEGORIES: Group by category
-                                                                        const fieldsByCategory = {};
-                                                                        filledFields.forEach(f => {
-                                                                            const cat = f.category || "Other";
-                                                                            if (!fieldsByCategory[cat]) {
-                                                                                fieldsByCategory[cat] = [];
-                                                                            }
-                                                                            fieldsByCategory[cat].push(f);
-                                                                        });
+                                                                                )}
+                                                                            </div>
+                                                                            <div className="h-[1px] w-full bg-gray-400 mt-2 mb-0"></div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            );
+                                                        })}
 
-                                                                        return Object.entries(fieldsByCategory).map(([category, fields], catIdx) => (
-                                                                            <React.Fragment key={catIdx}>
-                                                                                {/* Category Heading */}
+                                                        {/* ========================================
+                                            NARRATIVE/DESCRIPTIVE TESTS (No Table)
+                                        ======================================== */}
+                                                        {narrativeTests.map((test, testIndex) => {
+                                                            const filledFields = test.fields.filter(
+                                                                f => f.defaultValue &&
+                                                                    f.defaultValue.trim() !== "" &&
+                                                                    f.defaultValue !== "—"
+                                                            );
+
+                                                            if (filledFields.length === 0) return null;
+
+                                                            return (
+                                                                <div
+                                                                    key={`narrative-${testIndex}`}
+                                                                    style={{
+                                                                        pageBreakInside: "avoid",
+                                                                        breakInside: "avoid",
+                                                                        marginBottom: "16px",
+                                                                        marginTop: "16px"
+                                                                    }}
+                                                                >
+                                                                    {/* Test Name Header */}
+                                                                    <div className="mt-6">
+                                                                        <h3 className="text-sm font-semibold uppercase">{test.testName}</h3>
+                                                                    </div>
+                                                                    <div className="h-[1px] w-full bg-gray-400 mb-4"></div>
+
+                                                                    {/* Narrative Fields */}
+                                                                    {filledFields.map((field, fieldIndex) => (
+                                                                        <div
+                                                                            key={fieldIndex}
+                                                                            style={{
+                                                                                pageBreakInside: "avoid",
+                                                                                breakInside: "avoid",
+                                                                                marginBottom: "12px"
+                                                                            }}
+                                                                        >
+                                                                            {/* Field Name as Heading */}
+                                                                            <h4 className="font-semibold text-gray-900 text-sm mb-1">
+                                                                                {field.fieldName}
+                                                                            </h4>
+
+                                                                            {/* Field Value as Description */}
+                                                                            <p className="text-xs text-gray-900 leading-relaxed whitespace-pre-line">
+                                                                                {field.defaultValue}
+                                                                            </p>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            );
+                                                        })}
+
+                                                        {/* ========================================
+                                            NORMAL TABLE TESTS
+                                        ======================================== */}
+                                                        {normalTests.length > 0 && (
+                                                            <table className="text-xs border-collapse mb-2" style={{ width: "83%" }}>
+                                                                <thead>
+                                                                    <tr className="border-b border-gray-800">
+                                                                        <th className="text-left pl-2 font-semibold align-bottom">TEST</th>
+                                                                        <th className="text-center font-semibold align-bottom">REFERENCE RANGE</th>
+                                                                        <th className="text-center font-semibold align-bottom">UNIT</th>
+                                                                        <th className="text-center font-semibold align-top">
+                                                                            <div>RESULT</div>
+                                                                            <div className="text-[10px] font-semibold">
+                                                                                {printPatient?.refNo}
+                                                                            </div>
+                                                                            <div className="text-[10px] font-normal">
+                                                                                {new Date().toLocaleDateString("en-GB", {
+                                                                                    day: "2-digit",
+                                                                                    month: "short",
+                                                                                    year: "numeric"
+                                                                                }).replace(/ /g, "-")} {" "}
+                                                                                {new Date().toLocaleTimeString("en-US", {
+                                                                                    hour: "2-digit",
+                                                                                    minute: "2-digit",
+                                                                                    hour12: true,
+                                                                                })}
+                                                                            </div>
+                                                                        </th>
+                                                                    </tr>
+                                                                </thead>
+                                                                {normalTests.map((test, testIndex) => {
+                                                                    const filledFields = test.fields?.filter(
+                                                                        f => f.defaultValue &&
+                                                                            f.defaultValue.trim() !== "" &&
+                                                                            f.defaultValue !== "—"
+                                                                    ) || [];
+
+                                                                    return (
+                                                                        <tbody
+                                                                            key={testIndex}
+                                                                            className="test-block"
+                                                                            style={{
+                                                                                pageBreakInside: "avoid",
+                                                                                breakInside: "avoid"
+                                                                            }}
+                                                                        >
+                                                                            {/* TEST NAME */}
+                                                                            {test.testName && (
                                                                                 <tr>
-                                                                                    <td colSpan="4" className="py-1.5 font-bold text-xs uppercase bg-gray-50">
-                                                                                        {category}
+                                                                                    <td colSpan="4" className="py-2 font-semibold uppercase text-sm">
+                                                                                        {test.testName}
                                                                                     </td>
                                                                                 </tr>
+                                                                            )}
 
-                                                                                {/* Fields in this category */}
-                                                                                {fields.map((f, fi) => (
-                                                                                    <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
-                                                                                        <td className="py-0.5 pl-2">{f.fieldName}</td>
-                                                                                        <td className="text-center py-0.5">
-                                                                                            <div className='whitespace-pre-line'>
-                                                                                                {(() => {
-                                                                                                    const rangeStr = f.range || "-";
-                                                                                                    const patientGender = printPatient?.gender?.toUpperCase();
-                                                                                                    if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
-                                                                                                        const parts = rangeStr.split(',');
-                                                                                                        for (let part of parts) {
-                                                                                                            part = part.trim();
-                                                                                                            if (patientGender === 'MALE' && part.startsWith('M:')) {
-                                                                                                                return part.substring(2).trim();
+                                                                            {/* FIELDS */}
+                                                                            {(() => {
+                                                                                const hasCategories = filledFields.some(f => f.category);
+
+                                                                                if (!hasCategories) {
+                                                                                    // NO CATEGORIES: Render normally
+                                                                                    return filledFields.map((f, fi) => (
+                                                                                        <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
+                                                                                            <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                                                            <td className="text-center py-0.5">
+                                                                                                <div className='whitespace-pre-line'>
+                                                                                                    {(() => {
+                                                                                                        const rangeStr = f.range || "-";
+                                                                                                        const patientGender = printPatient?.gender?.toUpperCase();
+                                                                                                        if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
+                                                                                                            const parts = rangeStr.split(',');
+                                                                                                            for (let part of parts) {
+                                                                                                                part = part.trim();
+                                                                                                                if (patientGender === 'MALE' && part.startsWith('M:')) {
+                                                                                                                    return part.substring(2).trim();
+                                                                                                                }
+                                                                                                                if (patientGender === 'FEMALE' && part.startsWith('F:')) {
+                                                                                                                    return part.substring(2).trim();
+                                                                                                                }
                                                                                                             }
-                                                                                                            if (patientGender === 'FEMALE' && part.startsWith('F:')) {
-                                                                                                                return part.substring(2).trim();
-                                                                                                            }
+                                                                                                            return rangeStr;
                                                                                                         }
                                                                                                         return rangeStr;
-                                                                                                    }
-                                                                                                    return rangeStr;
-                                                                                                })()}
-                                                                                            </div>
-                                                                                        </td>
-                                                                                        <td className="text-center py-0.5">{f.unit || "."}</td>
-                                                                                        <td className="text-center font-semibold py-0.5">
-                                                                                            {f.defaultValue}
+                                                                                                    })()}
+                                                                                                </div>
+                                                                                            </td>
+                                                                                            <td className="text-center py-0.5">{f.unit || "."}</td>
+                                                                                            <td className="text-center font-semibold py-0.5">
+                                                                                                {f.defaultValue}
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    ));
+                                                                                } else {
+                                                                                    // HAS CATEGORIES: Group by category
+                                                                                    const fieldsByCategory = {};
+                                                                                    filledFields.forEach(f => {
+                                                                                        const cat = f.category || "Other";
+                                                                                        if (!fieldsByCategory[cat]) {
+                                                                                            fieldsByCategory[cat] = [];
+                                                                                        }
+                                                                                        fieldsByCategory[cat].push(f);
+                                                                                    });
+
+                                                                                    return Object.entries(fieldsByCategory).map(([category, fields], catIdx) => (
+                                                                                        <React.Fragment key={catIdx}>
+                                                                                            {/* Category Heading */}
+                                                                                            <tr>
+                                                                                                <td colSpan="4" className="py-1.5 font-bold text-xs uppercase bg-gray-50">
+                                                                                                    {category}
+                                                                                                </td>
+                                                                                            </tr>
+
+                                                                                            {/* Fields in this category */}
+                                                                                            {fields.map((f, fi) => (
+                                                                                                <tr key={fi} className="border-b border-gray-400" style={{ borderBottomStyle: "dashed" }}>
+                                                                                                    <td className="py-0.5 pl-2">{f.fieldName}</td>
+                                                                                                    <td className="text-center py-0.5">
+                                                                                                        <div className='whitespace-pre-line'>
+                                                                                                            {(() => {
+                                                                                                                const rangeStr = f.range || "-";
+                                                                                                                const patientGender = printPatient?.gender?.toUpperCase();
+                                                                                                                if (rangeStr.includes('M:') || rangeStr.includes('F:')) {
+                                                                                                                    const parts = rangeStr.split(',');
+                                                                                                                    for (let part of parts) {
+                                                                                                                        part = part.trim();
+                                                                                                                        if (patientGender === 'MALE' && part.startsWith('M:')) {
+                                                                                                                            return part.substring(2).trim();
+                                                                                                                        }
+                                                                                                                        if (patientGender === 'FEMALE' && part.startsWith('F:')) {
+                                                                                                                            return part.substring(2).trim();
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                    return rangeStr;
+                                                                                                                }
+                                                                                                                return rangeStr;
+                                                                                                            })()}
+                                                                                                        </div>
+                                                                                                    </td>
+                                                                                                    <td className="text-center py-0.5">{f.unit || "."}</td>
+                                                                                                    <td className="text-center font-semibold py-0.5">
+                                                                                                        {f.defaultValue}
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            ))}
+                                                                                        </React.Fragment>
+                                                                                    ));
+                                                                                }
+                                                                            })()}
+
+                                                                            {/* TEST SCALE */}
+                                                                            {(() => {
+                                                                                const testData = test.testId || test;
+                                                                                const scaleConfig = testData.scaleConfig;
+                                                                                const firstField = test.fields?.[0];
+                                                                                const resultValue = firstField?.defaultValue;
+                                                                                const unit = firstField?.unit || '';
+
+                                                                                if (!scaleConfig?.thresholds || !scaleConfig?.labels || !resultValue) return null;
+
+                                                                                return (
+                                                                                    <tr>
+                                                                                        <td colSpan="4">
+                                                                                            <TestScaleVisualization
+                                                                                                scaleConfig={scaleConfig}
+                                                                                                resultValue={resultValue}
+                                                                                                unit={unit}
+                                                                                            />
                                                                                         </td>
                                                                                     </tr>
-                                                                                ))}
-                                                                            </React.Fragment>
-                                                                        ));
-                                                                    }
-                                                                })()}
+                                                                                );
+                                                                            })()}
 
-                                                                {/* test scale  */}
-                                                                {(() => {
-                                                                    const testData = test.testId || test;
-                                                                    const scaleConfig = testData.scaleConfig;
-                                                                    const firstField = test.fields?.[0];
-                                                                    const resultValue = firstField?.defaultValue;
-                                                                    const unit = firstField?.unit || '';
+                                                                            {/* VISUAL SCALE */}
+                                                                            {(() => {
+                                                                                const testData = test.testId || test;
+                                                                                const visualScale = testData.visualScale;
+                                                                                const firstField = test.fields?.[0];
+                                                                                const resultValue = firstField?.defaultValue;
+                                                                                const unit = firstField?.unit || '';
 
-                                                                    if (!scaleConfig?.thresholds || !scaleConfig?.labels || !resultValue) return null;
+                                                                                if (!visualScale?.thresholds || !visualScale?.labels || !resultValue) return null;
 
-                                                                    return (
-                                                                        <tr>
-                                                                            <td colSpan="4">
-                                                                                <TestScaleVisualization
-                                                                                    scaleConfig={scaleConfig}
-                                                                                    resultValue={resultValue}
-                                                                                    unit={unit}
-                                                                                />
-                                                                            </td>
-                                                                        </tr>
+                                                                                return (
+                                                                                    <tr>
+                                                                                        <td colSpan="4">
+                                                                                            <VisualScaleVisualization
+                                                                                                visualScale={visualScale}
+                                                                                                resultValue={resultValue}
+                                                                                                unit={unit}
+                                                                                            />
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                );
+                                                                            })()}
+
+                                                                            {/* REPORT EXTRAS */}
+                                                                            {(() => {
+                                                                                const extras = (test.testId || test)?.reportExtras;
+                                                                                if (!extras || Object.keys(extras).length === 0) return null;
+
+                                                                                return (
+                                                                                    <tr>
+                                                                                        <td colSpan="4">
+                                                                                            {Object.entries(extras).map(([key, value]) => {
+                                                                                                if (!value || (typeof value === 'string' && !value.trim())) return null;
+
+                                                                                                const heading = key.replace(/([A-Z])/g, ' $1').toUpperCase();
+
+                                                                                                return (
+                                                                                                    <div key={key} className="mb-3 mt-2">
+                                                                                                        <h4 className="font-bold text-sm underline mb-1">
+                                                                                                            {heading}
+                                                                                                        </h4>
+
+                                                                                                        {typeof value === 'string' ? (
+                                                                                                            <p className="text-xs whitespace-pre-line">{value}</p>
+                                                                                                        ) : (
+                                                                                                            <ol className="list-decimal ml-4 text-xs">
+                                                                                                                {value.map((v, i) => <li key={i}>{v}</li>)}
+                                                                                                            </ol>
+                                                                                                        )}
+                                                                                                    </div>
+                                                                                                );
+                                                                                            })}
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                );
+                                                                            })()}
+                                                                        </tbody>
                                                                     );
-                                                                })()}
-
-                                                                {/* visual scale */}
-                                                                {(() => {
-                                                                    const testData = test.testId || test;
-                                                                    const visualScale = testData.visualScale;
-                                                                    const firstField = test.fields?.[0];
-                                                                    const resultValue = firstField?.defaultValue;
-                                                                    const unit = firstField?.unit || '';
-
-                                                                    if (!visualScale?.thresholds || !visualScale?.labels || !resultValue) return null;
-
-                                                                    return (
-                                                                        <tr>
-                                                                            <td colSpan="4">
-                                                                                <VisualScaleVisualization
-                                                                                    visualScale={visualScale}
-                                                                                    resultValue={resultValue}
-                                                                                    unit={unit}
-                                                                                />
-                                                                            </td>
-                                                                        </tr>
-                                                                    );
-                                                                })()}
-                                                                {/* report extras */}
-
-                                                                {(() => {
-                                                                    const extras = (test.testId || test)?.reportExtras;
-                                                                    if (!extras || Object.keys(extras).length === 0) return null;
-
-                                                                    return (
-                                                                        <tr>
-                                                                            <td colSpan="4">
-                                                                                {Object.entries(extras).map(([key, value]) => {
-                                                                                    if (!value || (typeof value === 'string' && !value.trim())) return null;
-
-                                                                                    const heading = key.replace(/([A-Z])/g, ' $1').toUpperCase();
-
-                                                                                    return (
-                                                                                        <div key={key} className="mb-3">
-                                                                                            <h4 className="font-bold text-sm underline mb-1">
-                                                                                                {heading}
-                                                                                            </h4>
-
-                                                                                            {typeof value === 'string' ? (
-                                                                                                <p className="text-xs whitespace-pre-line">{value}</p>
-                                                                                            ) : (
-                                                                                                <ol className="list-decimal ml-4 text-xs">
-                                                                                                    {value.map((v, i) => <li key={i}>{v}</li>)}
-                                                                                                </ol>
-                                                                                            )}
-                                                                                        </div>
-                                                                                    );
-                                                                                })}
-                                                                            </td>
-                                                                        </tr>
-                                                                    );
-                                                                })()}
-
-
-                                                            </React.Fragment>
-                                                        );
-                                                    })}
-                                                </tbody>
-                                            </table>
-
-
-
-
-
+                                                                })}
+                                                            </table>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
                                         </div>
                                     );
                                 });
@@ -602,15 +792,12 @@ export default function PrintReport() {
                         </td>
                     </tr>
 
+                    {/* SPACER ROW */}
                     {spacer > 0 && (
-                        <tr
-                            className="print-spacer"
-                            style={{ height: `${spacer}vh` }}
-                        >
+                        <tr className="print-spacer" style={{ height: `${spacer}vh` }}>
                             <td>&nbsp;</td>
                         </tr>
                     )}
-
                 </tbody>
 
                 {/* FOOTER */}

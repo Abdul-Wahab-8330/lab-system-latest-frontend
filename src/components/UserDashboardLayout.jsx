@@ -13,7 +13,8 @@ import {
   DollarSignIcon,
   PoundSterling,
   Printer,
-  History
+  History,
+  Star
 } from "lucide-react";
 
 import {
@@ -225,7 +226,7 @@ const UserDashboardLayout = () => {
               style={{ backgroundColor: '#F9FAFB', color: '#111827' }} // fallback for content
             >
               <DropdownMenuLabel className="flex gap-2 flex-wrap" style={{ color: '#111827' }}>
-                <User size={16} /> Logged in as <span className="font-semibold px-3">{user.name}</span>
+                <User size={20} /> Logged in as <span className="font-semibold px-3 pl-6">{user.name}</span>
               </DropdownMenuLabel>
 
               <Separator />
@@ -243,6 +244,8 @@ const UserDashboardLayout = () => {
               >
                 <Key size={16} /> Change Password
               </DropdownMenuItem>
+                                <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
+
 
               {/* only for admin */}
               {/* ✅ NEW - History Settings (Admin Only) */}
@@ -254,6 +257,20 @@ const UserDashboardLayout = () => {
                     onClick={() => navigate('/user/history-results')}
                   >
                     <History size={16} /> History Settings
+                  </DropdownMenuItem>
+                  <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
+                </>
+              )}
+
+              {/* ✅ Review On Online Results (Admin Only) */}
+              {user?.role === 'admin' && (
+                <>
+                  <DropdownMenuItem
+                    style={{ color: '#2563EB' }}
+                    className='cursor-pointer text-blue-600 hover:bg-gray-200'
+                    onClick={() => navigate('/admin/reviews')}
+                  >
+                    <Star size={16} /> Review Settings
                   </DropdownMenuItem>
                   <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
                 </>

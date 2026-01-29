@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import { Printer, AlertCircle, CheckCircle, Clock, Download } from 'lucide-react';
+import { Printer, AlertCircle, CheckCircle, Clock, Download, Star } from 'lucide-react';
 import JsBarcode from 'jsbarcode';
 import { QRCodeSVG } from 'qrcode.react';
 import React from 'react';
 import TestScaleVisualization from '@/components/TestScaleVisualization';
 import VisualScaleVisualization from '@/components/VisualScaleVisualization';
 import SmallTestScaleVisualization from '@/components/SmallTestScale';
+import { ReviewDialog, PublicReviewsWidget } from '@/components/AdminReviewManagement';
 
 export default function PublicReport() {
 
@@ -21,6 +22,9 @@ export default function PublicReport() {
   const [reports, setReports] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [canReview, setCanReview] = useState(false);
+  const [hasShownReviewDialog, setHasShownReviewDialog] = useState(false);
   const [attempts, setAttempts] = useState(() => {
     const saved = localStorage.getItem('reportAttempts');
     return saved ? parseInt(saved) : 0;
@@ -41,6 +45,7 @@ export default function PublicReport() {
   });
   const [labInfo, setLabInfo] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [refreshReviews, setRefreshReviews] = useState(0); 
   const [historySettings, setHistorySettings] = useState({
     historyResultsCount: 4,
     historyResultsDirection: 'left-to-right'
@@ -64,7 +69,10 @@ export default function PublicReport() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-
+const handleReviewSubmitted = () => {
+    console.log('🎉 Review submitted! Refreshing widget...');
+    setRefreshReviews(prev => prev + 1); // Force refresh
+  };
 
   useEffect(() => {
     if (blocked) {
@@ -111,8 +119,6 @@ export default function PublicReport() {
   }, [blocked]);
 
 
-
-
   const fetchLabInfo = async () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/lab-info`);
@@ -141,6 +147,48 @@ export default function PublicReport() {
       console.error('Error loading history settings:', err);
     }
   };
+
+  const checkCanReview = async (refNo) => {
+    try {
+      const alreadyReviewed = localStorage.getItem(`reviewed_${refNo}`);
+      if (alreadyReviewed) {
+        setCanReview(false);
+        return false;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/reviews/can-review/${refNo}`
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        setCanReview(data.canReview);
+        return data.canReview;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error checking review eligibility:', error);
+      return false;
+    }
+  };
+  useEffect(() => {
+    if (reports && reports.hasResults && !hasShownReviewDialog) {
+      checkCanReview(reports.finalReport.refNo);
+
+      const timer = setTimeout(() => {
+        const dialogShownKey = `reviewDialogShown_${reports.finalReport.refNo}`;
+        const alreadyShown = localStorage.getItem(dialogShownKey);
+
+        if (!alreadyShown && canReview) {
+          setReviewDialogOpen(true);
+          setHasShownReviewDialog(true);
+          localStorage.setItem(dialogShownKey, 'true');
+        }
+      }, 15000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [reports, canReview, hasShownReviewDialog]);
 
   const formatAge = (patient) => {
     if (!patient?.age) return "-";
@@ -379,6 +427,7 @@ export default function PublicReport() {
       console.log('📊 Full response data:', data);
 
       if (data.success) {
+
         // ✅ Process history if it exists in the response
         if (data.finalReport?.historicalPatients) {
           console.log('🔄 Processing history...');
@@ -401,6 +450,10 @@ export default function PublicReport() {
           }
         } else {
           console.log('ℹ️ No historical data available');
+        }
+
+        if (data.finalReport) {
+          checkCanReview(data.finalReport.refNo);
         }
 
         setReports(data);
@@ -1629,6 +1682,39 @@ export default function PublicReport() {
               <h3 className="text-lg font-semibold text-orange-800 mb-2">Results Pending</h3>
               <p className="text-orange-700">Your test results have not been uploaded yet. Please check back later.</p>
             </div>
+          )}
+
+          {/* ===================================
+    REVIEWS SECTION  
+=================================== */}
+          {reports.hasResults && (
+            <>
+              {/* Reviews Widget */}
+              <PublicReviewsWidget key={refreshReviews} />
+
+              {/* Floating Review Button */}
+              {canReview && (
+                <button
+                  onClick={() => setReviewDialogOpen(true)}
+                  className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-full shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 flex items-center gap-2 font-semibold"
+                >
+                  <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                  Rate Us
+                </button>
+              )}
+
+              {/* Review Dialog */}
+              <ReviewDialog
+                open={reviewDialogOpen}
+                onOpenChange={setReviewDialogOpen}
+                patientData={{
+                  refNo: reports.finalReport.refNo,
+                  phone: formData.phone,
+                  name: reports.finalReport.name
+                }}
+                onReviewSubmitted={handleReviewSubmitted}
+              />
+            </>
           )}
         </div>
       </div>

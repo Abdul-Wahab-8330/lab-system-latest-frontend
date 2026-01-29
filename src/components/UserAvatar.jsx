@@ -14,7 +14,7 @@ import {
 import { AuthContext } from "@/context/AuthProvider"
 import { Separator } from "./ui/separator"
 
-import { LogOut, Settings, User, Key, History } from "lucide-react"
+import { LogOut, Settings, User, Key, History, Star } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 export function UserAvatar() {
@@ -43,7 +43,7 @@ export function UserAvatar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent style={{ backgroundColor: '#F9FAFB', color: '#000000' }} className="cursor-pointer w-56 bg-gray-50 border border-gray-300 shadow-lg">
                 <DropdownMenuLabel style={{ color: '#4B5563' }} className='flex gap-2 text-gray-600 flex-wrap'>
-                    <User size={16} /> Logged in as <span className="font-semibold text-sm px-3">{user.name}</span>
+                    <User size={20} /> Logged in as <span className="font-semibold text-sm px-3 pl-6">{user.name}</span>
                 </DropdownMenuLabel>
                 <Separator />
                 <DropdownMenuSeparator />
@@ -56,6 +56,8 @@ export function UserAvatar() {
                 >
                     <Key size={16} /> Change Password
                 </DropdownMenuItem>
+                <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
+
 
                 {/* ✅ NEW - History Settings (Admin Only) */}
                 {user?.role === 'admin' && (
@@ -66,6 +68,20 @@ export function UserAvatar() {
                             onClick={() => navigate('/user/history-results')}
                         >
                             <History size={16} /> History Settings
+                        </DropdownMenuItem>
+                        <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
+                    </>
+                )}
+
+                {/* ✅ Review On Online Results (Admin Only) */}
+                {user?.role === 'admin' && (
+                    <>
+                        <DropdownMenuItem
+                            style={{ color: '#2563EB' }}
+                            className='cursor-pointer text-blue-600 hover:bg-gray-200'
+                            onClick={() => navigate('/admin/reviews')}
+                        >
+                            <Star size={16} /> Review Settings
                         </DropdownMenuItem>
                         <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
                     </>

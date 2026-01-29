@@ -39,6 +39,7 @@ import PublicReport from "./pages/PublicReport";
 import ChangePassword from "./components/ChangePassword";
 import { SUPER_ADMIN_USERNAME } from './config/constants';
 import HistoryResultsSettings from "./components/HistoryResultsSettings";
+import AdminReviewManagement from "./components/AdminReviewManagement";
 
 
 // const UserManagementRoute = ({ children, user }) => {
@@ -95,6 +96,8 @@ function App() {
           <Route path="user-analytics" element={<UserManagementCharts />} />
           <Route path="test-analytics" element={<TestsCharts />} />
           <Route path="patient-analytics" element={<PatientCharts />} />
+          <Route path="reviews" element={<AdminReviewManagement />} />
+
 
         </Route>
 

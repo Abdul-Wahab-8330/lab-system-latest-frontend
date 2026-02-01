@@ -36,7 +36,8 @@ import {
   Home, Plus, FileText, DollarSign, Microscope, LineChart,
   FlaskConical, ListChecks, Link2, Building2, UserCog,
   FileChartColumn, BarChart3, LucideBoxes, CalculatorIcon,
-  PoundSterling, Users, UserPlus, BarChart2, Crown
+  PoundSterling, Users, UserPlus, BarChart2, Crown,
+  NotebookTabsIcon
 } from 'lucide-react';
 
 // ============================================
@@ -49,7 +50,8 @@ const adminMenuItems = [
   { id: 'all tests', icon: ListChecks, label: 'Manage Tests', link: '/admin/all-tests', icon2: Crown },
   { id: 'create user', icon: UserPlus, label: 'Create New User', link: '/admin/create-user', icon2: Crown },
   { id: 'all users', icon: Users, label: 'Manage Users', link: '/admin/all-users', icon2: Crown },
-  { id: 'references', icon: Link2, label: 'Add Reference', link: '/admin/add-reference', icon2: Crown },
+  { id: 'references', icon: Link2, label: 'Doctor References', link: '/admin/add-reference', icon2: Crown },
+  { id: 'referral reports', icon: NotebookTabsIcon, label: 'Referral Reports', link: '/admin/doctor-share', icon2: Crown },
   { id: 'edit lab info', icon: Building2, label: 'Edit Lab Info', link: '/admin/edit-labinfo', icon2: Crown },
   { id: 'finance analytics', icon: BarChart2, label: 'Finance Analytics', link: '/admin/finance-analytics', icon2: Crown },
   { id: 'user analytics', icon: UserCog, label: 'User Analytics', link: '/admin/user-analytics', icon2: Crown },

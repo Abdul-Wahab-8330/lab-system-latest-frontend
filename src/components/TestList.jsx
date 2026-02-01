@@ -25,7 +25,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const TestList = () => {
   const { tests, deleteTest, updateTest, loading } = useContext(TestContext);
   const { info, loading: infoLoading } = useContext(LabInfoContext);
-  console.log('Component rendered, info:', info);
 
 
   const [search, setSearch] = useState("");
@@ -39,6 +38,7 @@ const TestList = () => {
     testCode: "",
     testName: "",
     testPrice: "",
+    testType: "routine",
     category: "",
     specimen: "",
     performed: "",
@@ -132,6 +132,7 @@ const TestList = () => {
       specimen: test.specimen,
       performed: test.performed,
       reported: test.reported,
+      testType: test.testType || "routine",
       fields: [...test.fields],
       isDiagnosticTest: test.isDiagnosticTest || false,
       isNarrativeFormat: test.isNarrativeFormat || false
@@ -406,7 +407,12 @@ const TestList = () => {
                               </div>
                               <div>
                                 <p className="font-semibold text-gray-900">{test.testName}</p>
-                                <p className="text-gray-500 text-sm">{test.fields?.length || 0} fields</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <p className="text-gray-500 text-sm">{test.fields?.length || 0} fields</p>
+                                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${test.testType === "special" ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"}`}>
+                                    {test.testType === "special" ? "Special" : "Routine"}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </td>
@@ -593,6 +599,26 @@ const TestList = () => {
                         required
                       />
                     </div>
+
+                    {/* Test Type - Routine or Special */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-red-500" />
+                        Test Type
+                      </label>
+                      <Select
+                        value={editForm.testType}
+                        onValueChange={(value) => setEditForm({ ...editForm, testType: value })}
+                      >
+                        <SelectTrigger className="h-12 w-full border-2 border-gray-200 rounded-xl px-4 text-gray-700 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200">
+                          <SelectValue placeholder="Select test type" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden">
+                          <SelectItem className="hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150" value="routine">Routine</SelectItem>
+                          <SelectItem className="hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150" value="special">Special</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     {/* ✅ Diagnostic Test & Narrative Format Checkboxes */}
                     <div className="space-y-3 md:col-span-2">
                       {/* Diagnostic Test Checkbox */}
@@ -725,7 +751,7 @@ const TestList = () => {
                       type="button"
                       onClick={handleSubmit}
                       disabled={updateLoading}
-                      className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                      className="px-8 py-3 bg-blue-500 border  text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
                     >
                       {updateLoading ? (
                         <>
@@ -958,8 +984,9 @@ const TestList = () => {
                   <tr className="bg-gray-800 text-white">
                     <th className="px-2 py-2 text-left font-bold border-r border-gray-600">Sr. No</th>
                     <th className="px-2 py-2 text-left font-bold border-r border-gray-600">Test Name</th>
-                    <th className="px-2 py-2 text-center font-bold border-r border-gray-600">Test Price (Rs.)</th>
+                    <th className="px-2 py-2 text-center font-bold border-r border-gray-600">Test Price</th>
                     <th className="px-2 py-2 text-center font-bold border-r border-gray-600">Category</th>
+                    <th className="px-2 py-2 text-center font-bold border-r border-gray-600">Test Type</th>
                     <th className="px-2 py-2 text-left font-bold border-r border-gray-600">Specimen</th>
                     <th className="px-2 py-2 text-left font-bold border-r border-gray-600">Performing Time</th>
                     <th className="px-2 py-2 text-left font-bold">Reporting Time</th>
@@ -972,6 +999,7 @@ const TestList = () => {
                       <td className="px-2 py-2 font-semibold text-gray-900 border-r border-gray-300">{test.testName}</td>
                       <td className="px-2 py-2 text-center font-bold text-green-700 border-r border-gray-300">Rs. {test.testPrice}</td>
                       <td className="px-2 py-2 text-center text-gray-700 border-r border-gray-300">{test.category}</td>
+                      <td className="px-2 py-2 text-center text-gray-700 border-r border-gray-300">{test.testType ? test.testType.charAt(0).toUpperCase() + test.testType.slice(1) : '-'}</td>
                       <td className="px-2 py-2 text-gray-700 border-r border-gray-300">{test.specimen || '-'}</td>
                       <td className="px-2 py-2 text-gray-700 border-r border-gray-300">{test.performed || '-'}</td>
                       <td className="px-2 py-2 text-gray-700">{test.reported || '-'}</td>

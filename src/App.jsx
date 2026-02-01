@@ -40,6 +40,7 @@ import ChangePassword from "./components/ChangePassword";
 import { SUPER_ADMIN_USERNAME } from './config/constants';
 import HistoryResultsSettings from "./components/HistoryResultsSettings";
 import AdminReviewManagement from "./components/AdminReviewManagement";
+import DoctorShare from "./components/DoctorShare";
 
 
 // const UserManagementRoute = ({ children, user }) => {
@@ -97,6 +98,7 @@ function App() {
           <Route path="test-analytics" element={<TestsCharts />} />
           <Route path="patient-analytics" element={<PatientCharts />} />
           <Route path="reviews" element={<AdminReviewManagement />} />
+          <Route path="doctor-share" element={<DoctorShare />} />
 
 
         </Route>

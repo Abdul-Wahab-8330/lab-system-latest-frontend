@@ -20,6 +20,7 @@ const CreateTestForm = () => {
     const [specimen, setSpecimen] = useState("");
     const [performed, setPerformed] = useState("");
     const [reported, setReported] = useState("");
+    const [testType, setTestType] = useState("routine");
     const [isLoading, setIsLoading] = useState(false);
     const { fetchTests } = useContext(TestContext)
     const [fields, setFields] = useState([
@@ -57,6 +58,7 @@ const CreateTestForm = () => {
                 testCode,
                 testName,
                 testPrice,
+                testType,
                 category,
                 specimen,
                 performed,
@@ -76,6 +78,7 @@ const CreateTestForm = () => {
                 setSpecimen("");
                 setPerformed("");
                 setReported("");
+                setTestType("routine");
                 setFields([{ fieldName: "", fieldType: "String", defaultValue: '', unit: '', range: '' }]);
             }
         } catch (error) {
@@ -226,6 +229,26 @@ const CreateTestForm = () => {
                                     onChange={(e) => setReported(e.target.value)}
                                     required
                                 />
+                            </div>
+
+                            {/* Test Type - Routine or Special */}
+                            <div className="space-y-2">
+                                <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                    <Settings className="w-4 h-4 text-red-500" />
+                                    Test Type
+                                </Label>
+                                <Select
+                                    value={testType}
+                                    onValueChange={(value) => setTestType(value)}
+                                >
+                                    <SelectTrigger className="h-12 w-full border-2 border-gray-200 rounded-xl px-4 text-gray-700 bg-gray-50 focus:bg-white focus:border-blue-500 transition-all duration-200">
+                                        <SelectValue placeholder="Select test type" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden">
+                                        <SelectItem className="hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150" value="routine">Routine</SelectItem>
+                                        <SelectItem className="hover:bg-blue-50 px-4 py-2 cursor-pointer transition-colors duration-150" value="special">Special</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
 

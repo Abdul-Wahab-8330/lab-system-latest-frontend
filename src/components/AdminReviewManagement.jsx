@@ -546,7 +546,7 @@ export function AdminReviewManagement() {
 
                 {/* Settings Dialog */}
                 <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-                    <DialogContent className="max-w-md bg-white">
+                    <DialogContent className="max-w-md bg-white border border-gray-700">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
                                 <Settings className="h-5 w-5 text-blue-600" />
@@ -645,7 +645,7 @@ export function AdminReviewManagement() {
 
                 {/* Delete Confirmation Dialog */}
                 <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                    <DialogContent className="max-w-md bg-white">
+                    <DialogContent className="max-w-md bg-white border border-gray-700">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2 text-red-600">
                                 <AlertCircle className="h-5 w-5" />
@@ -747,7 +747,7 @@ export function ReviewDialog({ open, onOpenChange, patientData, onReviewSubmitte
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md bg-white">
+            <DialogContent className="max-w-md bg-white border border-gray-700">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Star className="h-5 w-5 text-yellow-500" />

@@ -7,19 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Building2, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Image, 
-  Globe, 
-  FileText, 
-  Edit3, 
-  Save, 
-  Loader2,
-  ExternalLink,
-  Info
+import {
+    Building2,
+    Phone,
+    Mail,
+    MapPin,
+    Image,
+    Globe,
+    FileText,
+    Edit3,
+    Save,
+    Loader2,
+    ExternalLink,
+    Info
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -76,7 +76,7 @@ export default function LabInfoForm() {
     const getLabAvatar = (labName) => {
         const initial = labName?.charAt(0)?.toUpperCase() || 'L';
         return (
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+            <div className="h-16 w-16 rounded-2xl bg-purple-700 flex items-center justify-center shadow-lg">
                 <span className="text-2xl font-bold text-white">{initial}</span>
             </div>
         );
@@ -91,10 +91,10 @@ export default function LabInfoForm() {
                 <p className="text-sm font-semibold text-gray-800 mb-1">{label}</p>
                 {value ? (
                     isLink ? (
-                        <a 
-                            href={value} 
-                            target="_blank" 
-                            rel="noreferrer" 
+                        <a
+                            href={value}
+                            target="_blank"
+                            rel="noreferrer"
                             className="text-purple-600 hover:text-purple-800 underline decoration-purple-300 hover:decoration-purple-500 transition-colors duration-200 flex items-center"
                         >
                             {linkText || value}
@@ -125,7 +125,7 @@ export default function LabInfoForm() {
                 {/* Main Card */}
                 <Card className="bg-white/90 backdrop-blur-sm shadow-2xl rounded-3xl border-0 overflow-hidden p-0">
                     {/* Card Header */}
-                    <CardHeader className="bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-8">
+                    <CardHeader className="bg-purple-600 px-8 py-8">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-6">
                                 {getLabAvatar(labInfo.labName)}
@@ -139,19 +139,19 @@ export default function LabInfoForm() {
                                     </p>
                                 </div>
                             </div>
-                            
+
                             {/* Edit Button */}
                             <Dialog open={open} onOpenChange={setOpen}>
                                 <DialogTrigger asChild>
-                                    <Button 
-                                        className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border border-white/30 hover:border-white/50 rounded-xl px-6 py-3 font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+                                    <Button style={{ backgroundColor: '#ffffff', color: '#000000', border: '1px solid #d1d5db', borderRadius: '0.75rem', padding: '0.75rem 1rem', fontWeight: 600, fontSize: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 15px rgba(0,0,0,0.1)' }}
+                                        className="bg-white hover:bg-white/30 text-gray-900 border border-gray-300 hover:border-gray-400 rounded-xl px-6 py-3 font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
                                         disabled={loading}
                                     >
                                         <Edit3 className="h-4 w-4 mr-2" />
                                         Edit Information
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="sm:max-w-2xl bg-white/95 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border-0 overflow-hidden max-h-[90vh] overflow-y-auto">
+                                <DialogContent className="sm:max-w-2xl bg-white/95 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border border-gray-700 overflow-hidden max-h-[90vh] overflow-y-auto">
                                     {/* Dialog Header */}
                                     <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4 sticky top-0 z-10">
                                         <DialogHeader>
@@ -173,14 +173,14 @@ export default function LabInfoForm() {
                                                     <Building2 className="h-4 w-4 mr-2" />
                                                     Laboratory Name *
                                                 </Label>
-                                                <Input 
+                                                <Input
                                                     id="labName"
-                                                    name="labName" 
-                                                    value={labInfo.labName} 
-                                                    onChange={handleChange} 
-                                                    placeholder="Enter laboratory name" 
+                                                    name="labName"
+                                                    value={labInfo.labName}
+                                                    onChange={handleChange}
+                                                    placeholder="Enter laboratory name"
                                                     className="h-12 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-purple-500"
-                                                    required 
+                                                    required
                                                 />
                                             </div>
 
@@ -190,14 +190,14 @@ export default function LabInfoForm() {
                                                     <Phone className="h-4 w-4 mr-2" />
                                                     Phone Number *
                                                 </Label>
-                                                <Input 
+                                                <Input
                                                     id="phoneNumber"
-                                                    name="phoneNumber" 
-                                                    value={labInfo.phoneNumber} 
-                                                    onChange={handleChange} 
-                                                    placeholder="Enter phone number" 
+                                                    name="phoneNumber"
+                                                    value={labInfo.phoneNumber}
+                                                    onChange={handleChange}
+                                                    placeholder="Enter phone number"
                                                     className="h-12 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-purple-500"
-                                                    required 
+                                                    required
                                                 />
                                             </div>
 
@@ -207,15 +207,15 @@ export default function LabInfoForm() {
                                                     <Mail className="h-4 w-4 mr-2" />
                                                     Email Address *
                                                 </Label>
-                                                <Input 
+                                                <Input
                                                     id="email"
-                                                    name="email" 
-                                                    type="email" 
-                                                    value={labInfo.email} 
-                                                    onChange={handleChange} 
-                                                    placeholder="Enter email address" 
+                                                    name="email"
+                                                    type="email"
+                                                    value={labInfo.email}
+                                                    onChange={handleChange}
+                                                    placeholder="Enter email address"
                                                     className="h-12 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-purple-500"
-                                                    required 
+                                                    required
                                                 />
                                             </div>
 
@@ -225,12 +225,12 @@ export default function LabInfoForm() {
                                                     <MapPin className="h-4 w-4 mr-2" />
                                                     Laboratory Address
                                                 </Label>
-                                                <Input 
+                                                <Input
                                                     id="address"
-                                                    name="address" 
-                                                    value={labInfo.address} 
-                                                    onChange={handleChange} 
-                                                    placeholder="Enter laboratory address" 
+                                                    name="address"
+                                                    value={labInfo.address}
+                                                    onChange={handleChange}
+                                                    placeholder="Enter laboratory address"
                                                     className="h-12 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-purple-500"
                                                 />
                                             </div>
@@ -241,12 +241,12 @@ export default function LabInfoForm() {
                                                     <Image className="h-4 w-4 mr-2" />
                                                     Logo URL
                                                 </Label>
-                                                <Input 
+                                                <Input
                                                     id="logoUrl"
-                                                    name="logoUrl" 
-                                                    value={labInfo.logoUrl} 
-                                                    onChange={handleChange} 
-                                                    placeholder="Enter logo URL" 
+                                                    name="logoUrl"
+                                                    value={labInfo.logoUrl}
+                                                    onChange={handleChange}
+                                                    placeholder="Enter logo URL"
                                                     className="h-12 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-purple-500"
                                                 />
                                             </div>
@@ -257,12 +257,12 @@ export default function LabInfoForm() {
                                                     <Globe className="h-4 w-4 mr-2" />
                                                     Website
                                                 </Label>
-                                                <Input 
+                                                <Input
                                                     id="website"
-                                                    name="website" 
-                                                    value={labInfo.website} 
-                                                    onChange={handleChange} 
-                                                    placeholder="Enter website URL" 
+                                                    name="website"
+                                                    value={labInfo.website}
+                                                    onChange={handleChange}
+                                                    placeholder="Enter website URL"
                                                     className="h-12 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-purple-500"
                                                 />
                                             </div>
@@ -273,20 +273,20 @@ export default function LabInfoForm() {
                                                     <FileText className="h-4 w-4 mr-2" />
                                                     Description
                                                 </Label>
-                                                <Textarea 
+                                                <Textarea
                                                     id="description"
-                                                    name="description" 
-                                                    value={labInfo.description} 
-                                                    onChange={handleChange} 
-                                                    placeholder="Enter laboratory description" 
+                                                    name="description"
+                                                    value={labInfo.description}
+                                                    onChange={handleChange}
+                                                    placeholder="Enter laboratory description"
                                                     className="min-h-[100px] border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-purple-500 resize-none"
                                                 />
                                             </div>
 
                                             {/* Submit Button */}
-                                            <Button 
-                                                type="submit" 
-                                                className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+                                            <Button style={{width:'100%',height:'3rem',backgroundColor:'#7c3aed',color:'#ffffff',borderRadius:'0.75rem',fontWeight:600,fontSize:'0.875rem',padding:'0 0.75rem',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
+                                                type="submit"
+                                                className="w-full h-12 bg-purple-600     text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
                                                 disabled={saving}
                                             >
                                                 {saving ? (

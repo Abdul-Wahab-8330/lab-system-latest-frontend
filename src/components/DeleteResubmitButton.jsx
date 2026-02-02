@@ -42,7 +42,7 @@ export default function DeleteResubmitButton({ patientId,setAddedPatients, refre
 
       {/* Confirmation dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className='bg-white'>
+        <DialogContent className='bg-white border border-gray-700'>
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>

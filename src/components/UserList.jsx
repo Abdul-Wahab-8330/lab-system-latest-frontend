@@ -319,7 +319,7 @@ const UserList = () => {
                               <div className="flex items-center justify-end gap-2">
                                 {/* ✅ Reset Password Button - Only for Admin role */}
                                 {user?.role === 'admin' && (
-                                  <Button
+                                  <Button style={{ backgroundColor: '#ffffff', color: '#4f46e5', border: '1px solid blue', borderRadius: '0.75rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                     variant="ghost"
                                     size="sm"
                                     className="text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 rounded-xl transition-all duration-200 border border-transparent hover:border-indigo-200"
@@ -331,7 +331,7 @@ const UserList = () => {
                                 )}
 
                                 {/* Delete Button */}
-                                <Button
+                                <Button style={{ backgroundColor: '#ffffff', color: '#dc2626', border: '1px solid red', borderRadius: '0.75rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                   variant="ghost"
                                   size="sm"
                                   className="text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 border border-transparent hover:border-red-200"
@@ -356,7 +356,7 @@ const UserList = () => {
         {/* Delete Confirmation Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           {selectedUser && (
-            <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border-0 overflow-hidden">
+            <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border border-gray-700 overflow-hidden">
               {/* Dialog Header */}
               <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
                 <DialogHeader>
@@ -389,7 +389,7 @@ const UserList = () => {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col-reverse sm:flex-row gap-3">
-                  <Button
+                  <Button style={{ flex: 1, height: '2.75rem', backgroundColor: '#ffffff', color: '#374151', border: '2px solid #e5e7eb', borderRadius: '0.75rem', fontWeight: 600, fontSize: '0.875rem', padding: '0 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     variant="outline"
                     className="flex-1 h-11 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-semibold transition-all duration-200"
                     onClick={() => setDeleteDialogOpen(false)}
@@ -397,9 +397,9 @@ const UserList = () => {
                   >
                     Cancel
                   </Button>
-                  <Button
+                  <Button style={{ flex: 1, height: '2.75rem', backgroundColor: '#dc2626', color: '#ffffff', borderRadius: '0.75rem', fontWeight: 600, fontSize: '0.875rem', padding: '0 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 15px rgba(0,0,0,0.1)' }}
                     variant="destructive"
-                    className="flex-1 h-11 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+                    className="flex-1 h-11 bg-red-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
                     onClick={confirmDelete}
                     disabled={deleting}
                   >
@@ -425,7 +425,7 @@ const UserList = () => {
         {/* ============================================ */}
         <Dialog open={resetPasswordDialogOpen} onOpenChange={setResetPasswordDialogOpen}>
           {resetPasswordUser && (
-            <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border-0 overflow-hidden">
+            <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border border-gray-700 overflow-hidden">
               {/* Dialog Header */}
               <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
                 <DialogHeader>
@@ -547,7 +547,7 @@ const UserList = () => {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col-reverse sm:flex-row gap-3">
-                  <Button
+                  <Button style={{ flex: 1, height: '2.75rem', backgroundColor: '#ffffff', color: '#374151', border: '2px solid #e5e7eb', borderRadius: '0.75rem', fontWeight: 600, fontSize: '0.875rem', padding: '0 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     variant="outline"
                     className="flex-1 h-11 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-semibold transition-all duration-200"
                     onClick={() => {
@@ -559,8 +559,8 @@ const UserList = () => {
                   >
                     Cancel
                   </Button>
-                  <Button
-                    className="flex-1 h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+                  <Button style={{ flex: 1, height: '2.75rem', backgroundColor: '#4f46e5', color: '#ffffff', borderRadius: '0.75rem', fontWeight: 600, fontSize: '0.875rem', padding: '0 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 15px rgba(0,0,0,0.1)' }}
+                    className="flex-1 h-11 bg-indigo-600 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
                     onClick={confirmResetPassword}
                     disabled={resetting}
                   >

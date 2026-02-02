@@ -530,7 +530,7 @@ You can view your registration receipt and check for results anytime using this 
                                                                     <Eye className="h-4 w-4 text-blue-600" />
                                                                 </Button>
                                                             </DialogTrigger>
-                                                            <DialogContent className="max-w-2xl max-h-[95vh] overflow-auto bg-white rounded-2xl border-0 shadow-2xl">
+                                                            <DialogContent className="max-w-2xl max-h-[95vh] overflow-auto bg-white rounded-2xl border border-gray-700 shadow-2xl">
                                                                 <DialogHeader className="pb-4">
                                                                     <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
                                                                         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
@@ -848,7 +848,7 @@ You can view your registration receipt and check for results anytime using this 
             </div>
             {/* Delete Confirmation Dialog */}
             <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-                <DialogContent className="max-w-md bg-white rounded-2xl border-0 shadow-2xl">
+                <DialogContent className="max-w-md bg-white rounded-2xl border border-gray-700 shadow-2xl">
                     <DialogHeader className="pb-4">
                         <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
                             <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
@@ -895,7 +895,7 @@ You can view your registration receipt and check for results anytime using this 
 
             {/* Edit Patient Dialog */}
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                <DialogContent className="max-w-3xl bg-white rounded-2xl border-0 shadow-2xl max-h-[95vh] overflow-auto">
+                <DialogContent className="max-w-3xl bg-white rounded-2xl border border-gray-700 shadow-2xl max-h-[95vh] overflow-auto">
                     <DialogHeader className="pb-4">
                         <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
                             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">

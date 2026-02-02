@@ -157,7 +157,8 @@ export default function RevenueSummary() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700">Quick Action</label>
-                  <Button onClick={handleTodaySummary} className="h-12 w-full bg-green-600 hover:bg-green-700 text-white rounded-xl text-md font-semibold">
+                  <Button style={{ height: '3rem', width: '100%', backgroundColor: '#16a34a', color: '#ffffff', borderRadius: '0.75rem', fontSize: '1rem', fontWeight: 600, padding: '0 0.5rem' }}
+                   onClick={handleTodaySummary} className="h-12 w-full bg-green-600 hover:bg-green-700 text-white rounded-xl text-md font-semibold">
                     <CalendarCheck className="h-4 w-4 mr-2" />
                     Today's Summary
                   </Button>
@@ -207,14 +208,14 @@ export default function RevenueSummary() {
 
             {/* Report Buttons */}
             <div className="flex gap-4">
-              <Button
+              <Button style={{ height: '3.5rem', backgroundColor: '#2563eb', color: '#ffffff', borderRadius: '0.75rem', fontSize: '1.125rem', fontWeight: 700, boxShadow: '0 10px 15px rgba(0,0,0,0.1)', padding: '0 0.5rem' }}
                 onClick={() => setSummaryDialogOpen(true)}
                 className="flex-1 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 rounded-xl font-bold text-lg shadow-lg"
               >
                 <TrendingUp className="h-5 w-5 mr-2" />
                 Daily Summary Report
               </Button>
-              <Button
+              <Button style={{ height: '3.5rem',  backgroundColor: '#7c3aed', color: '#ffffff', borderRadius: '0.75rem', fontSize: '1.125rem', fontWeight: 700, boxShadow: '0 10px 15px rgba(0,0,0,0.1)', padding: '0 0.5rem' }}
                 onClick={() => setDetailedDialogOpen(true)}
                 className="flex-1 h-14 bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 rounded-xl font-bold text-lg shadow-lg"
               >
@@ -227,7 +228,7 @@ export default function RevenueSummary() {
 
         {/* Summary Report Dialog */}
         <Dialog open={summaryDialogOpen} onOpenChange={setSummaryDialogOpen}>
-          <DialogContent className="min-w-[80vw] max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border-0">
+          <DialogContent className="min-w-[80vw] max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-gray-700">
 
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 -m-6 mb-6 px-8 py-6">
               <DialogHeader>
@@ -393,7 +394,7 @@ export default function RevenueSummary() {
 
         {/* Detailed Report Dialog */}
         <Dialog open={detailedDialogOpen} onOpenChange={setDetailedDialogOpen}>
-          <DialogContent className="min-w-[80vw] max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border-0">
+          <DialogContent className="min-w-[80vw] max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-gray-700">
             <div className="bg-gradient-to-r from-purple-600 to-indigo-600 -m-6 mb-6 px-8 py-6">
               <DialogHeader>
                 <div className="flex items-center justify-between">

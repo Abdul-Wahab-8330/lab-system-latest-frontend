@@ -24,7 +24,7 @@ const ConfirmDialog = ({ title, description, confirmText, cancelText, onConfirm,
       <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border-0 overflow-hidden">
+      <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border border-gray-700 overflow-hidden">
         <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-white flex items-center">
@@ -44,7 +44,7 @@ const ConfirmDialog = ({ title, description, confirmText, cancelText, onConfirm,
             <p className="text-gray-600 leading-relaxed">{description}</p>
           </div>
           <div className="flex flex-col-reverse sm:flex-row gap-3">
-            <Button
+            <Button style={{flex:1,height:'2.75rem',backgroundColor:'#ffffff',color:'#374151',border:'2px solid #e5e7eb',borderRadius:'0.75rem',fontWeight:600,fontSize:'0.875rem',padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center'}}
               variant="outline"
               className="flex-1 h-11 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-semibold transition-all duration-200"
               onClick={() => setOpen(false)}
@@ -52,9 +52,9 @@ const ConfirmDialog = ({ title, description, confirmText, cancelText, onConfirm,
             >
               {cancelText}
             </Button>
-            <Button
+            <Button style={{flex:1,height:'2.75rem',backgroundColor:'#dc2626',color:'#ffffff',borderRadius:'0.75rem',fontWeight:600,fontSize:'0.875rem',padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
               variant="destructive"
-              className="flex-1 h-11 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
+              className="flex-1 h-11 bg-red-600 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
               onClick={handleConfirm}
               disabled={confirming}
             >
@@ -267,12 +267,12 @@ const AddDoctorDialog = ({ onDoctorAdded }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-blue-600  border border-gray-400 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center">
+        <Button style={{backgroundColor:'#2563eb',color:'#ffffff',border:'1px solid #9ca3af',padding:'0.75rem 1.5rem',borderRadius:'0.75rem',fontWeight:600,fontSize:'0.875rem',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}} className="bg-blue-600  border border-gray-400 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center">
           <Plus className="h-5 w-5 mr-2" />
           Add Referring Doctor
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg bg-white/95 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border-0 overflow-hidden max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg bg-white/95 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border border-gray-700 overflow-hidden max-h-[90vh] overflow-y-auto">
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-white flex items-center">
@@ -287,7 +287,7 @@ const AddDoctorDialog = ({ onDoctorAdded }) => {
           <form onSubmit={handleSubmit}>
             <DoctorFormFields form={form} onChange={handleChange} />
             <div className="flex flex-col-reverse sm:flex-row gap-3 mt-6">
-              <Button
+              <Button style={{flex:1,height:'2.75rem',backgroundColor:'#ffffff',color:'#374151',border:'2px solid #e5e7eb',borderRadius:'0.75rem',fontWeight:600,fontSize:'0.875rem',padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center'}}
                 type="button"
                 variant="outline"
                 className="flex-1 h-11 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl font-semibold transition-all duration-200"
@@ -296,9 +296,9 @@ const AddDoctorDialog = ({ onDoctorAdded }) => {
               >
                 Cancel
               </Button>
-              <Button
+              <Button style={{flex:1,height:'2.75rem',backgroundColor:'#3b82f6',color:'#ffffff',borderRadius:'0.75rem',fontWeight:600,fontSize:'0.875rem',padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
                 type="submit"
-                className="flex-1 h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg transition-all duration-200 disabled:opacity-50"
+                className="flex-1 h-11 bg-blue-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg transition-all duration-200 disabled:opacity-50"
                 disabled={adding || !form.name.trim()}
               >
                 {adding ? (
@@ -365,8 +365,8 @@ const EditDoctorDialog = ({ doctor, onDoctorUpdated }) => {
   return (
     <Dialog open={open} onOpenChange={handleOpen}>
       <DialogTrigger asChild>
-        <Button
-          className="text-blue-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 rounded-xl transition-all duration-200 border-2 border-transparent"
+        <Button style={{border:'1px solid transparent',color:'#2563eb',borderRadius:'0.75rem',fontSize:'0.875rem',fontWeight:500,padding:'0.25rem 0.6rem',display:'flex',alignItems:'center',justifyContent:'center'}}
+          className="text-blue-600 hover:bg-blue-100 hover:text-blue-700 hover:border-blue-200 rounded-xl transition-all duration-200 border-2 border-transparent"
           variant="ghost"
           size="sm"
         >
@@ -374,7 +374,7 @@ const EditDoctorDialog = ({ doctor, onDoctorUpdated }) => {
           Edit
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg bg-white/95 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border-0 overflow-hidden max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg bg-white/95 backdrop-blur-sm p-0 rounded-2xl shadow-2xl border border-gray-700 overflow-hidden max-h-[90vh] overflow-y-auto">
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-white flex items-center">
@@ -389,7 +389,7 @@ const EditDoctorDialog = ({ doctor, onDoctorUpdated }) => {
           <form onSubmit={handleSubmit}>
             <DoctorFormFields form={form} onChange={handleChange} />
             <div className="flex flex-col-reverse sm:flex-row gap-3 mt-6">
-              <Button
+              <Button style={{flex:1,height:'2.75rem',backgroundColor:'#ffffff',color:'#374151',border:'2px solid #e5e7eb',borderRadius:'0.75rem',fontWeight:600,fontSize:'0.875rem',padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center'}}
                 type="button"
                 variant="outline"
                 className="flex-1 h-11 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl font-semibold transition-all duration-200"
@@ -398,7 +398,7 @@ const EditDoctorDialog = ({ doctor, onDoctorUpdated }) => {
               >
                 Cancel
               </Button>
-              <Button
+              <Button style={{flex:1,height:'2.75rem',backgroundColor:'#4f46e5',color:'#ffffff',borderRadius:'0.75rem',fontWeight:600,fontSize:'0.875rem',padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
                 type="submit"
                 className="flex-1 h-11 bg-indigo-600 border  hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg transition-all duration-200 disabled:opacity-50"
                 disabled={updating || !form.name.trim()}
@@ -559,7 +559,7 @@ export default function DoctorCard() {
                         cancelText="Cancel"
                         onConfirm={() => handleDelete(doc._id)}
                         trigger={
-                          <Button
+                          <Button style={{color:'#dc2626',border:'2px solid transparent',borderRadius:'0.75rem',fontSize:'0.875rem',fontWeight:500,padding:'0.25rem 0.5rem',display:'flex',alignItems:'center',justifyContent:'center'}}
                             className="text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200 rounded-xl transition-all duration-200 border-2 border-transparent"
                             variant="ghost"
                             size="sm"

@@ -506,10 +506,10 @@ export default function ResultAddingComponent() {
                                                     <TableCell>
                                                         <Button
                                                             size="sm"
-                                                            className="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-white rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105 hover:shadow-xl"
+                                                            className="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-white rounded-lg shadow-lg transition-all border duration-200 transform hover:scale-105 hover:shadow-xl"
                                                             style={{
                                                                 background: 'linear-gradient(to right, #8B5CF6, #4F46E5)',
-                                                                border: 'none'
+                    
                                                             }}
 
                                                             onClick={() => openResultDialog(p)}
@@ -542,7 +542,7 @@ export default function ResultAddingComponent() {
 
                 {/* Add Results Dialog */}
                 <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogContent className="max-w-4xl bg-white rounded-2xl border-0 shadow-2xl max-h-[95vh] overflow-auto">
+                    <DialogContent className="max-w-4xl bg-white rounded-2xl border border-gray-700 shadow-2xl max-h-[95vh] overflow-auto">
                         <DialogHeader className="">
                             <DialogTitle className="text-xl font-bold text-gray-900 flex items-center mt-2">
                                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
@@ -786,7 +786,7 @@ export default function ResultAddingComponent() {
 
                 {/* Confirmation Dialog */}
                 <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-                    <DialogContent className="max-w-md bg-white rounded-2xl border-0 shadow-2xl">
+                    <DialogContent className="max-w-md bg-white rounded-2xl border border-gray-700 shadow-2xl">
                         <DialogHeader className="pb-4">
                             <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
                                 <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
@@ -823,7 +823,7 @@ export default function ResultAddingComponent() {
 
                 {/* Patient Details Dialog */}
                 <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-                    <DialogContent className="max-w-2xl bg-white rounded-2xl border-0 shadow-2xl">
+                    <DialogContent className="max-w-2xl bg-white rounded-2xl border border-gray-700 shadow-2xl">
                         <DialogHeader className="pb-4">
                             <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
                                 <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center mr-3">

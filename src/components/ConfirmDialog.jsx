@@ -32,7 +32,7 @@ export default function ConfirmDialog({
       </span>
 
       {/* Dialog */}
-      <DialogContent className='bg-white'>
+      <DialogContent className='bg-white border border-gray-700'>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

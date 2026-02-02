@@ -218,7 +218,7 @@ export default function RegisterPatient() {
                             <Button className="bg-purple-700 text-white">New Patient</Button>
                         </DialogTrigger>
 
-                        <DialogContent className="bg-white border-none overflow-auto h-[95vh]">
+                        <DialogContent className="bg-white border border-gray-700 overflow-auto h-[95vh]">
                             <DialogHeader className=''>
                                 <DialogTitle>Patient Registration</DialogTitle>
                             </DialogHeader>

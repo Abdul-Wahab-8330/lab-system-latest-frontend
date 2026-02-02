@@ -466,7 +466,6 @@ export default function HistoryResultsSettings() {
                     maxWidth: '450px',
                     backgroundColor: 'white',
                     borderRadius: '16px',
-                    border: 'none',
                     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
                 }}>
                     <DialogHeader style={{ paddingBottom: '16px' }}>

@@ -1020,7 +1020,7 @@ Click the link above to view and download your complete test results anytime.
 
                 {/* Delete Confirmation Dialog */}
                 <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                    <DialogContent className="max-w-md bg-white rounded-2xl border-0 shadow-2xl">
+                    <DialogContent className="max-w-md bg-white rounded-2xl border border-gray-700 shadow-2xl">
                         <DialogHeader className="pb-4">
                             <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
                                 <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
@@ -1068,7 +1068,7 @@ Click the link above to view and download your complete test results anytime.
 
                 {/* Edit Results Dialog */}
                 <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                    <DialogContent className="max-w-4xl bg-white rounded-2xl border-0 shadow-2xl max-h-[95vh] overflow-auto">
+                    <DialogContent className="max-w-4xl bg-white rounded-2xl border border-gray-700 shadow-2xl max-h-[95vh] overflow-auto">
                         <DialogHeader>
                             <DialogTitle className="text-xl font-bold text-gray-900 flex items-center mt-2">
                                 <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
@@ -1189,7 +1189,7 @@ Click the link above to view and download your complete test results anytime.
 
                 {/* Patient Details Dialog */}
                 <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-                    <DialogContent className="max-w-2xl max-h-[95vh] overflow-auto bg-white rounded-2xl border-0 shadow-2xl">
+                    <DialogContent className="max-w-2xl max-h-[95vh] overflow-auto bg-white rounded-2xl border border-gray-700 shadow-2xl">
                         <DialogHeader className="pb-4">
                             <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
                                 <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center mr-3">

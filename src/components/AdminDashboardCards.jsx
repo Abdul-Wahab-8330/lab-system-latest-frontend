@@ -185,7 +185,7 @@ const LabUsersCard = () => {
       </div>
 
       {/* Quick Action */}
-      <Link to='/admin/all-users'
+      <Link style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'0.5rem',width:'100%',backgroundColor:'#2563eb',color:'#ffffff',padding:'0.5rem 1rem',borderRadius:'0.5rem',fontWeight:500,fontSize:'0.875rem',textDecoration:'none'}} to='/admin/all-users'
         className="w-full bg-blue-600 text-white hover:bg-blue-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
       >
         <Eye className="w-4 h-4" />
@@ -421,7 +421,7 @@ const RevenueAnalyticsCard = () => {
           {revenueData.dailyTrend.map((day, index) => (
             <div
               key={index}
-              className="flex-1 bg-emerald-400 rounded-sm min-h-1 transition-all duration-300 hover:bg-emerald-500 cursor-pointer relative group/bar"
+              className="flex-1 bg-green-400 rounded-sm min-h-1 transition-all duration-300 hover:bg-green-500 cursor-pointer relative group/bar"
               style={{
                 height: `${Math.max((day.revenue / maxRevenue) * 100, 8)}%`
               }}

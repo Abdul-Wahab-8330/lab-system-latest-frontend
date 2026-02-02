@@ -224,10 +224,10 @@ function CreateUserForm() {
                   </Select>
                 </div>
 
-                <Button
+                <Button style={{width:'100%',height:'3rem',backgroundColor:'#7c3aed',color:'#ffffff',borderRadius:'0.75rem',fontWeight:600,fontSize:'0.875rem',padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
                   type="submit"
                   disabled={loading}
-                  className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="w-full h-12 bg-indigo-600 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
                   {loading ? (
                     <>

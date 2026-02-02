@@ -259,10 +259,10 @@ const CreateTestForm = () => {
                                     <Settings className="w-5 h-5 text-blue-500" />
                                     Test Fields Configuration
                                 </h3>
-                                <button
+                                <button style={{display:'flex',alignItems:'center',gap:'0.5rem',backgroundColor:'#3b82f6',color:'#ffffff',padding:'0.5rem 1rem',borderRadius:'0.75rem',fontWeight:500,fontSize:'0.875rem',boxShadow:'0 10px 15px rgba(0,0,0,0.1)',border:'1px solid #3b82f6'}}
                                     type="button"
                                     onClick={addField}
-                                    className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                    className="flex items-center gap-2 bg-blue-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                 >
                                     <Plus className="w-4 h-4" />
                                     Add Field
@@ -361,10 +361,10 @@ const CreateTestForm = () => {
 
                         {/* Submit Button */}
                         <div className="flex justify-center pt-6">
-                            <button
+                            <button style={{display:'flex',alignItems:'center',gap:'0.75rem',backgroundColor:'#10b981',color:'#ffffff',padding:'1rem 2rem',borderRadius:'1rem',fontWeight:700,fontSize:'1.125rem',boxShadow:'0 10px 15px rgba(0,0,0,0.1)',border:'1px solid #10b981',minWidth:'12rem;'}}
                                 type="submit"
                                 disabled={isLoading}
-                                className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 disabled:transform-none disabled:cursor-not-allowed min-w-48"
+                                className="flex items-center gap-3 bg-green-700 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 disabled:transform-none disabled:cursor-not-allowed min-w-48"
                             >
                                 {isLoading ? (
                                     <>

@@ -74,13 +74,10 @@ export default function GlobalDateFilter({ filterType }) {
 
   return (
     <div className="flex items-center gap-2 rounded-xl px-3 py-2 border"
-      style={{
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        borderColor: 'rgba(255,255,255,0.2)'
-      }}>
+      style={{ backgroundColor:'#1F2937', border:'1px solid #374151', padding:'0.5rem 0.75rem' }}>
       <Calendar className="h-4 w-4 text-white" />
       <span className="text-xs font-medium whitespace-nowrap"
-        style={{ color: '#FFFFFF' }}>Global Filter:</span>
+         style={{ color:'#F9FAFB', whiteSpace:'nowrap' }}>Global Filter:</span>
       <Input
         type="number"
         min="1"
@@ -89,14 +86,16 @@ export default function GlobalDateFilter({ filterType }) {
         onChange={(e) => setFilterDays(e.target.value)}
         className="h-9 w-20 text-white"
         style={{
-          backgroundColor: 'rgba(255,255,255,0.2)',
-          borderColor: 'rgba(255,255,255,0.3)',
-          color: '#FFFFFF'
-        }}
+      backgroundColor:'#374151',
+      border:'1px solid #4B5563',
+      color:'#F9FAFB',
+      padding:'0.25rem 0.5rem',
+      borderRadius:'0.5rem'
+    }}
         disabled={filterLoading}
       />
       <span className="text-xs whitespace-nowrap"
-        style={{ color: 'rgba(255,255,255,0.8)' }}>days</span>
+        style={{ color:'#D1D5DB', whiteSpace:'nowrap' }}>days</span>
 
       {!currentFilter?.isActive ? (
         <button
@@ -104,7 +103,7 @@ export default function GlobalDateFilter({ filterType }) {
           onClick={handleApplyFilter}
           disabled={filterLoading || !filterDays}
           className="h-9 px-4 text-sm font-semibold text-white rounded-lg shadow-lg transition-colors"
-          style={{ backgroundColor: '#22C55E' }}        >
+          style={{ backgroundColor:'#22C55E', color:'#FFFFFF', border:'1px solid #16A34A' }}>
           {filterLoading ? 'Applying...' : 'Apply'}
         </button>
       ) : (
@@ -113,17 +112,14 @@ export default function GlobalDateFilter({ filterType }) {
           onClick={handleResetFilter}
           disabled={filterLoading}
           className="h-9 px-4 text-sm font-semibold text-white rounded-lg shadow-lg transition-colors"
-          style={{ backgroundColor: '#EF4444' }}        >
+          style={{ backgroundColor:'#EF4444', color:'#FFFFFF', border:'1px solid #B91C1C' }}     >
           {filterLoading ? 'Resetting...' : 'Reset'}
         </button>
       )}
 
       {currentFilter?.isActive && (
         <span className="px-3 py-1 text-xs font-semibold rounded-full shadow-md whitespace-nowrap"
-          style={{
-            backgroundColor: '#4ADE80',
-            color: '#14532D'
-          }}>
+          tyle={{ backgroundColor:'#4ADE80', color:'#14532D', whiteSpace:'nowrap' }}>
           ✓ Last {currentFilter.daysLimit} days
         </span>
       )}

@@ -334,16 +334,16 @@ const TestList = () => {
 
             {/* Report Buttons */}
             <div className="mb-6 flex gap-4">
-              <Button
+              <Button style={{flex:1,height:'2.75rem',backgroundColor:'#16a34a',color:'#ffffff',borderRadius:'0.75rem',border:'1px solid #16a34a',fontWeight:700,fontSize:'0.875rem',padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
                 onClick={() => setSimpleReportOpen(true)}
-                className="flex-1 h-11 bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 rounded-xl font-bold border border-green-500 shadow-lg"
+                className="flex-1 h-11 bg-green-600 text-white hover:from-green-700 hover:to-emerald-700 rounded-xl font-bold border border-green-500 shadow-lg"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Print/Download Test List
               </Button>
-              <Button
+              <Button style={{flex:1,height:'2.75rem',backgroundColor:'#2563eb',color:'#ffffff',borderRadius:'0.75rem',border:'1px solid #2563eb',fontWeight:700,fontSize:'0.875rem',padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
                 onClick={() => setDetailedReportOpen(true)}
-                className="flex-1 h-11 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 rounded-xl border border-blue-500 font-bold shadow-lg"
+                className="flex-1 h-11 bg-blue-600 text-white hover:from-blue-700 hover:to-indigo-700 rounded-xl border border-blue-500 font-bold shadow-lg"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Print/Download Detailed Test List
@@ -467,7 +467,7 @@ const TestList = () => {
         {/* Edit Dialog */}
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
           {currentTest && (
-            <DialogContent className="sm:max-w-4xl bg-white rounded-3xl shadow-2xl border-0 overflow-auto max-h-[95vh]">
+            <DialogContent className="sm:max-w-4xl bg-white rounded-3xl shadow-2xl border border-gray-700 overflow-auto max-h-[95vh]">
               <div className="bg-gradient-to-r from-blue-500 to-indigo-600 -m-6 mb-6 px-8 py-6">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
@@ -738,7 +738,7 @@ const TestList = () => {
                   </div>
 
                   <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
-                    <Button
+                    <Button style={{padding:'0.75rem 1.5rem',borderRadius:'0.75rem',border:'2px solid #d1d5db',backgroundColor:'#ffffff',color:'#374151',fontWeight:500,fontSize:'0.875rem',display:'flex',alignItems:'center',justifyContent:'center'}}
                       type="button"
                       variant="outline"
                       className="px-6 py-3 rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
@@ -747,7 +747,7 @@ const TestList = () => {
                     >
                       Cancel
                     </Button>
-                    <Button
+                    <Button style={{padding:'0.75rem 2rem',borderRadius:'0.75rem',backgroundColor:'#3b82f6',color:'#ffffff',border:'1px solid #3b82f6',fontWeight:700,fontSize:'0.875rem',display:'flex',alignItems:'center',justifyContent:'center',gap:'0.5rem',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
                       type="button"
                       onClick={handleSubmit}
                       disabled={updateLoading}
@@ -775,7 +775,7 @@ const TestList = () => {
         {/* Delete Confirmation */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           {currentTest && (
-            <DialogContent className="sm:max-w-md max-h-[95vh] overflow-auto bg-white rounded-3xl shadow-2xl border-0 ">
+            <DialogContent className="sm:max-w-md max-h-[95vh] overflow-auto bg-white rounded-3xl shadow-2xl border border-gray-700 ">
               <div className="bg-gradient-to-r from-red-500 to-pink-600 -m-6 mb-6 px-8 py-6">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
@@ -799,7 +799,7 @@ const TestList = () => {
                 </div>
 
                 <div className="flex justify-center gap-4">
-                  <Button
+                  <Button style={{padding:'0.75rem 1.5rem',borderRadius:'0.75rem',border:'2px solid #d1d5db',backgroundColor:'#ffffff',color:'#374151',fontWeight:500,fontSize:'0.875rem',display:'flex',alignItems:'center',justifyContent:'center'}}
                     variant="outline"
                     className="px-6 py-3 rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
                     onClick={() => setDeleteDialogOpen(false)}
@@ -807,10 +807,10 @@ const TestList = () => {
                   >
                     Cancel
                   </Button>
-                  <Button
+                  <Button  style={{padding:'0.75rem 2rem',borderRadius:'0.75rem',backgroundColor:'#ef4444',color:'#ffffff',border:'1px solid #ef4444',fontWeight:700,fontSize:'0.875rem',display:'flex',alignItems:'center',justifyContent:'center',gap:'0.5rem',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
                     variant="destructive"
                     disabled={deleteLoading}
-                    className="px-8 py-3 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                    className="px-8 py-3 bg-red-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
                     onClick={confirmDelete}
                   >
                     {deleteLoading ? (
@@ -833,7 +833,7 @@ const TestList = () => {
 
         {/* Simple Report Dialog */}
         <Dialog open={simpleReportOpen} onOpenChange={setSimpleReportOpen}>
-          <DialogContent className="min-w-[80vw] max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border-0">
+          <DialogContent className="min-w-[80vw] max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-gray-700">
             <div className="bg-gradient-to-r from-green-600 to-emerald-600 -m-6 mb-6 px-8 py-6">
               <DialogHeader>
                 <div className="flex items-center justify-between">
@@ -922,7 +922,7 @@ const TestList = () => {
 
         {/* Detailed Report Dialog */}
         <Dialog open={detailedReportOpen} onOpenChange={setDetailedReportOpen}>
-          <DialogContent className="min-w-[80vw] max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border-0">
+          <DialogContent className="min-w-[80vw] max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-gray-700">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 -m-6 mb-6 px-8 py-6">
               <DialogHeader>
                 <div className="flex items-center justify-between">

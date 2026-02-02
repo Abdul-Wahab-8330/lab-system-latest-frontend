@@ -161,7 +161,8 @@ export default function ExpenseManagement() {
                                 Daily Expense Management
                             </CardTitle>
                             <div className="flex gap-2">
-                                <Button onClick={() => setAddDialogOpen(true)} className="bg-white text-orange-600 hover:bg-orange-50">
+                                <Button style={{ backgroundColor: '#ffffff', color: '#f97316', borderRadius: '0.5rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem' }}
+                                    onClick={() => setAddDialogOpen(true)} className="bg-white text-orange-600 hover:bg-orange-50">
                                     <Plus className="h-4 w-4 mr-2" />
                                     Add Expense
                                 </Button>
@@ -185,23 +186,27 @@ export default function ExpenseManagement() {
                                     onChange={(e) => setDateRangeFilter({ ...dateRangeFilter, endDate: e.target.value })}
                                     className="h-10 min-w-36 border-2 border-gray-200 p-1"
                                 />
-                                <Button onClick={handleDateRangeFilter} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                                <Button style={{ backgroundColor: '#2563eb', color: '#ffffff', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem' }}
+                                    onClick={handleDateRangeFilter} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
                                     <Calendar className="h-4 w-4 mr-1 text-white" />
                                     Filter
                                 </Button>
                                 {isFiltered && (
-                                    <Button onClick={clearFilter} size="sm" variant="outline">
+                                    <Button style={{ backgroundColor: '#ffffff', color: '#000000', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem' }}
+                                        onClick={clearFilter} size="sm" variant="outline">
                                         Clear
                                     </Button>
                                 )}
                             </div>
 
                             <div className="flex gap-2">
-                                <Button onClick={() => setDetailedDialogOpen(true)} variant="outline" size="sm" className='bg-orange-200 border border-orange-300 hover:bg-orange-500 hover:text-white'>
+                                <Button style={{ backgroundColor: '#fed7aa', color: '#c2410c', border: '1px solid #f97316', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem' }}
+                                    onClick={() => setDetailedDialogOpen(true)} variant="outline" size="sm" className='bg-orange-200 border border-orange-300 hover:bg-orange-500 hover:text-white'>
                                     <FileText className="h-4 w-4 mr-1" />
                                     Detailed Report
                                 </Button>
-                                <Button onClick={() => setSummaryDialogOpen(true)} variant="outline" size="sm" className='bg-orange-200 border border-orange-300 hover:bg-orange-500 hover:text-white'>
+                                <Button style={{ backgroundColor: '#fed7aa', color: '#c2410c', border: '1px solid #f97316', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem' }}
+                                    onClick={() => setSummaryDialogOpen(true)} variant="outline" size="sm" className='bg-orange-200 border border-orange-300 hover:bg-orange-500 hover:text-white'>
                                     <TrendingUp className="h-4 w-4 mr-1" />
                                     Daily Report
                                 </Button>
@@ -286,7 +291,7 @@ export default function ExpenseManagement() {
                         });
                     }
                 }}>
-                    <DialogContent className="max-w-md bg-white rounded-2xl">
+                    <DialogContent className="max-w-md bg-white rounded-2xl border border-gray-700">
                         <DialogHeader>
                             <DialogTitle className="text-xl font-bold flex items-center">
                                 {editingExpense ? <Edit className="h-5 w-5 mr-2 text-blue-600" /> : <Plus className="h-5 w-5 mr-2 text-orange-600" />}
@@ -325,17 +330,19 @@ export default function ExpenseManagement() {
                                 />
                             </div>
                             <div className="flex justify-end gap-3 pt-4">
-                                <Button variant="outline" onClick={() => setAddDialogOpen(false)}>Cancel</Button>
-                                <Button onClick={handleSubmit} className="bg-gradient-to-r from-orange-600 to-amber-600 text-white">
+                                <Button style={{ backgroundColor: '#ffffff', color: '#000000', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem' }}
+                                    variant="outline" onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+                                <button style={{ backgroundColor: '#f97316', color: '#ffffff', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem' }}
+                                    onClick={handleSubmit} className="bg-orange-500 text-white">
                                     {editingExpense ? 'Update' : 'Add'} Expense
-                                </Button>
+                                </button>
                             </div>
                         </div>
                     </DialogContent>
                 </Dialog>
 
                 <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                    <DialogContent className="max-w-md bg-white rounded-2xl">
+                    <DialogContent className="max-w-md bg-white border border-gray-700 rounded-2xl">
                         <DialogHeader>
                             <DialogTitle className="text-xl font-bold flex items-center text-red-600">
                                 <AlertTriangle className="h-5 w-5 mr-2" />
@@ -352,8 +359,9 @@ export default function ExpenseManagement() {
                                 </div>
                             )}
                             <div className="flex justify-end gap-3">
-                                <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-                                <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                                <Button style={{ backgroundColor: '#ffffff', color: '#000000', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem' }}
+                                    variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+                                <Button style={{ backgroundColor: '#dc2626', color: '#ffffff', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
                                     <Trash2 className="h-4 w-4 mr-2" />
                                     Delete
                                 </Button>
@@ -363,7 +371,7 @@ export default function ExpenseManagement() {
                 </Dialog>
 
                 <Dialog open={detailedDialogOpen} onOpenChange={setDetailedDialogOpen}>
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto bg-white rounded-2xl">
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto bg-white border border-gray-700 rounded-2xl">
                         <DialogHeader>
                             <div className="flex items-center justify-between">
                                 <DialogTitle className="text-xl font-bold flex items-center">
@@ -415,7 +423,7 @@ export default function ExpenseManagement() {
                 </Dialog>
 
                 <Dialog open={summaryDialogOpen} onOpenChange={setSummaryDialogOpen}>
-                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto bg-white rounded-2xl">
+                    <DialogContent className="max-w-3xl max-h-[90vh] border border-gray-700 overflow-auto bg-white rounded-2xl">
                         <DialogHeader>
                             <div className="flex items-center justify-between">
                                 <DialogTitle className="text-xl font-bold flex items-center">

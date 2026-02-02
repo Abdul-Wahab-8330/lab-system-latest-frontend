@@ -299,7 +299,7 @@ export default function InventoryManagement() {
                     <Box className="h-5 w-5 mr-2" />
                     Item Master List
                   </CardTitle>
-                  <Button onClick={() => openItemDialog()} className="bg-indigo-600 text-purple-50 border border-purple-300 hover:text-white  hover:bg-indigo-700">
+                  <Button style={{ backgroundColor: '#4f46e5', color: '#ede9fe', border: '1px solid #d8b4fe', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => openItemDialog()} className="bg-indigo-600 text-purple-50 border border-purple-300 hover:text-white  hover:bg-indigo-700">
                     <Plus className="h-4 w-4 mr-1" />
                     Add New Item
                   </Button>
@@ -385,18 +385,18 @@ export default function InventoryManagement() {
                     Transaction History
                   </CardTitle>
                   <div className="flex gap-2">
-                    <Button
+                    <Button style={{ backgroundColor: '#3b82f6', color: '#ffffff', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       onClick={openDailySummaryDialog}
                       className="bg-blue-500 hover:bg-blue-600"
                     >
                       <Calendar className="h-4 w-4 mr-2" />
                       Daily Summary
                     </Button>
-                    <Button onClick={() => openTransactionDialog('addition')} className="bg-green-500 hover:bg-green-600">
+                    <Button style={{ backgroundColor: '#22c55e', color: '#ffffff', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => openTransactionDialog('addition')} className="bg-green-500 hover:bg-green-600">
                       <PackagePlus className="h-4 w-4 mr-2" />
                       Add Stock
                     </Button>
-                    <Button onClick={() => openTransactionDialog('removal')} className="bg-orange-500 hover:bg-orange-600">
+                    <Button style={{ backgroundColor: '#f97316', color: '#ffffff', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => openTransactionDialog('removal')} className="bg-orange-500 hover:bg-orange-600">
                       <PackageMinus className="h-4 w-4 mr-2" />
                       Issue Stock
                     </Button>
@@ -607,9 +607,9 @@ export default function InventoryManagement() {
                     </div>
                   </div>
 
-                  <Button
+                  <Button style={{width:'100%',height:'2.5rem',backgroundColor:'#6b21a8',color:'#ffffff',borderRadius:'0.75rem',fontSize:'1rem',fontWeight:600,padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center'}}
                     onClick={generateReport}
-                    className="w-full h-10 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-800 hover:to-indigo-800 text-white font-semibold rounded-xl text-lg"
+                    className="w-full h-10 bg-purple-700 hover:from-purple-800  text-white font-semibold rounded-xl border text-lg"
                   >
                     <FileText className="h-5 w-5 mr-2" />
                     Generate Report
@@ -622,7 +622,7 @@ export default function InventoryManagement() {
 
         {/* DIALOG: Add/Edit Item */}
         <Dialog open={itemDialogOpen} onOpenChange={setItemDialogOpen}>
-          <DialogContent className="max-w-md bg-white rounded-2xl">
+          <DialogContent className="max-w-md bg-white border border-gray-700 rounded-2xl">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold flex items-center">
                 <Box className="h-5 w-5 mr-2 text-purple-600" />
@@ -661,10 +661,10 @@ export default function InventoryManagement() {
                 />
               </div>
               <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={() => setItemDialogOpen(false)}>
+                <Button style={{ backgroundColor: '#ffffff', color: '#000000', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem' }} type="button" variant="outline" onClick={() => setItemDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
+                <Button style={{ backgroundColor: '#7c3aed', color: '#ffffff', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }} type="submit" className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
                   {editingItem ? 'Update' : 'Create'} Item
                 </Button>
               </div>
@@ -674,7 +674,7 @@ export default function InventoryManagement() {
 
         {/* DIALOG: Add/Remove Transaction */}
         <Dialog open={transactionDialogOpen} onOpenChange={setTransactionDialogOpen}>
-          <DialogContent className="max-w-md bg-white rounded-2xl">
+          <DialogContent className="max-w-md bg-white border border-gray-700 rounded-2xl">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold flex items-center">
                 {transactionType === 'addition' ? (
@@ -749,10 +749,20 @@ export default function InventoryManagement() {
                 />
               </div>
               <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={() => setTransactionDialogOpen(false)}>
+                <Button style={{ backgroundColor: '#ffffff', color: '#000000', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem' }} type="button" variant="outline" onClick={() => setTransactionDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button
+                <Button style={{
+                  backgroundColor: transactionType === 'addition' ? '#16a34a' : '#ea580c',
+                  color: '#ffffff',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  padding: '0.25rem 0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
                   type="submit"
                   className={transactionType === 'addition' ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700 text-white'}
                 >
@@ -765,7 +775,7 @@ export default function InventoryManagement() {
 
         {/* DIALOG: Delete Confirmation */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <DialogContent className="max-w-md bg-white rounded-2xl">
+          <DialogContent className="max-w-md bg-white border border-gray-700 rounded-2xl">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold flex items-center text-red-600">
                 <AlertTriangle className="h-5 w-5 mr-2" />
@@ -779,14 +789,14 @@ export default function InventoryManagement() {
                   : `Are you sure you want to delete this transaction? This action cannot be undone.`}
               </p>
               <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => {
+                <Button style={{ backgroundColor: '#ffffff', color: '#000000', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem' }} variant="outline" onClick={() => {
                   setDeleteDialogOpen(false);
                   setItemToDelete(null);
                   setTransactionToDelete(null);
                 }}>
                   Cancel
                 </Button>
-                <Button
+                <Button style={{ backgroundColor: '#dc2626', color: '#ffffff', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   onClick={itemToDelete ? handleDeleteItem : handleDeleteTransaction}
                   className="bg-red-600 hover:bg-red-700"
                 >
@@ -799,7 +809,7 @@ export default function InventoryManagement() {
 
         {/* DIALOG: Report View */}
         <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
-          <DialogContent className="min-w-[90vw] max-h-[90vh] overflow-auto bg-white rounded-2xl">
+          <DialogContent className="min-w-[90vw] max-h-[90vh] overflow-auto bg-white rounded-2xl border border-gray-700">
             <DialogHeader className="print:hidden">
               <div className="flex items-center justify-between">
                 <DialogTitle className="text-2xl font-bold flex items-center">
@@ -900,7 +910,7 @@ export default function InventoryManagement() {
         </Dialog>
         {/* DIALOG: Daily Summary */}
         <Dialog open={dailySummaryDialogOpen} onOpenChange={setDailySummaryDialogOpen}>
-          <DialogContent className="min-w-[80vw] max-h-[90vh] overflow-auto bg-white rounded-2xl">
+          <DialogContent className="min-w-[80vw] max-h-[90vh] overflow-auto bg-white border border-gray-700 rounded-2xl">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold flex items-center">
                 <Calendar className="h-6 w-6 mr-2 text-blue-600" />
@@ -1001,10 +1011,10 @@ export default function InventoryManagement() {
                               </Badge>
                               <Badge
                                 className={`px-3 py-1 font-bold ${day.dayNetChange > 0
-                                    ? 'bg-green-100 text-green-700 border-green-200'
-                                    : day.dayNetChange < 0
-                                      ? 'bg-red-100 text-red-700 border-red-200'
-                                      : 'bg-gray-100 text-gray-700 border-gray-200'
+                                  ? 'bg-green-100 text-green-700 border-green-200'
+                                  : day.dayNetChange < 0
+                                    ? 'bg-red-100 text-red-700 border-red-200'
+                                    : 'bg-gray-100 text-gray-700 border-gray-200'
                                   }`}
                               >
                                 Net: {day.dayNetChange > 0 ? '+' : ''}{day.dayNetChange}
@@ -1050,10 +1060,10 @@ export default function InventoryManagement() {
                                   <TableCell className="text-center">
                                     <Badge
                                       className={`font-bold ${item.netChange > 0
-                                          ? 'bg-green-100 text-green-700 border-green-200'
-                                          : item.netChange < 0
-                                            ? 'bg-red-100 text-red-700 border-red-200'
-                                            : 'bg-gray-100 text-gray-700 border-gray-200'
+                                        ? 'bg-green-100 text-green-700 border-green-200'
+                                        : item.netChange < 0
+                                          ? 'bg-red-100 text-red-700 border-red-200'
+                                          : 'bg-gray-100 text-gray-700 border-gray-200'
                                         }`}
                                     >
                                       {item.netChange > 0 ? '+' : ''}{item.netChange}

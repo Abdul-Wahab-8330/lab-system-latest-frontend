@@ -400,7 +400,7 @@ export default function PaymentComponent() {
                                                                             Mark as Paid
                                                                         </Button>
                                                                     </DialogTrigger>
-                                                                    <DialogContent className="bg-white rounded-2xl border-0 shadow-2xl max-w-md">
+                                                                    <DialogContent className="bg-white rounded-2xl border border-gray-700 shadow-2xl max-w-md">
                                                                         <DialogHeader className="pb-4">
                                                                             <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
                                                                                 <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center mr-3">
@@ -477,7 +477,7 @@ export default function PaymentComponent() {
                                                                         <Eye className="h-4 w-4 text-blue-600" />
                                                                     </Button>
                                                                 </DialogTrigger>
-                                                                <DialogContent className="max-w-2xl max-h-[95vh] overflow-auto bg-white rounded-2xl border-0 shadow-2xl">
+                                                                <DialogContent className="max-w-2xl max-h-[95vh] overflow-auto bg-white rounded-2xl border border-gray-700 shadow-2xl">
                                                                     <DialogHeader className="pb-4">
                                                                         <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
                                                                             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">

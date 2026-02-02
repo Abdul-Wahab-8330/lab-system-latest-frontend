@@ -68,20 +68,21 @@ export default function ResultPrintComponent() {
 
     // ✅ NEW: State for print with history (per patient)
     const [loadingHistoryForPatient, setLoadingHistoryForPatient] = useState(null);
-
+    
     const [historySettings, setHistorySettings] = useState({
         historyResultsCount: 4,
         historyResultsDirection: 'left-to-right'
     });
-
+    
     const reportRef = useRef();
-
-
+    const labID = labInfo?.labID
+    
+    
     useEffect(() => {
         loadLabInfo();
         loadHistorySettings();
     }, []);
-
+    
     // ✅ NEW: Listen for history settings updates via socket
     useEffect(() => {
         const handleHistorySettingsUpdate = (data) => {
@@ -93,15 +94,15 @@ export default function ResultPrintComponent() {
                 toast.success('History settings updated!');
             }
         };
-
+        
         socket.on('historySettingsUpdated', handleHistorySettingsUpdate);
-
+        
         // ✅ Cleanup on unmount
         return () => {
             socket.off('historySettingsUpdated', handleHistorySettingsUpdate);
         };
     }, []);
-
+    
     // NEW: Sync addedPatients with patients context changes
     useEffect(() => {
         if (patients && patients.length > 0) {
@@ -109,25 +110,25 @@ export default function ResultPrintComponent() {
             const patientsWithResults = patients.filter(patient =>
                 patient.resultStatus?.toLowerCase() === 'added'
             );
-
+            
             // Update addedPatients context to stay in sync
             setAddedPatients(patientsWithResults);
         }
     }, [patients, setAddedPatients]);
-
+    
     // Update filtered patients whenever addedPatients, search, or testSearch changes
     useEffect(() => {
         let data = [...(addedPatients || [])];
-
+        
         if (search) {
             data = data.filter(
                 (p) =>
                     p.name?.toLowerCase().includes(search.toLowerCase()) ||
-                    p.refNo?.toString().includes(search) ||
-                    p.caseNo?.toString().includes(search)
+                p.refNo?.toString().includes(search) ||
+                p.caseNo?.toString().includes(search)
             );
         }
-
+        
         if (testSearch) {
             data = data.filter((p) =>
                 p.tests?.some((t) =>

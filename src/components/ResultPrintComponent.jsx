@@ -363,7 +363,15 @@ export default function ResultPrintComponent() {
     const handleWhatsAppShare = (patient) => {
         const formattedPhone = formatPhoneNumber(patient.phone);
 
-        const message = `🏥 *DOCTOR LAB & Imaging Center Sahiwal*
+        const message = `${labID === "demo_lab_system"
+            ? "🏥 *LabSync Pro*"
+            : labID === "doctor_lab_sahiwal"
+                ? "🏥 *DOCTOR LAB & Imaging Center Sahiwal*"
+                : labID === "fatima_medical_lab_bhera"
+                    ? "🏥 *FATIMA MEDICAL LAB Bhera*"
+                    : "🏥 *LabSync Pro*"
+            }
+
 
 Dear *${patient.name}*,
 

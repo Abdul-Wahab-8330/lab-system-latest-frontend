@@ -75,6 +75,8 @@ const UserDashboardLayout = () => {
     const currentItem = allMenuItems.find(item => item.link === pathname);
     return currentItem ? currentItem.id : 'dashboard';
   };
+  const labID = info?.labID;
+
 
   // Update active tab when route changes (including on refresh)
   useEffect(() => {
@@ -129,27 +131,53 @@ const UserDashboardLayout = () => {
               to={isAdmin(user?.role) ? '/admin/dashboard' : '/user/dashboard'} className="flex items-center space-x-2">
               <div>
                 <img src={info?.logoUrl} alt="" className='w-13' />
-                {/* <img src={lablogo} alt="" className='w-14' /> */}
               </div>
               {sidebarOpen && (
-                <span
-                  className="cursor-pointer text-xl font-bold whitespace-nowrap bg-gray-800 bg-clip-text text-transparent"
-                  style={{ color: '#1F2937' }} // fallback text color for legacy browsers
-                >
-                  D O C T O R &nbsp;L A B
-                  <span
-                    className="block text-xs italic font-extralight pt-0.5 text-gray-900"
-                    style={{ color: '#111827' }} // fallback for secondary text
-                  >
-                    & Imaging Center Sahiwal
-                  </span>
-                </span>
-
-                // <span className="cursor-pointer text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
-                //   LabSync Pro
-                //   <span className='block text-xs px-1 text-gray-400 font-extralight' >v_1.0</span>
-                // </span>
+                <>
+                  {labID === "demo_lab_system" ? (
+                    <span className="cursor-pointer text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
+                      LabSync Pro
+                      <span className="block text-xs px-1 text-gray-400 font-extralight">
+                        v_1.0
+                      </span>
+                    </span>
+                  ) : labID === "doctor_lab_sahiwal" ? (
+                    <span
+                      className="cursor-pointer text-xl font-bold whitespace-nowrap bg-gray-800 bg-clip-text text-transparent"
+                      style={{ color: '#1F2937' }}
+                    >
+                      D O C T O R &nbsp;L A B
+                      <span
+                        className="block text-xs italic font-extralight pt-0.5 text-gray-900"
+                        style={{ color: '#111827' }}
+                      >
+                        & Imaging Center Sahiwal
+                      </span>
+                    </span>
+                  ) : labID === "fatima_medical_lab_bhera" ? (
+                    <span
+                      className="cursor-pointer text-xl font-bold whitespace-nowrap bg-gray-800 bg-clip-text text-transparent"
+                      style={{ color: '#1F2937' }}
+                    >
+                      F A T I M A &nbsp;L A B
+                      <span
+                        className="block text-xs italic font-extralight pt-0.5 text-gray-800"
+                        style={{ color: '#111827' }}
+                      >
+                        Fatima Medical Lab Bhera
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="cursor-pointer text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
+                      LabSync Pro
+                      <span className="block text-xs px-1 text-gray-400 font-extralight">
+                        v_1.0
+                      </span>
+                    </span>
+                  )}
+                </>
               )}
+
             </Link>
           </div>
         </div>
@@ -244,7 +272,7 @@ const UserDashboardLayout = () => {
               >
                 <Key size={16} /> Change Password
               </DropdownMenuItem>
-                                <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
+              <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
 
 
               {/* only for admin */}

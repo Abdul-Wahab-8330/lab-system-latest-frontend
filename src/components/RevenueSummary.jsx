@@ -30,6 +30,8 @@ export default function RevenueSummary() {
 
   const detailedReportRef = useRef();
   const summaryReportRef = useRef();
+  const labID = info?.labID;
+
 
   const handlePrintDetailed = useReactToPrint({
     contentRef: detailedReportRef,
@@ -99,17 +101,17 @@ export default function RevenueSummary() {
   };
 
   const formatAge = (patient) => {
-  if (!patient?.age) return "-";
+    if (!patient?.age) return "-";
 
-  const unit =
-    patient.ageUnit === "months"
-      ? "M"
-      : patient.ageUnit === "days"
-      ? "D"
-      : "Y"; // default for old records
+    const unit =
+      patient.ageUnit === "months"
+        ? "M"
+        : patient.ageUnit === "days"
+          ? "D"
+          : "Y"; // default for old records
 
-  return `${patient.age} ${unit}`;
-};
+    return `${patient.age} ${unit}`;
+  };
 
 
   const groupedPatients = groupPatientsByDate(filteredPatients);
@@ -158,7 +160,7 @@ export default function RevenueSummary() {
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700">Quick Action</label>
                   <Button style={{ height: '3rem', width: '100%', backgroundColor: '#16a34a', color: '#ffffff', borderRadius: '0.75rem', fontSize: '1rem', fontWeight: 600, padding: '0 0.5rem' }}
-                   onClick={handleTodaySummary} className="h-12 w-full bg-green-600 hover:bg-green-700 text-white rounded-xl text-md font-semibold">
+                    onClick={handleTodaySummary} className="h-12 w-full bg-green-600 hover:bg-green-700 text-white rounded-xl text-md font-semibold">
                     <CalendarCheck className="h-4 w-4 mr-2" />
                     Today's Summary
                   </Button>
@@ -215,7 +217,7 @@ export default function RevenueSummary() {
                 <TrendingUp className="h-5 w-5 mr-2" />
                 Daily Summary Report
               </Button>
-              <Button style={{ height: '3.5rem',  backgroundColor: '#7c3aed', color: '#ffffff', borderRadius: '0.75rem', fontSize: '1.125rem', fontWeight: 700, boxShadow: '0 10px 15px rgba(0,0,0,0.1)', padding: '0 0.5rem' }}
+              <Button style={{ height: '3.5rem', backgroundColor: '#7c3aed', color: '#ffffff', borderRadius: '0.75rem', fontSize: '1.125rem', fontWeight: 700, boxShadow: '0 10px 15px rgba(0,0,0,0.1)', padding: '0 0.5rem' }}
                 onClick={() => setDetailedDialogOpen(true)}
                 className="flex-1 h-14 bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 rounded-xl font-bold text-lg shadow-lg"
               >
@@ -262,18 +264,43 @@ export default function RevenueSummary() {
                       />
                     )}
                     <div className="text-left">
-                      <h1 className="text-2xl font-bold mb-0">
-                        <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
-                        <span style={{ letterSpacing: '0.25em' }}>LAB</span>
-                      </h1>
-                      <p className="text-sm mb-1">
-                        <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
-                        <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
-                      </p>
-                      <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
-                        Better Diagnosis - Better Treatment
-                      </p>
+                      {labID === "demo_lab_system" ? (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">LabSync Pro</h1>
+                          <p className="text-sm mb-1 text-gray-500">v_1.0</p>
+                          <p className="text-xs italic">Smart Lab Reporting System</p>
+                        </>
+                      ) : labID === "doctor_lab_sahiwal" ? (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">
+                            <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
+                            <span style={{ letterSpacing: '0.25em' }}>LAB</span>
+                          </h1>
+                          <p className="text-sm mb-1">
+                            <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
+                            <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
+                          </p>
+                          <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
+                            Better Diagnosis - Better Treatment
+                          </p>
+                        </>
+                      ) : labID === "fatima_medical_lab_bhera" ? (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">
+                            <span style={{ letterSpacing: '0.1em' }}>FATIMA </span>{' '}
+                            <span style={{ letterSpacing: '0.1em' }}>MEDICAL LAB</span>
+                          </h1>
+                          <p className="text-xs italic">Fatima Medical Lab Bhera</p>
+                        </>
+                      ) : (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">LabSync Pro</h1>
+                          <p className="text-sm mb-1 text-gray-500">v_1.0</p>
+                          <p className="text-xs italic">Smart Lab Reporting System</p>
+                        </>
+                      )}
                     </div>
+
                   </div>
                 </div>
               </div>
@@ -427,17 +454,41 @@ export default function RevenueSummary() {
                       />
                     )}
                     <div className="text-left">
-                      <h1 className="text-2xl font-bold mb-0">
-                        <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
-                        <span style={{ letterSpacing: '0.25em' }}>LAB</span>
-                      </h1>
-                      <p className="text-sm mb-1">
-                        <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
-                        <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
-                      </p>
-                      <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
-                        Better Diagnosis - Better Treatment
-                      </p>
+                      {labID === "demo_lab_system" ? (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">LabSync Pro</h1>
+                          <p className="text-sm mb-1 text-gray-500">v_1.0</p>
+                          <p className="text-xs italic">Smart Lab Reporting System</p>
+                        </>
+                      ) : labID === "doctor_lab_sahiwal" ? (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">
+                            <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
+                            <span style={{ letterSpacing: '0.25em' }}>LAB</span>
+                          </h1>
+                          <p className="text-sm mb-1">
+                            <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
+                            <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
+                          </p>
+                          <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
+                            Better Diagnosis - Better Treatment
+                          </p>
+                        </>
+                      ) : labID === "fatima_medical_lab_bhera" ? (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">
+                            <span style={{ letterSpacing: '0.1em' }}>FATIMA </span>{' '}
+                            <span style={{ letterSpacing: '0.1em' }}>MEDICAL LAB</span>
+                          </h1>
+                          <p className="text-xs italic">Fatima Medical Lab Bhera</p>
+                        </>
+                      ) : (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">LabSync Pro</h1>
+                          <p className="text-sm mb-1 text-gray-500">v_1.0</p>
+                          <p className="text-xs italic">Smart Lab Reporting System</p>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

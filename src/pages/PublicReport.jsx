@@ -45,11 +45,13 @@ export default function PublicReport() {
   });
   const [labInfo, setLabInfo] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-    const [refreshReviews, setRefreshReviews] = useState(0); 
+  const [refreshReviews, setRefreshReviews] = useState(0);
   const [historySettings, setHistorySettings] = useState({
     historyResultsCount: 4,
     historyResultsDirection: 'left-to-right'
   });
+  const labID = labInfo?.labID;
+
 
   const inputRefs = useRef([]);
   const regReportRef = useRef();
@@ -69,7 +71,7 @@ export default function PublicReport() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-const handleReviewSubmitted = () => {
+  const handleReviewSubmitted = () => {
     console.log('🎉 Review submitted! Refreshing widget...');
     setRefreshReviews(prev => prev + 1); // Force refresh
   };
@@ -126,10 +128,9 @@ const handleReviewSubmitted = () => {
       setLabInfo(data || {});
     } catch (err) {
       setLabInfo({
-        labName: 'DOCTOR LAB & Imaging Center Sahiwal',
-        address: 'Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha',
-        phoneNumber: '0325-0020111'
+        labName: 'LabSync Pro'
       });
+      console.error('Error fetching lab info:', err);
     }
   };
 
@@ -1737,15 +1738,40 @@ const handleReviewSubmitted = () => {
               />
             )}
             <div className="text-center -mt-2">
-              <h1 className="text-[19px] font-bold mb-0">
-                <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
-                <span style={{ letterSpacing: '0.25em' }}>LAB</span>
-              </h1>
-              <p className="text-[11px] mb-1">
-                <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
-                <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
-              </p>
+              {labID === "demo_lab_system" ? (
+                <>
+                  <h1 className="text-[19px] font-bold mb-0">LabSync Pro</h1>
+                  <p className="text-[11px] mb-1 text-gray-500">v_1.0</p>
+                </>
+              ) : labID === "doctor_lab_sahiwal" ? (
+                <>
+                  <h1 className="text-[19px] font-bold mb-0">
+                    <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
+                    <span style={{ letterSpacing: '0.25em' }}>LAB</span>
+                  </h1>
+                  <p className="text-[11px] mb-1">
+                    <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
+                    <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
+                  </p>
+                </>
+              ) : labID === "fatima_medical_lab_bhera" ? (
+                <>
+                  <h1 className="text-[19px] font-bold mb-0">
+                    <span style={{ letterSpacing: '0.3em' }}>FATIMA</span>{' '}
+                    <span style={{ letterSpacing: '0.25em' }}>LAB</span>
+                  </h1>
+                  <p className="text-[11px] mb-1">
+                    <span style={{ letterSpacing: '0.08em' }}>Fatima Medical Lab Bhera</span>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-[19px] font-bold mb-0">LabSync Pro</h1>
+                  <p className="text-[11px] mb-1 text-gray-500">v_1.0</p>
+                </>
+              )}
             </div>
+
           </div>
 
           <h2 className="text-xl font-bold text-gray-800 mt-4">View Your Report Online</h2>

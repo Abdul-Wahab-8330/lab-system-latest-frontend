@@ -54,6 +54,8 @@ const TestList = () => {
 
   const simpleReportRef = useRef();
   const detailedReportRef = useRef();
+  const labID = info?.labID;
+
 
   const handlePrintSimple = useReactToPrint({
     contentRef: simpleReportRef,
@@ -334,14 +336,14 @@ const TestList = () => {
 
             {/* Report Buttons */}
             <div className="mb-6 flex gap-4">
-              <Button style={{flex:1,height:'2.75rem',backgroundColor:'#16a34a',color:'#ffffff',borderRadius:'0.75rem',border:'1px solid #16a34a',fontWeight:700,fontSize:'0.875rem',padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
+              <Button style={{ flex: 1, height: '2.75rem', backgroundColor: '#16a34a', color: '#ffffff', borderRadius: '0.75rem', border: '1px solid #16a34a', fontWeight: 700, fontSize: '0.875rem', padding: '0 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 15px rgba(0,0,0,0.1)' }}
                 onClick={() => setSimpleReportOpen(true)}
                 className="flex-1 h-11 bg-green-600 text-white hover:from-green-700 hover:to-emerald-700 rounded-xl font-bold border border-green-500 shadow-lg"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Print/Download Test List
               </Button>
-              <Button style={{flex:1,height:'2.75rem',backgroundColor:'#2563eb',color:'#ffffff',borderRadius:'0.75rem',border:'1px solid #2563eb',fontWeight:700,fontSize:'0.875rem',padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
+              <Button style={{ flex: 1, height: '2.75rem', backgroundColor: '#2563eb', color: '#ffffff', borderRadius: '0.75rem', border: '1px solid #2563eb', fontWeight: 700, fontSize: '0.875rem', padding: '0 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 15px rgba(0,0,0,0.1)' }}
                 onClick={() => setDetailedReportOpen(true)}
                 className="flex-1 h-11 bg-blue-600 text-white hover:from-blue-700 hover:to-indigo-700 rounded-xl border border-blue-500 font-bold shadow-lg"
               >
@@ -738,7 +740,7 @@ const TestList = () => {
                   </div>
 
                   <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
-                    <Button style={{padding:'0.75rem 1.5rem',borderRadius:'0.75rem',border:'2px solid #d1d5db',backgroundColor:'#ffffff',color:'#374151',fontWeight:500,fontSize:'0.875rem',display:'flex',alignItems:'center',justifyContent:'center'}}
+                    <Button style={{ padding: '0.75rem 1.5rem', borderRadius: '0.75rem', border: '2px solid #d1d5db', backgroundColor: '#ffffff', color: '#374151', fontWeight: 500, fontSize: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       type="button"
                       variant="outline"
                       className="px-6 py-3 rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
@@ -747,7 +749,7 @@ const TestList = () => {
                     >
                       Cancel
                     </Button>
-                    <Button style={{padding:'0.75rem 2rem',borderRadius:'0.75rem',backgroundColor:'#3b82f6',color:'#ffffff',border:'1px solid #3b82f6',fontWeight:700,fontSize:'0.875rem',display:'flex',alignItems:'center',justifyContent:'center',gap:'0.5rem',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
+                    <Button style={{ padding: '0.75rem 2rem', borderRadius: '0.75rem', backgroundColor: '#3b82f6', color: '#ffffff', border: '1px solid #3b82f6', fontWeight: 700, fontSize: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', boxShadow: '0 10px 15px rgba(0,0,0,0.1)' }}
                       type="button"
                       onClick={handleSubmit}
                       disabled={updateLoading}
@@ -799,7 +801,7 @@ const TestList = () => {
                 </div>
 
                 <div className="flex justify-center gap-4">
-                  <Button style={{padding:'0.75rem 1.5rem',borderRadius:'0.75rem',border:'2px solid #d1d5db',backgroundColor:'#ffffff',color:'#374151',fontWeight:500,fontSize:'0.875rem',display:'flex',alignItems:'center',justifyContent:'center'}}
+                  <Button style={{ padding: '0.75rem 1.5rem', borderRadius: '0.75rem', border: '2px solid #d1d5db', backgroundColor: '#ffffff', color: '#374151', fontWeight: 500, fontSize: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     variant="outline"
                     className="px-6 py-3 rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
                     onClick={() => setDeleteDialogOpen(false)}
@@ -807,7 +809,7 @@ const TestList = () => {
                   >
                     Cancel
                   </Button>
-                  <Button  style={{padding:'0.75rem 2rem',borderRadius:'0.75rem',backgroundColor:'#ef4444',color:'#ffffff',border:'1px solid #ef4444',fontWeight:700,fontSize:'0.875rem',display:'flex',alignItems:'center',justifyContent:'center',gap:'0.5rem',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
+                  <Button style={{ padding: '0.75rem 2rem', borderRadius: '0.75rem', backgroundColor: '#ef4444', color: '#ffffff', border: '1px solid #ef4444', fontWeight: 700, fontSize: '0.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', boxShadow: '0 10px 15px rgba(0,0,0,0.1)' }}
                     variant="destructive"
                     disabled={deleteLoading}
                     className="px-8 py-3 bg-red-600 hover:from-red-600 hover:to-pink-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
@@ -866,18 +868,43 @@ const TestList = () => {
                       />
                     )}
                     <div className="text-left">
-                      <h1 className="text-2xl font-bold mb-0">
-                        <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
-                        <span style={{ letterSpacing: '0.25em' }}>LAB</span>
-                      </h1>
-                      <p className="text-sm mb-1">
-                        <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
-                        <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
-                      </p>
-                      <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
-                        Better Diagnosis - Better Treatment
-                      </p>
+                      {labID === "demo_lab_system" ? (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">LabSync Pro</h1>
+                          <p className="text-sm mb-1 text-gray-500">v_1.0</p>
+                          <p className="text-xs italic">Smart Lab Reporting System</p>
+                        </>
+                      ) : labID === "doctor_lab_sahiwal" ? (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">
+                            <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
+                            <span style={{ letterSpacing: '0.25em' }}>LAB</span>
+                          </h1>
+                          <p className="text-sm mb-1">
+                            <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
+                            <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
+                          </p>
+                          <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
+                            Better Diagnosis - Better Treatment
+                          </p>
+                        </>
+                      ) : labID === "fatima_medical_lab_bhera" ? (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">
+                            <span style={{ letterSpacing: '0.1em' }}>FATIMA</span>{' '}
+                            <span style={{ letterSpacing: '0.1em' }}>MEDICAL LAB</span>
+                          </h1>
+                          <p className="text-xs italic">Fatima Medical Lab Bhera</p>
+                        </>
+                      ) : (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">LabSync Pro</h1>
+                          <p className="text-sm mb-1 text-gray-500">v_1.0</p>
+                          <p className="text-xs italic">Smart Lab Reporting System</p>
+                        </>
+                      )}
                     </div>
+
                   </div>
                 </div>
               </div>
@@ -955,18 +982,43 @@ const TestList = () => {
                       />
                     )}
                     <div className="text-left">
-                      <h1 className="text-2xl font-bold mb-0">
-                        <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
-                        <span style={{ letterSpacing: '0.25em' }}>LAB</span>
-                      </h1>
-                      <p className="text-sm mb-1">
-                        <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
-                        <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
-                      </p>
-                      <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
-                        Better Diagnosis - Better Treatment
-                      </p>
+                      {labID === "demo_lab_system" ? (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">LabSync Pro</h1>
+                          <p className="text-sm mb-1 text-gray-500">v_1.0</p>
+                          <p className="text-xs italic">Smart Lab Reporting System</p>
+                        </>
+                      ) : labID === "doctor_lab_sahiwal" ? (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">
+                            <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
+                            <span style={{ letterSpacing: '0.25em' }}>LAB</span>
+                          </h1>
+                          <p className="text-sm mb-1">
+                            <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
+                            <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
+                          </p>
+                          <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
+                            Better Diagnosis - Better Treatment
+                          </p>
+                        </>
+                      ) : labID === "fatima_medical_lab_bhera" ? (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">
+                            <span style={{ letterSpacing: '0.1em' }}>FATIMA</span>{' '}
+                            <span style={{ letterSpacing: '0.1em' }}>MEDICAL LAB</span>
+                          </h1>
+                          <p className="text-xs italic">Fatima Medical Lab Bhera</p>
+                        </>
+                      ) : (
+                        <>
+                          <h1 className="text-2xl font-bold mb-0">LabSync Pro</h1>
+                          <p className="text-sm mb-1 text-gray-500">v_1.0</p>
+                          <p className="text-xs italic">Smart Lab Reporting System</p>
+                        </>
+                      )}
                     </div>
+
                   </div>
                 </div>
               </div>

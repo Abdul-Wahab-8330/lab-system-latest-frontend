@@ -41,14 +41,9 @@ import { SUPER_ADMIN_USERNAME } from './config/constants';
 import HistoryResultsSettings from "./components/HistoryResultsSettings";
 import AdminReviewManagement from "./components/AdminReviewManagement";
 import DoctorShare from "./components/DoctorShare";
+import GeneralSettings from "./components/GeneralSettings";
 
 
-// const UserManagementRoute = ({ children, user }) => {
-//   if (user?.userName !== SUPER_ADMIN_USERNAME) {
-//     return <AccessDenied />;
-//   }
-//   return children;
-// };
 
 
 function App() {
@@ -99,6 +94,9 @@ function App() {
           <Route path="patient-analytics" element={<PatientCharts />} />
           <Route path="reviews" element={<AdminReviewManagement />} />
           <Route path="doctor-share" element={<DoctorShare />} />
+
+          {/* General Settings */}
+          <Route path="general-settings" element={<GeneralSettings />} />
 
 
         </Route>

@@ -20,6 +20,7 @@ import { Search, Clock, Printer, Info, FileText, User, Calendar, Phone, TestTube
 import { AddedPatientsContext } from "@/context/AddedPatientsContext";
 import { AuthContext } from "@/context/AuthProvider";
 import { SystemFiltersContext } from '@/context/SystemFiltersContext';
+import { GeneralSettingsContext } from '@/context/GeneralSettingsContext';
 import GlobalDateFilter from './GlobalDateFilter';
 import VisualScaleVisualization from './VisualScaleVisualization';
 
@@ -45,7 +46,7 @@ export default function ResultPrintComponent() {
     const { addedPatients, setAddedPatients, fetchAddedPatients } = useContext(AddedPatientsContext);
     const { user } = useContext(AuthContext);
     const { checkDateFilter } = useContext(SystemFiltersContext);
-
+    const { settings: generalSettings } = useContext(GeneralSettingsContext);
 
     const [filteredPatients, setFilteredPatients] = useState([]);
     const [search, setSearch] = useState("");
@@ -68,21 +69,21 @@ export default function ResultPrintComponent() {
 
     // ✅ NEW: State for print with history (per patient)
     const [loadingHistoryForPatient, setLoadingHistoryForPatient] = useState(null);
-    
+
     const [historySettings, setHistorySettings] = useState({
         historyResultsCount: 4,
         historyResultsDirection: 'left-to-right'
     });
-    
+
     const reportRef = useRef();
     const labID = labInfo?.labID
-    
-    
+
+
     useEffect(() => {
         loadLabInfo();
         loadHistorySettings();
     }, []);
-    
+
     // ✅ NEW: Listen for history settings updates via socket
     useEffect(() => {
         const handleHistorySettingsUpdate = (data) => {
@@ -94,15 +95,15 @@ export default function ResultPrintComponent() {
                 toast.success('History settings updated!');
             }
         };
-        
+
         socket.on('historySettingsUpdated', handleHistorySettingsUpdate);
-        
+
         // ✅ Cleanup on unmount
         return () => {
             socket.off('historySettingsUpdated', handleHistorySettingsUpdate);
         };
     }, []);
-    
+
     // NEW: Sync addedPatients with patients context changes
     useEffect(() => {
         if (patients && patients.length > 0) {
@@ -110,25 +111,25 @@ export default function ResultPrintComponent() {
             const patientsWithResults = patients.filter(patient =>
                 patient.resultStatus?.toLowerCase() === 'added'
             );
-            
+
             // Update addedPatients context to stay in sync
             setAddedPatients(patientsWithResults);
         }
     }, [patients, setAddedPatients]);
-    
+
     // Update filtered patients whenever addedPatients, search, or testSearch changes
     useEffect(() => {
         let data = [...(addedPatients || [])];
-        
+
         if (search) {
             data = data.filter(
                 (p) =>
                     p.name?.toLowerCase().includes(search.toLowerCase()) ||
-                p.refNo?.toString().includes(search) ||
-                p.caseNo?.toString().includes(search)
+                    p.refNo?.toString().includes(search) ||
+                    p.caseNo?.toString().includes(search)
             );
         }
-        
+
         if (testSearch) {
             data = data.filter((p) =>
                 p.tests?.some((t) =>
@@ -1323,7 +1324,7 @@ Click the link above to view and download your complete test results anytime.
 @media print {
   @page {
     size: A4 portrait;
-    margin: 5mm 8mm;
+    margin: 0mm 0mm;
   }
 
   html, body {
@@ -1347,13 +1348,14 @@ Click the link above to view and download your complete test results anytime.
 
   /* Header stays at top */
   thead.print-header {
-    display: table-header-group;
+    display: table-header-group !important;
   }
 
   /* Content fills available space */
   tbody.print-content {
     display: table-row-group;
     height: 100%;
+
   }
 
   tbody.print-content tr {
@@ -1363,6 +1365,8 @@ Click the link above to view and download your complete test results anytime.
   tbody.print-content td {
     vertical-align: top;
     height: 100%;
+     padding-left: 6mm !important;   /* ✅ ADD THIS */
+    padding-right: 6mm !important;  /* ✅ ADD THIS */
   }
 
   /* Footer sticks to bottom */
@@ -1418,100 +1422,176 @@ Click the link above to view and download your complete test results anytime.
                                 <thead className="print-header">
                                     <tr>
                                         <td>
-                                            <div className="flex items-start justify-between border-b-2 border-gray-800 pb-2 mb-2">
-                                                {/* Left: Logo and Lab Info */}
-                                                <div className="flex items-start">
-                                                    {labInfo?.logoUrl && (
-                                                        <img
-                                                            src={labInfo.logoUrl}
-                                                            alt="Lab Logo"
-                                                            className="h-24 w-24 mr-4 object-contain"
-                                                            onError={(e) => (e.target.style.display = "none")}
-                                                        />
-                                                    )}
-                                                    <div className="text-left">
-                                                        <h1 className="text-3xl font-bold mb-1">
-                                                            <span style={{ letterSpacing: "0.3em" }}>DOCTOR</span>{" "}
-                                                            <span style={{ letterSpacing: "0.25em" }}>LAB</span>
-                                                        </h1>
-                                                        <p className="text-md font-semibold mb-2">
-                                                            <span style={{ letterSpacing: "0.02em" }}>&</span>{" "}
-                                                            <span style={{ letterSpacing: "0.08em" }}>
-                                                                Imaging Center Sahiwal
-                                                            </span>
-                                                        </p>
-                                                        <p className="text-xs italic" style={{ letterSpacing: "0.03em" }}>
-                                                            Better Diagnosis - Better Treatment
-                                                        </p>
+                                            {labInfo?.labID === "fatima_medical_lab_bhera" ? (
+                                                <>
+                                                    {/* Full width header image */}
+                                                    <div style={{
+                                                        visibility: generalSettings.printShowHeader ? 'visible' : 'hidden'
+                                                    }}>
+                                                        {labInfo?.headerUrl && (
+                                                            <img
+                                                                src={labInfo.headerUrl}
+                                                                alt="Fatima Medical Lab"
+                                                                className="w-full object-contain"
+                                                                onError={(e) => (e.target.style.display = "none")}
+                                                            />
+                                                        )}
                                                     </div>
-                                                </div>
+                                                    {/* Patient No and Case No with Barcodes */}
+                                                    <div className="flex justify-between items-center border-b-1 border-gray-800 mx-[24px] pt-11 pb-0.5 mb-0.5">
 
-                                                {/* Right: QR Code and Barcodes */}
-                                                <div className="flex items-center justify-center">
-                                                    <div className="mr-6 pt-3">
-                                                        <div className="flex flex-col items-center">
-                                                            {/* Patient No */}
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="text-xs font-bold">Patient #:</span>
-                                                                <div className="text-center">
-                                                                    <svg
-                                                                        ref={(el) => {
-                                                                            if (el && printPatient?.refNo) {
-                                                                                JsBarcode(el, printPatient.refNo, {
-                                                                                    format: "CODE128",
-                                                                                    width: 1,
-                                                                                    height: 20,
-                                                                                    displayValue: false,
-                                                                                    margin: 0,
-                                                                                });
-                                                                            }
-                                                                        }}
-                                                                    ></svg>
-                                                                    <p className="text-xs mt-0.5">{printPatient?.refNo}</p>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Case No */}
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="text-xs font-bold">Case #:</span>
-                                                                <div className="text-center">
-                                                                    <svg
-                                                                        ref={(el) => {
-                                                                            if (el && printPatient?.caseNo) {
-                                                                                JsBarcode(el, printPatient.caseNo, {
-                                                                                    format: "CODE128",
-                                                                                    width: 1,
-                                                                                    height: 20,
-                                                                                    displayValue: false,
-                                                                                    margin: 0,
-                                                                                });
-                                                                            }
-                                                                        }}
-                                                                    ></svg>
-                                                                    <p className="text-xs mt-0.5">{printPatient?.caseNo}</p>
-                                                                </div>
+                                                        {/* Patient No */}
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs font-bold">Patient #:</span>
+                                                            <div className="text-center flex gap-1 items-center">
+                                                                <svg
+                                                                    ref={(el) => {
+                                                                        if (el && printPatient?.refNo) {
+                                                                            JsBarcode(el, printPatient.refNo, {
+                                                                                format: "CODE128",
+                                                                                width: 1,
+                                                                                height: 20,
+                                                                                displayValue: false,
+                                                                                margin: 0,
+                                                                            });
+                                                                        }
+                                                                    }}
+                                                                ></svg>
+                                                                <p className="text-xs mt-0.5">{printPatient?.refNo}</p>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    {/*text - scan to see online */}
-                                                    <div className="flex flex-col">
-                                                        <div className="text-[11px]">
-                                                            <div>Scan to View</div>
+
+                                                        {/* Case No */}
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs font-bold">Case #:</span>
+                                                            <div className="text-center flex gap-1 items-center">
+                                                                <svg
+                                                                    ref={(el) => {
+                                                                        if (el && printPatient?.caseNo) {
+                                                                            JsBarcode(el, printPatient.caseNo, {
+                                                                                format: "CODE128",
+                                                                                width: 1,
+                                                                                height: 20,
+                                                                                displayValue: false,
+                                                                                margin: 0,
+                                                                            });
+                                                                        }
+                                                                    }}
+                                                                ></svg>
+                                                                <p className="text-xs mt-0.5">{printPatient?.caseNo}</p>
+                                                            </div>
                                                         </div>
-                                                        <QRCodeSVG
-                                                            value={`${window.location.origin}/public-report`}
-                                                            size={70}
-                                                            level="M"
-                                                        />
-                                                        <div className="text-[11px]">
-                                                            <div>Online Report</div>
+                                                        {/* QR  */}
+                                                        {/* <div className="flex items-center gap-2 pb-1 ">
+                                                            <span className="text-xs font-bold">View Online:</span>
+                                                            <div className="text-center">
+                                                                <QRCodeSVG
+                                                                    value={`${window.location.origin}/public-report`}
+                                                                    size={40}
+                                                                    level="M"
+                                                                />
+                                                            </div>
+
+                                                        </div> */}
+
+
+                                                    </div>
+
+                                                </>
+
+                                            ) : labInfo?.labID === "doctor_lab_sahiwal" ? (
+
+                                                <div style={{
+                                                    visibility: generalSettings.printShowHeader ? 'visible' : 'hidden'
+                                                }} className="flex items-start justify-between border-b-2 border-gray-800 pb-2 mb-2 mt-3 mx-[22px]">
+                                                    <div className="flex items-start">
+                                                        {labInfo?.logoUrl && (
+                                                            <img
+                                                                src={labInfo.logoUrl}
+                                                                alt="Lab Logo"
+                                                                className="h-24 w-24 mr-4 object-contain"
+                                                                onError={(e) => (e.target.style.display = "none")}
+                                                            />
+                                                        )}
+                                                        <div className="text-left">
+                                                            <h1 className="text-3xl font-bold mb-1">
+                                                                <span style={{ letterSpacing: "0.3em" }}>DOCTOR</span>{" "}
+                                                                <span style={{ letterSpacing: "0.25em" }}>LAB</span>
+                                                            </h1>
+                                                            <p className="text-md font-semibold mb-2">
+                                                                <span style={{ letterSpacing: "0.02em" }}>&</span>{" "}
+                                                                <span style={{ letterSpacing: "0.08em" }}>
+                                                                    Imaging Center Sahiwal
+                                                                </span>
+                                                            </p>
+                                                            <p className="text-xs italic" style={{ letterSpacing: "0.03em" }}>
+                                                                Better Diagnosis - Better Treatment
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Right: QR + Barcodes (unchanged) */}
+                                                    <div className="flex items-center justify-center">
+                                                        <div className="mr-6 pt-3">
+                                                            <div className="flex flex-col items-center">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-xs font-bold">Patient #:</span>
+                                                                    <div className="text-center">
+                                                                        <svg
+                                                                            ref={(el) => {
+                                                                                if (el && printPatient?.refNo) {
+                                                                                    JsBarcode(el, printPatient.refNo, {
+                                                                                        format: "CODE128",
+                                                                                        width: 1,
+                                                                                        height: 20,
+                                                                                        displayValue: false,
+                                                                                        margin: 0,
+                                                                                    });
+                                                                                }
+                                                                            }}
+                                                                        ></svg>
+                                                                        <p className="text-xs mt-0.5">{printPatient?.refNo}</p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-xs font-bold">Case #:</span>
+                                                                    <div className="text-center">
+                                                                        <svg
+                                                                            ref={(el) => {
+                                                                                if (el && printPatient?.caseNo) {
+                                                                                    JsBarcode(el, printPatient.caseNo, {
+                                                                                        format: "CODE128",
+                                                                                        width: 1,
+                                                                                        height: 20,
+                                                                                        displayValue: false,
+                                                                                        margin: 0,
+                                                                                    });
+                                                                                }
+                                                                            }}
+                                                                        ></svg>
+                                                                        <p className="text-xs mt-0.5">{printPatient?.caseNo}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex flex-col">
+                                                            <div className="text-[11px]">Scan to View</div>
+                                                            <QRCodeSVG
+                                                                value={`${window.location.origin}/public-report`}
+                                                                size={70}
+                                                                level="M"
+                                                            />
+                                                            <div className="text-[11px]">Online Report</div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            ) : null}
+
 
                                             {/* Patient Info Box */}
-                                            <div className="border-b border-gray-800 pb-3  bg-white">
+                                            <div className="border-b border-gray-800 pb-1 mx-[22px] bg-white">
                                                 <table className="w-full text-xs">
                                                     <tbody>
                                                         <tr>
@@ -1534,11 +1614,12 @@ Click the link above to view and download your complete test results anytime.
                                                             <td className="py-0.5">
                                                                 {formatAge(printPatient)} / {printPatient?.gender}
                                                             </td>
-                                                            {/* this is the second specimen status we add while registering patient */}
-                                                            <td className="font-semibold py-0.5">Specimen</td>
+                                                            {/* <td className="font-semibold py-0.5">Specimen</td>
                                                             <td className="py-0.5">
                                                                 {printPatient?.specimen || "Taken in Lab"}
-                                                            </td>
+                                                            </td> */}
+                                                            <td className="font-semibold py-0.5">NIC No</td>
+                                                            <td className="py-0.5">{printPatient?.nicNo || "-"}</td>
                                                         </tr>
                                                         <tr>
                                                             <td className="font-semibold py-0.5">Father/Husband</td>
@@ -1553,12 +1634,10 @@ Click the link above to view and download your complete test results anytime.
                                                             <td className="py-0.5">{printPatient?.referencedBy || "SELF"}</td>
                                                         </tr>
                                                         <tr>
-                                                            <td className="font-semibold py-0.5">Hosp/ MR #</td>
+                                                            {/* <td className="font-semibold py-0.5">Hosp/ MR #</td>
                                                             <td className="py-0.5">-</td>
                                                             <td className="font-semibold py-0.5">NIC No</td>
-                                                            <td className="py-0.5">{printPatient?.nicNo || "-"}</td>
-
-
+                                                            <td className="py-0.5">{printPatient?.nicNo || "-"}</td> */}
 
                                                         </tr>
                                                     </tbody>
@@ -2175,47 +2254,108 @@ Click the link above to view and download your complete test results anytime.
                                 {/* ========================================
             FOOTER (Repeats Automatically)
         ======================================== */}
-                                <tfoot className="print-footer">
+                                <tfoot style={{
+                                    visibility: generalSettings.printShowFooter ? 'visible' : 'hidden'
+                                }} className="print-footer">
                                     <tr>
                                         <td>
-                                            <div className="text-center mb-1 mt-10">
-                                                <p className="text-xs font-semibold">
-                                                    Electronically Verified Report, No Signature(s) Required.
-                                                </p>
-                                            </div>
 
-                                            <div className="border-t border-gray-800 pt-1">
-                                                <div className="flex justify-start items-end text-xs mb-1">
-                                                    <div className="">
-                                                        <p className="font-semibold">Dr. Mudaser Hussain</p>
-                                                        <p className="text-left">Consultant Pathologist</p>
-                                                        <p>MBBS, MPhil. (Biochemistry)</p>
+                                            {labInfo?.labID === "fatima_medical_lab_bhera" ? (
+                                                <>
+                                                    {labInfo?.footerUrl && (
+                                                        <div className="w-full">
+                                                            <img
+                                                                src={labInfo.footerUrl}
+                                                                alt="Footer"
+                                                                className="w-full object-contain"
+                                                                onError={(e) => (e.target.style.display = "none")}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </>
+                                            ) : labInfo?.labID === "doctor_lab_sahiwal" ? (
+                                                <div className='mx-[22px]'>
+                                                    <div className="text-center mb-1 mt-10">
+                                                        <p className="text-xs font-semibold">
+                                                            Electronically Verified Report, No Signature(s) Required.
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="border-t border-gray-800 pt-1">
+                                                        <div className="flex justify-start items-end text-xs mb-1">
+                                                            <div className="">
+                                                                <p className="font-semibold">Dr. Mudaser Hussain</p>
+                                                                <p className="text-left">Consultant Pathologist</p>
+                                                                <p>MBBS, MPhil. (Biochemistry)</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="text-center">
+                                                            <p className="text-[10px] text-gray-600 mb-1">
+                                                                NOTE: All the tests are performed on the most advanced,
+                                                                highly sophisticated, appropriate, and state of the art
+                                                                instruments with highly sensitive chemicals under strict
+                                                                conditions and with all care and diligence. However, the
+                                                                above results are NOT the DIAGNOSIS and should be correlated
+                                                                with clinical findings, patient's history, signs and
+                                                                symptoms and other diagnostic tests. Lab to lab variation
+                                                                may occur. This document is NEVER challengeable at any
+                                                                PLACE/COURT and in any CONDITION.
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="text-center text-xs">
+                                                            <p>
+                                                                {labInfo?.address || "Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha"}
+                                                            </p>
+                                                            <p>
+                                                                Contact #: {labInfo?.phoneNumber || "0325-0020111"} | Email: {labInfo?.email || "doctorlab91@gmail.com"}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                            ) : (
+                                                <div className='mx-[22px]'>
+                                                    <div className="text-center mb-1 mt-10">
+                                                        <p className="text-xs font-semibold">
+                                                            Electronically Verified Report, No Signature(s) Required.
+                                                        </p>
+                                                    </div>
 
-                                                <div className="text-center">
-                                                    <p className="text-[10px] text-gray-600 mb-1">
-                                                        NOTE: All the tests are performed on the most advanced,
-                                                        highly sophisticated, appropriate, and state of the art
-                                                        instruments with highly sensitive chemicals under strict
-                                                        conditions and with all care and diligence. However, the
-                                                        above results are NOT the DIAGNOSIS and should be correlated
-                                                        with clinical findings, patient's history, signs and
-                                                        symptoms and other diagnostic tests. Lab to lab variation
-                                                        may occur. This document is NEVER challengeable at any
-                                                        PLACE/COURT and in any CONDITION.
-                                                    </p>
-                                                </div>
+                                                    <div className="border-t border-gray-800 pt-1">
+                                                        <div className="flex justify-start items-end text-xs mb-1">
+                                                            <div className="">
+                                                                <p className="font-semibold">Dr. Mudaser Hussain</p>
+                                                                <p className="text-left">Consultant Pathologist</p>
+                                                                <p>MBBS, MPhil. (Biochemistry)</p>
+                                                            </div>
+                                                        </div>
 
-                                                <div className="text-center text-xs">
-                                                    <p>
-                                                        Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha
-                                                    </p>
-                                                    <p>
-                                                        Contact # 0325-0020111 | Email: doctorlab91@gmail.com
-                                                    </p>
+                                                        <div className="text-center">
+                                                            <p className="text-[10px] text-gray-600 mb-1">
+                                                                NOTE: All the tests are performed on the most advanced,
+                                                                highly sophisticated, appropriate, and state of the art
+                                                                instruments with highly sensitive chemicals under strict
+                                                                conditions and with all care and diligence. However, the
+                                                                above results are NOT the DIAGNOSIS and should be correlated
+                                                                with clinical findings, patient's history, signs and
+                                                                symptoms and other diagnostic tests. Lab to lab variation
+                                                                may occur. This document is NEVER challengeable at any
+                                                                PLACE/COURT and in any CONDITION.
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="text-center text-xs">
+                                                            <p>
+                                                                {labInfo?.address || "Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha"}
+                                                            </p>
+                                                            <p>
+                                                                Contact #: {labInfo?.phoneNumber || "0325-0020111"} | Email: {labInfo?.email || "doctorlab91@gmail.com"}
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
                                         </td>
                                     </tr>
                                 </tfoot>

@@ -1135,50 +1135,80 @@ You can view your registration receipt and check for results anytime using this 
                                     </div>
                                 </div>
 
-                                <div className="flex items-start justify-between">
+                                <div className="flex items-end justify-between">
                                     {/* Left: Logo and Lab Info */}
-                                    <div className="flex items-start">
-                                        {info?.logoUrl && (
-                                            <img
-                                                src={info.logoUrl}
-                                                alt="Lab Logo"
-                                                className="h-16 w-16 mr-4 object-contain"
-                                                onError={(e) => e.target.style.display = 'none'}
-                                            />
-                                        )}
-                                        <div className="text-left">
-                                            <h1 className="text-2xl font-bold mb-0">
-                                                <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
-                                                <span style={{ letterSpacing: '0.25em' }}>LAB</span>
-                                            </h1>
-                                            <p className="text-sm mb-1">
-                                                <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
-                                                <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
-                                            </p>
-                                            <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
-                                                Better Diagnosis - Better Treatment
-                                            </p>
-                                        </div>
-                                    </div>
+                                    {labID === "fatima_medical_lab_bhera" ? (
+                                        /* ===== FATIMA LAB (Wide logo + name) ===== */
+                                        <>
+                                            <div className="flex items-center gap-4">
+                                                {info?.headerUrl && (
+                                                    <img
+                                                        src={info.headerUrl}
+                                                        alt="Fatima Medical Lab"
+                                                        className="max-w-[550px] object-contain h-[108px]"
+                                                        onError={(e) => (e.target.style.display = "none")}
+                                                    />
+                                                )}
+                                            </div>
+                                            {/* Right: QR Code (unchanged) */}
+                                            <div className="flex flex-col items-center ">
+                                                <div className="flex flex-col">
+                                                    <div className="text-[10px]">Scan to View</div>
+                                                    <QRCodeSVG
+                                                        value={`${window.location.origin}/public-report`}
+                                                        size={60}
+                                                        level="M"
+                                                    />
+                                                    <div className="text-[10px]">Online Report</div>
+                                                </div>
+                                            </div>
+                                        </>
 
-                                    {/* Right: QR Code */}
-                                    <div className="flex flex-col items-center">
-                                        {/*text - scan to see online */}
-                                        <div className="flex flex-col">
-                                            <div className="text-[10px]">
-                                                <div>Scan to View</div>
+
+                                    ) : (
+                                        /* ===== Other labs (unchanged) ===== */
+                                        <>
+                                            <div className="flex items-start">
+                                                {info?.logoUrl && (
+                                                    <img
+                                                        src={info.logoUrl}
+                                                        alt="Lab Logo"
+                                                        className="h-[70px] w-[70px] mr-4 object-contain"
+                                                        onError={(e) => (e.target.style.display = "none")}
+                                                    />
+                                                )}
+                                                <div className="text-left">
+                                                    <h1 className="text-2xl font-bold mb-0">
+                                                        <span style={{ letterSpacing: "0.3em" }}>DOCTOR</span>{" "}
+                                                        <span style={{ letterSpacing: "0.25em" }}>LAB</span>
+                                                    </h1>
+                                                    <p className="text-sm mb-1">
+                                                        <span style={{ letterSpacing: "0.02em" }}>&</span>{" "}
+                                                        <span style={{ letterSpacing: "0.08em" }}>Imaging Center Sahiwal</span>
+                                                    </p>
+                                                    <p className="text-xs italic" style={{ letterSpacing: "0.03em" }}>
+                                                        Better Diagnosis - Better Treatment
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <QRCodeSVG
-                                                value={`${window.location.origin}/public-report`}
-                                                size={60}
-                                                level="M"
-                                            />
-                                            <div className="text-[10px]">
-                                                <div>Online Report</div>
+                                            {/* Right: QR Code (unchanged) */}
+                                            <div className="flex flex-col items-center ">
+                                                <div className="flex flex-col">
+                                                    <div className="text-[10px]">Scan to View</div>
+                                                    <QRCodeSVG
+                                                        value={`${window.location.origin}/public-report`}
+                                                        size={60}
+                                                        level="M"
+                                                    />
+                                                    <div className="text-[10px]">Online Report</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
+                                        </>
+                                    )}
+
+
                                 </div>
+
                             </div>
 
                             {/* Patient No and Case No with Barcodes */}
@@ -1321,49 +1351,76 @@ You can view your registration receipt and check for results anytime using this 
                                     </div>
                                 </div>
 
-                                <div className="flex items-start justify-between">
+                                <div className="flex items-end justify-between">
                                     {/* Left: Logo and Lab Info */}
-                                    <div className="flex items-start">
-                                        {info.logoUrl && (
-                                            <img
-                                                src={info.logoUrl}
-                                                alt="Lab Logo"
-                                                className="h-16 w-16 mr-4 object-contain"
-                                                onError={(e) => e.target.style.display = 'none'}
-                                            />
-                                        )}
-                                        <div className="text-left">
-                                            <h1 className="text-2xl font-bold mb-0">
-                                                <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
-                                                <span style={{ letterSpacing: '0.25em' }}>LAB</span>
-                                            </h1>
-                                            <p className="text-sm mb-1">
-                                                <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
-                                                <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
-                                            </p>
-                                            <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
-                                                Better Diagnosis - Better Treatment
-                                            </p>
-                                        </div>
-                                    </div>
+                                    {labID === "fatima_medical_lab_bhera" ? (
+                                        /* ===== FATIMA LAB (Wide logo + name) ===== */
+                                        <>
+                                            <div className="flex items-center gap-4">
+                                                {info?.headerUrl && (
+                                                    <img
+                                                        src={info.headerUrl}
+                                                        alt="Fatima Medical Lab"
+                                                        className="max-w-[550px] object-contain h-[108px]"
+                                                        onError={(e) => (e.target.style.display = "none")}
+                                                    />
+                                                )}
+                                            </div>
+                                            {/* Right: QR Code (unchanged) */}
+                                            <div className="flex flex-col items-center ">
+                                                <div className="flex flex-col">
+                                                    <div className="text-[10px]">Scan to View</div>
+                                                    <QRCodeSVG
+                                                        value={`${window.location.origin}/public-report`}
+                                                        size={60}
+                                                        level="M"
+                                                    />
+                                                    <div className="text-[10px]">Online Report</div>
+                                                </div>
+                                            </div>
+                                        </>
 
-                                    {/* Right: QR Code */}
-                                    <div className="flex flex-col items-center">
-                                        {/*text - scan to see online */}
-                                        <div className="flex flex-col">
-                                            <div className="text-[10px]">
-                                                <div>Scan to View</div>
+                                    ) : (
+                                        /* ===== Other labs (unchanged) ===== */
+                                        <>
+                                            <div className="flex items-start">
+                                                {info?.logoUrl && (
+                                                    <img
+                                                        src={info.logoUrl}
+                                                        alt="Lab Logo"
+                                                        className="h-[70px] w-[70px] mr-4 object-contain"
+                                                        onError={(e) => (e.target.style.display = "none")}
+                                                    />
+                                                )}
+                                                <div className="text-left">
+                                                    <h1 className="text-2xl font-bold mb-0">
+                                                        <span style={{ letterSpacing: "0.3em" }}>DOCTOR</span>{" "}
+                                                        <span style={{ letterSpacing: "0.25em" }}>LAB</span>
+                                                    </h1>
+                                                    <p className="text-sm mb-1">
+                                                        <span style={{ letterSpacing: "0.02em" }}>&</span>{" "}
+                                                        <span style={{ letterSpacing: "0.08em" }}>Imaging Center Sahiwal</span>
+                                                    </p>
+                                                    <p className="text-xs italic" style={{ letterSpacing: "0.03em" }}>
+                                                        Better Diagnosis - Better Treatment
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <QRCodeSVG
-                                                value={`${window.location.origin}/public-report`}
-                                                size={60}
-                                                level="M"
-                                            />
-                                            <div className="text-[10px]">
-                                                <div>Online Report</div>
+                                            {/* Right: QR Code (unchanged) */}
+                                            <div className="flex flex-col items-center ">
+                                                <div className="flex flex-col">
+                                                    <div className="text-[10px]">Scan to View</div>
+                                                    <QRCodeSVG
+                                                        value={`${window.location.origin}/public-report`}
+                                                        size={60}
+                                                        level="M"
+                                                    />
+                                                    <div className="text-[10px]">Online Report</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
+                                        </>
+                                    )}
+
                                 </div>
                             </div>
 
@@ -1441,6 +1498,7 @@ You can view your registration receipt and check for results anytime using this 
                                                 {" / "}
                                                 {printPatient.gender}
                                             </td>
+                                            <td className="font-semibold py-0.5">Specimen</td>
                                             <td className="py-0.5">{printPatient.tests?.[0]?.testId?.specimen || 'Taken in Lab'}</td>
                                         </tr>
                                         <tr>
@@ -1522,16 +1580,35 @@ You can view your registration receipt and check for results anytime using this 
 
                             {/* Footer */}
                             <div className="border-t border-gray-400 pt-2">
-                                <p className="text-center text-xs font-semibold mb-2">Computerized Receipt, No Signature(s) Required</p>
+                                <p className="text-center text-xs font-semibold mb-2">
+                                    Computerized Receipt, No Signature(s) Required
+                                </p>
+
                                 <div className="text-center text-xs text-gray-700 space-y-0.5">
                                     <p className="font-medium">
-                                        Phone: {info?.phoneNumber || '0325-0020111'} | Email: doctorlab91@gmail.com
+                                        {info?.labID === "demo_lab_system"
+                                            ? `Phone: ${info?.phoneNumber || "-"} | Email: ${info?.email || "-"}`
+                                            : info?.labID === "doctor_lab_sahiwal"
+                                                ? `Phone: ${info?.phoneNumber || "-"} | Email: ${info?.email || "-"}`
+                                                : info?.labID === "fatima_medical_lab_bhera"
+                                                    ? `Phone: ${info?.phoneNumber || "-"} | Email: ${info?.email || "-"}`
+                                                    : `Phone: ${info?.phoneNumber || "-"} | Email: ${info?.email || "-"}`
+                                        }
                                     </p>
+
                                     <p className="text-[10px] leading-tight">
-                                        {info?.address || 'Opposite THQ Hospital Near Punjab Pharmacy Sahiwal, District Sargodha'}
+                                        {info?.labID === "demo_lab_system"
+                                            ? info?.address || "-"
+                                            : info?.labID === "doctor_lab_sahiwal"
+                                                ? info?.address || "-"
+                                                : info?.labID === "fatima_medical_lab_bhera"
+                                                    ? info?.address || "-"
+                                                    : info?.address || "-"
+                                        }
                                     </p>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>

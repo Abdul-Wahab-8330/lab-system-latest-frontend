@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
+
+
 // ============================================================
 // HELPERS
 // ============================================================
@@ -41,21 +43,80 @@ function formatDate(dateStr) {
 // ============================================================
 const PrintHeader = ({ info, title, subtitle }) => (
     <div className="mb-3 mt-1">
-        <div className="flex items-start">
-            {info?.logoUrl && (
-                <img src={info.logoUrl} alt="Lab Logo" style={{ height: "64px", width: "64px" }} className="mr-3 object-contain" onError={(e) => (e.target.style.display = "none")} />
-            )}
-            <div>
-                <h1 className="text-lg font-bold">{info?.labName || "Lab Name"}</h1>
-                <p className="text-xs text-gray-600">{info?.address || ""}</p>
-                <p className="text-xs text-gray-500 italic">{info?.tagline || ""}</p>
+        {info?.labID === "demo_lab_system" ? (
+            <div className="flex items-start">
+                {info?.logoUrl && (
+                    <img
+                        src={info.logoUrl}
+                        alt="Lab Logo"
+                        style={{ height: "64px", width: "64px" }}
+                        className="mr-3 object-contain"
+                        onError={(e) => (e.target.style.display = "none")}
+                    />
+                )}
+                <div>
+                    <h1 className="text-lg font-bold">LabSync Pro</h1>
+                    <p className="text-xs text-gray-600">Smart Lab Reporting System</p>
+                </div>
             </div>
-        </div>
-        <div className="text-center mt-2 pb-1.5 border-b-2 border-gray-800">
-            <p className="text-sm font-bold text-gray-900">{title}</p>
-            {subtitle && <p className="text-xs text-gray-600 mt-0.5">{subtitle}</p>}
-        </div>
+
+        ) : info?.labID === "doctor_lab_sahiwal" ? (
+            <div className="flex items-start">
+                {info?.logoUrl && (
+                    <img
+                        src={info.logoUrl}
+                        alt="Lab Logo"
+                        style={{ height: "64px", width: "64px" }}
+                        className="mr-3 object-contain"
+                        onError={(e) => (e.target.style.display = "none")}
+                    />
+                )}
+                <div>
+                    <h1 className="text-lg font-bold">DOCTOR LAB & Imaging Center Sahiwal</h1>
+                    <p className="text-xs text-gray-600">{info?.address || ""}</p>
+                </div>
+            </div>
+
+        ) : info?.labID === "fatima_medical_lab_bhera" ? (
+            <div className="flex items-start">
+                {info?.headerUrl && (
+                    <img
+                        src={info.headerUrl}
+                        alt="Lab Header"
+
+                        className=""
+                        onError={(e) => (e.target.style.display = "none")}
+                    />
+                )}
+            </div>
+
+        ) : (
+            <div className="flex items-start">
+                {info?.logoUrl && (
+                    <img
+                        src={info.logoUrl}
+                        alt="Lab Logo"
+                        style={{ height: "64px", width: "64px" }}
+                        className="mr-3 object-contain"
+                        onError={(e) => (e.target.style.display = "none")}
+                    />
+                )}
+                <div>
+                    <h1 className="text-lg font-bold">LabSync Pro</h1>
+                    <p className="text-xs text-gray-600">Smart Lab Reporting System</p>
+                </div>
+            </div>
+        )}
+        {title && (
+            <div className="mt-2 text-center">
+                <h2 className="text-sm font-bold uppercase tracking-wide">{title}</h2>
+                {subtitle && (
+                    <p className="text-xs text-gray-600">{subtitle}</p>
+                )}
+            </div>
+        )}
     </div>
+
 );
 
 // ============================================================
@@ -581,10 +642,10 @@ const LabReferralSummary = ({ doctors, info }) => {
     return (
         <div className="space-y-4">
             {/* Simple Heading */}
-        <div className="bg-white border border-gray-300 px-4 py-3">
-            <h3 className="text-lg font-bold text-gray-900">Lab Referral Summary</h3>
-            <p className="text-xs text-gray-600 mt-1">View commission summary for all referring doctors in a date range</p>
-        </div>
+            <div className="bg-white border border-gray-300 px-4 py-3">
+                <h3 className="text-lg font-bold text-gray-900">Lab Referral Summary</h3>
+                <p className="text-xs text-gray-600 mt-1">View commission summary for all referring doctors in a date range</p>
+            </div>
             {/* Filters + Print Buttons */}
             <div className="bg-white border border-gray-500 p-4">
                 <div className="flex flex-wrap gap-3 items-end">

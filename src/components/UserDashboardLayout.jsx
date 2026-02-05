@@ -14,7 +14,8 @@ import {
   PoundSterling,
   Printer,
   History,
-  Star
+  Star,
+  Settings2
 } from "lucide-react";
 
 import {
@@ -127,47 +128,58 @@ const UserDashboardLayout = () => {
         {/* Logo/Header */}
         <div className="p-3 border-b border-gray-200 ">
           <div className="flex items-center justify-center">
-            <Link onClick={() => setActiveTab('dashboard')}
-              to={isAdmin(user?.role) ? '/admin/dashboard' : '/user/dashboard'} className="flex items-center space-x-2">
-              <div>
-                <img src={info?.logoUrl} alt="" className='w-13' />
-              </div>
-              {sidebarOpen && (
+            <Link
+              onClick={() => setActiveTab('dashboard')}
+              to={isAdmin(user?.role) ? '/admin/dashboard' : '/user/dashboard'}
+              className="flex items-center space-x-2"
+            >
+              {labID === "demo_lab_system" ? (
+                /* ===== LabSync Pro ===== */
                 <>
-                  {labID === "demo_lab_system" ? (
+                  <img src={info?.logoUrl} className="w-12" />
+                  {sidebarOpen && (
                     <span className="cursor-pointer text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
                       LabSync Pro
                       <span className="block text-xs px-1 text-gray-400 font-extralight">
                         v_1.0
                       </span>
                     </span>
-                  ) : labID === "doctor_lab_sahiwal" ? (
-                    <span
-                      className="cursor-pointer text-xl font-bold whitespace-nowrap bg-gray-800 bg-clip-text text-transparent"
-                      style={{ color: '#1F2937' }}
-                    >
+                  )}
+                </>
+
+              ) : labID === "doctor_lab_sahiwal" ? (
+                /* ===== Doctor Lab ===== */
+                <>
+                  <img src={info?.logoUrl} className="w-12" />
+                  {sidebarOpen && (
+                    <span className="cursor-pointer text-xl font-bold whitespace-nowrap">
                       D O C T O R &nbsp;L A B
-                      <span
-                        className="block text-xs italic font-extralight pt-0.5 text-gray-900"
-                        style={{ color: '#111827' }}
-                      >
+                      <span className="block text-xs italic font-extralight">
                         & Imaging Center Sahiwal
                       </span>
                     </span>
-                  ) : labID === "fatima_medical_lab_bhera" ? (
-                    <span
-                      className="cursor-pointer text-xl font-bold whitespace-nowrap bg-gray-800 bg-clip-text text-transparent"
-                      style={{ color: '#1F2937' }}
-                    >
+                  )}
+                </>
+
+              ) : labID === "fatima_medical_lab_bhera" ? (
+                /* ===== Fatima Lab ===== */
+                <>
+                  <img src={`${sidebarOpen ? info?.headerUrl : info?.logoUrl}`} className="w-60 h-[46px]" />
+                  {/* {sidebarOpen && (
+                    <span className="cursor-pointer text-xl font-bold whitespace-nowrap">
                       F A T I M A &nbsp;L A B
-                      <span
-                        className="block text-xs italic font-extralight pt-0.5 text-gray-800"
-                        style={{ color: '#111827' }}
-                      >
+                      <span className="block text-xs italic font-extralight">
                         Fatima Medical Lab Bhera
                       </span>
                     </span>
-                  ) : (
+                  )} */}
+                </>
+
+              ) : (
+                /* ===== Default (LabSync) ===== */
+                <>
+                  <img src="/labsync-logo.png" className="w-12" />
+                  {sidebarOpen && (
                     <span className="cursor-pointer text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
                       LabSync Pro
                       <span className="block text-xs px-1 text-gray-400 font-extralight">
@@ -177,8 +189,8 @@ const UserDashboardLayout = () => {
                   )}
                 </>
               )}
-
             </Link>
+
           </div>
         </div>
 
@@ -192,15 +204,16 @@ const UserDashboardLayout = () => {
                 <li key={item.id}>
                   <Link to={item.link}
                     onClick={handleLinkClick}
+
                     style={isActive
                       ? {
-                        backgroundColor: '#EFF6FF', // fallback for from-blue-50
-                        color: '#1D4ED8',           // fallback for text-blue-700
-                        borderColor: '#BFDBFE',     // fallback for border-blue-200
+                        backgroundColor: '#EFF6FF',
+                        color: '#1D4ED8',
+                        borderColor: '#BFDBFE',
                       }
                       : {
-                        color: '#4B5563',           // fallback for text-gray-600
-                        backgroundColor: '#F9FAFB', // fallback for hover base
+                        color: '#4B5563',
+                        backgroundColor: '#F9FAFB',
                         borderColor: 'transparent',
                       }
                     }
@@ -270,7 +283,7 @@ const UserDashboardLayout = () => {
                   navigate('/user/change-password');
                 }}
               >
-                <Key size={16} /> Change Password
+                <Key size={16} /> Change My Password
               </DropdownMenuItem>
               <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
 
@@ -299,6 +312,19 @@ const UserDashboardLayout = () => {
                     onClick={() => navigate('/admin/reviews')}
                   >
                     <Star size={16} /> Review Settings
+                  </DropdownMenuItem>
+                  <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
+                </>
+              )}
+              {/* ✅ Print Settings(visible header footer or not) */}
+              {user?.role === 'admin' && (
+                <>
+                  <DropdownMenuItem
+                    style={{ color: '#2563EB' }}
+                    className='cursor-pointer text-blue-600 hover:bg-gray-200'
+                    onClick={() => navigate('/admin/general-settings')}
+                  >
+                    <Settings2 size={16} /> General Settings
                   </DropdownMenuItem>
                   <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
                 </>

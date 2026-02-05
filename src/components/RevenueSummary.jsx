@@ -252,56 +252,86 @@ export default function RevenueSummary() {
 
             <div ref={summaryReportRef} className="px-4 pb-4">
               {/* Header */}
-              <div className="mb-3 mt-3">
+              <div className="mb-3 mt-2">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start">
-                    {info?.logoUrl && (
-                      <img
-                        src={info?.logoUrl}
-                        alt="Lab Logo"
-                        className="h-20 w-20 mr-4 object-contain"
-                        onError={(e) => e.target.style.display = 'none'}
-                      />
-                    )}
-                    <div className="text-left">
-                      {labID === "demo_lab_system" ? (
-                        <>
+                    {labID === "demo_lab_system" ? (
+                      <>
+                        {info?.logoUrl && (
+                          <img
+                            src={info?.logoUrl}
+                            alt="Lab Logo"
+                            className="h-20 w-20 mr-4 object-contain"
+                            onError={(e) => (e.target.style.display = "none")}
+                          />
+                        )}
+                        <div className="text-left">
                           <h1 className="text-2xl font-bold mb-0">LabSync Pro</h1>
                           <p className="text-sm mb-1 text-gray-500">v_1.0</p>
                           <p className="text-xs italic">Smart Lab Reporting System</p>
-                        </>
-                      ) : labID === "doctor_lab_sahiwal" ? (
-                        <>
+                        </div>
+                      </>
+                    ) : labID === "doctor_lab_sahiwal" ? (
+                      <>
+                        {info?.logoUrl && (
+                          <img
+                            src={info?.logoUrl}
+                            alt="Lab Logo"
+                            className="h-20 w-20 mr-4 object-contain"
+                            onError={(e) => (e.target.style.display = "none")}
+                          />
+                        )}
+                        <div className="text-left">
                           <h1 className="text-2xl font-bold mb-0">
-                            <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
-                            <span style={{ letterSpacing: '0.25em' }}>LAB</span>
+                            <span style={{ letterSpacing: "0.3em" }}>DOCTOR</span>{" "}
+                            <span style={{ letterSpacing: "0.25em" }}>LAB</span>
                           </h1>
                           <p className="text-sm mb-1">
-                            <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
-                            <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
+                            <span style={{ letterSpacing: "0.02em" }}>&</span>{" "}
+                            <span style={{ letterSpacing: "0.08em" }}>Imaging Center Sahiwal</span>
                           </p>
-                          <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
+                          <p className="text-xs italic" style={{ letterSpacing: "0.03em" }}>
                             Better Diagnosis - Better Treatment
                           </p>
-                        </>
-                      ) : labID === "fatima_medical_lab_bhera" ? (
-                        <>
+                        </div>
+                      </>
+                    ) : labID === "fatima_medical_lab_bhera" ? (
+                      <>
+                        {info?.headerUrl && (
+                          <img
+                            src={info?.headerUrl}
+                            alt="Lab Header"
+                            className="w-full"
+                            onError={(e) => (e.target.style.display = "none")}
+                          />
+                        )}
+                        {/* <div className="text-left">
                           <h1 className="text-2xl font-bold mb-0">
-                            <span style={{ letterSpacing: '0.1em' }}>FATIMA </span>{' '}
-                            <span style={{ letterSpacing: '0.1em' }}>MEDICAL LAB</span>
+                            <span style={{ letterSpacing: "0.1em" }}>FATIMA </span>{" "}
+                            <span style={{ letterSpacing: "0.1em" }}>MEDICAL LAB</span>
                           </h1>
                           <p className="text-xs italic">Fatima Medical Lab Bhera</p>
-                        </>
-                      ) : (
-                        <>
+                        </div> */}
+                      </>
+                    ) : (
+                      <>
+                        {info?.logoUrl && (
+                          <img
+                            src={info?.logoUrl}
+                            alt="Lab Logo"
+                            className="h-20 w-20 mr-4 object-contain"
+                            onError={(e) => (e.target.style.display = "none")}
+                          />
+                        )}
+                        <div className="text-left">
                           <h1 className="text-2xl font-bold mb-0">LabSync Pro</h1>
                           <p className="text-sm mb-1 text-gray-500">v_1.0</p>
                           <p className="text-xs italic">Smart Lab Reporting System</p>
-                        </>
-                      )}
-                    </div>
-
+                        </div>
+                      </>
+                    )}
                   </div>
+
                 </div>
               </div>
 
@@ -445,52 +475,84 @@ export default function RevenueSummary() {
               <div className="mb-3 mt-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start">
-                    {info?.logoUrl && (
-                      <img
-                        src={info?.logoUrl}
-                        alt="Lab Logo"
-                        className="h-20 w-20 mr-4 object-contain"
-                        onError={(e) => e.target.style.display = 'none'}
-                      />
-                    )}
-                    <div className="text-left">
-                      {labID === "demo_lab_system" ? (
-                        <>
+                    {labID === "demo_lab_system" ? (
+                      <>
+                        {info?.logoUrl && (
+                          <img
+                            src={info?.logoUrl}
+                            alt="Lab Logo"
+                            className="h-20 w-20 mr-4 object-contain"
+                            onError={(e) => (e.target.style.display = "none")}
+                          />
+                        )}
+                        <div className="text-left">
                           <h1 className="text-2xl font-bold mb-0">LabSync Pro</h1>
                           <p className="text-sm mb-1 text-gray-500">v_1.0</p>
                           <p className="text-xs italic">Smart Lab Reporting System</p>
-                        </>
-                      ) : labID === "doctor_lab_sahiwal" ? (
-                        <>
+                        </div>
+                      </>
+                    ) : labID === "doctor_lab_sahiwal" ? (
+                      <>
+                        {info?.logoUrl && (
+                          <img
+                            src={info?.logoUrl}
+                            alt="Lab Logo"
+                            className="h-20 w-20 mr-4 object-contain"
+                            onError={(e) => (e.target.style.display = "none")}
+                          />
+                        )}
+                        <div className="text-left">
                           <h1 className="text-2xl font-bold mb-0">
-                            <span style={{ letterSpacing: '0.3em' }}>DOCTOR</span>{' '}
-                            <span style={{ letterSpacing: '0.25em' }}>LAB</span>
+                            <span style={{ letterSpacing: "0.3em" }}>DOCTOR</span>{" "}
+                            <span style={{ letterSpacing: "0.25em" }}>LAB</span>
                           </h1>
                           <p className="text-sm mb-1">
-                            <span style={{ letterSpacing: '0.02em' }}>&</span>{' '}
-                            <span style={{ letterSpacing: '0.08em' }}>Imaging Center Sahiwal</span>
+                            <span style={{ letterSpacing: "0.02em" }}>&</span>{" "}
+                            <span style={{ letterSpacing: "0.08em" }}>Imaging Center Sahiwal</span>
                           </p>
-                          <p className="text-xs italic" style={{ letterSpacing: '0.03em' }}>
+                          <p className="text-xs italic" style={{ letterSpacing: "0.03em" }}>
                             Better Diagnosis - Better Treatment
                           </p>
-                        </>
-                      ) : labID === "fatima_medical_lab_bhera" ? (
-                        <>
+                        </div>
+                      </>
+                    ) : labID === "fatima_medical_lab_bhera" ? (
+                      <>
+                        {info?.headerUrl && (
+                          <img
+                            src={info?.headerUrl}
+                            alt="Lab Header"
+                            className="w-full"
+                            onError={(e) => (e.target.style.display = "none")}
+                          />
+                        )}
+
+                        <div className="text-left">
                           <h1 className="text-2xl font-bold mb-0">
-                            <span style={{ letterSpacing: '0.1em' }}>FATIMA </span>{' '}
-                            <span style={{ letterSpacing: '0.1em' }}>MEDICAL LAB</span>
+                            <span style={{ letterSpacing: "0.1em" }}>FATIMA </span>{" "}
+                            <span style={{ letterSpacing: "0.1em" }}>MEDICAL LAB</span>
                           </h1>
                           <p className="text-xs italic">Fatima Medical Lab Bhera</p>
-                        </>
-                      ) : (
-                        <>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {info?.logoUrl && (
+                          <img
+                            src={info?.logoUrl}
+                            alt="Lab Logo"
+                            className="h-20 w-20 mr-4 object-contain"
+                            onError={(e) => (e.target.style.display = "none")}
+                          />
+                        )}
+                        <div className="text-left">
                           <h1 className="text-2xl font-bold mb-0">LabSync Pro</h1>
                           <p className="text-sm mb-1 text-gray-500">v_1.0</p>
                           <p className="text-xs italic">Smart Lab Reporting System</p>
-                        </>
-                      )}
-                    </div>
+                        </div>
+                      </>
+                    )}
                   </div>
+
                 </div>
               </div>
 

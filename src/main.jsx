@@ -12,6 +12,7 @@ import { InventoryProvider } from './context/InventoryContext';
 import { ExpenseProvider } from './context/ExpenseContext';
 import { SystemFiltersProvider } from './context/SystemFiltersContext';
 import { DoctorsProvider } from './context/DoctorsContext';
+import { GeneralSettingsProvider } from './context/GeneralSettingsContext';
 
 
 createRoot(document.getElementById('root')).render(
@@ -25,7 +26,9 @@ createRoot(document.getElementById('root')).render(
                 <LabInfoProvider>
                   <PatientsProvider>
                     <TestProvider>
+                      <GeneralSettingsProvider>
                       <App />
+                      </GeneralSettingsProvider>
                     </TestProvider>
                   </PatientsProvider>
                 </LabInfoProvider>

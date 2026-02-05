@@ -14,7 +14,7 @@ import {
 import { AuthContext } from "@/context/AuthProvider"
 import { Separator } from "./ui/separator"
 
-import { LogOut, Settings, User, Key, History, Star } from "lucide-react"
+import { LogOut, Settings, User, Key, History, Star, Settings2 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 export function UserAvatar() {
@@ -54,7 +54,7 @@ export function UserAvatar() {
                     className=' cursor-pointer text-indigo-600 hover:bg-gray-200'
                     onClick={() => navigate('/user/change-password')}
                 >
-                    <Key size={16} /> Change Password
+                    <Key size={16} /> Change My Password
                 </DropdownMenuItem>
                 <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
 
@@ -82,6 +82,19 @@ export function UserAvatar() {
                             onClick={() => navigate('/admin/reviews')}
                         >
                             <Star size={16} /> Review Settings
+                        </DropdownMenuItem>
+                        <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
+                    </>
+                )}
+                {/* ✅ Print Settings(visible header footer or not) */}
+                {user?.role === 'admin' && (
+                    <>
+                        <DropdownMenuItem
+                            style={{ color: '#2563EB' }}
+                            className='cursor-pointer text-blue-600 hover:bg-gray-200'
+                            onClick={() => navigate('/admin/general-settings')}
+                        >
+                            <Settings2 size={16} /> General Settings
                         </DropdownMenuItem>
                         <Separator className='bg-gray-300 my-1' style={{ backgroundColor: '#D1D5DB' }} />
                     </>

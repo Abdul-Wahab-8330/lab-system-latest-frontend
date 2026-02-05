@@ -607,7 +607,7 @@ export default function InventoryManagement() {
                     </div>
                   </div>
 
-                  <Button style={{width:'100%',height:'2.5rem',backgroundColor:'#6b21a8',color:'#ffffff',borderRadius:'0.75rem',fontSize:'1rem',fontWeight:600,padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center'}}
+                  <Button style={{ width: '100%', height: '2.5rem', backgroundColor: '#6b21a8', color: '#ffffff', borderRadius: '0.75rem', fontSize: '1rem', fontWeight: 600, padding: '0 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     onClick={generateReport}
                     className="w-full h-10 bg-purple-700 hover:from-purple-800  text-white font-semibold rounded-xl border text-lg"
                   >
@@ -823,16 +823,47 @@ export default function InventoryManagement() {
               </div>
             </DialogHeader>
 
-            <div ref={reportRef} className="p-8">
+            <div ref={reportRef} className="px-8 pb-8">
               {/* Report Header */}
               <div className="text-center mb-6 pb-4 border-b-2">
-                <div className="flex items-center justify-center mb-3">
-                  <img src={info.logoUrl} alt="Lab Logo" className="h-12 w-12 mr-3" onError={(e) => e.target.style.display = 'none'} />
-                  <div>
-                    <h1 className="text-2xl font-bold text-gray-900">{info.labName || 'Medical Laboratory'}</h1>
-                    <p className="text-sm text-gray-600">Inventory Management Report</p>
+                {info?.labID === "demo_lab_system" ? (
+                  <div className="flex items-center justify-center mb-3">
+                    <img src={info?.logoUrl} alt="Lab Logo" className="h-12 w-12 mr-3" onError={(e) => e.target.style.display = 'none'} />
+                    <div>
+                      <h1 className="text-2xl font-bold text-gray-900">{info?.labName || 'Medical Laboratory'}</h1>
+                      <p className="text-sm text-gray-600">Inventory Management Report</p>
+                    </div>
                   </div>
-                </div>
+
+                ) : info?.labID === "doctor_lab_sahiwal" ? (
+                  <div className="flex items-center justify-center mb-3">
+                    <img src={info?.logoUrl} alt="Lab Logo" className="h-12 w-12 mr-3" onError={(e) => e.target.style.display = 'none'} />
+                    <div>
+                      <h1 className="text-2xl font-bold text-gray-900">{info?.labName || 'Medical Laboratory'}</h1>
+                      <p className="text-sm text-gray-600">Inventory Management Report</p>
+                    </div>
+                  </div>
+
+                ) : info?.labID === "fatima_medical_lab_bhera" ? (
+                  <div className="flex items-center justify-center mb-3">
+                    <img src={info?.headerUrl} alt="Lab Header" className="w-full" onError={(e) => e.target.style.display = 'none'} />
+                    {/* <div>
+                      <h1 className="text-2xl font-bold text-gray-900">{info?.labName || 'Medical Laboratory'}</h1>
+                      <p className="text-sm text-gray-600">Inventory Management Report</p>
+                    </div> */}
+                  </div>
+
+                ) : (
+                  <div className="flex items-center justify-center mb-3">
+                    <img src={info?.logoUrl} alt="Lab Logo" className="h-12 w-12 mr-3" onError={(e) => e.target.style.display = 'none'} />
+                    <div>
+                      <h1 className="text-2xl font-bold text-gray-900">{info?.labName || 'Medical Laboratory'}</h1>
+                      <p className="text-sm text-gray-600">Inventory Management Report</p>
+                    </div>
+                  </div>
+                )}
+
+
                 <div className="text-xs text-gray-500 mt-2">
                   Period: {new Date(reportDates.startDate).toLocaleDateString()} - {new Date(reportDates.endDate).toLocaleDateString()} |
                   Generated: {new Date().toLocaleString()}

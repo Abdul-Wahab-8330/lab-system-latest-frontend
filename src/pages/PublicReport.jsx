@@ -920,7 +920,7 @@ export default function PublicReport() {
                           HEADER (Repeats Automatically)
                       ======================================== */}
                       <thead className="print-header">
-                        
+
                         <tr>
                           <td>
                             {labInfo?.labID === "fatima_medical_lab_bhera" ? (
@@ -937,8 +937,19 @@ export default function PublicReport() {
                                   )}
                                 </div>
                                 {/* Patient No and Case No with Barcodes */}
-                                <div className="flex justify-between items-center border-b-1 border-gray-800 mx-[24px] pt-11 pb-0.5 mb-0.5">
+                                <div className="flex justify-between items-center  mx-[24px] pt-1 mb-0.5">
+                                  <div className="flex flex-col items-center pb-1">
+                                    <div className="text-xs font-semibold">Track Online:</div>
+                                    <div className="text-center">
+                                      <QRCodeSVG
+                                        value={`${window.location.origin}/public-report`}
+                                        size={40}
+                                        level="M"
+                                      />
+                                    </div>
+                                    {/* <a href={`${window.location.origin}/public-report`} className="text-[7px] italic text-gray-700 font-semibold">{`${window.location.origin}/public-report`}</a> */}
 
+                                  </div>
                                   {/* Patient No */}
                                   <div className="flex items-center gap-2">
                                     <span className="text-xs font-bold">Patient #:</span>
@@ -1443,7 +1454,7 @@ export default function PublicReport() {
                                                       key={testIndex}
                                                       className="test-block"
                                                       style={{
-                                                          pageBreakInside: "avoid",
+                                                        pageBreakInside: "avoid",
                                                         breakInside: "avoid"
                                                       }}
                                                     >

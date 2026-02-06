@@ -7,7 +7,9 @@ export const GeneralSettingsContext = createContext();
 export function GeneralSettingsProvider({ children }) {
   const [settings, setSettings] = useState({
     printShowHeader: true,
-    printShowFooter: true
+    printShowFooter: true,
+    headerTopMargin: 0,
+    tableWidthMode: 'smart'
   });
   const [loading, setLoading] = useState(false);
   const { isAuthenticated } = useContext(AuthContext);

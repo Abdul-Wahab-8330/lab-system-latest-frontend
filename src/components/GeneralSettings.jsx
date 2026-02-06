@@ -6,6 +6,7 @@ import { Printer, Save, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { GeneralSettingsContext } from '@/context/GeneralSettingsContext';
 import { AuthContext } from '@/context/AuthProvider';
+import { Input } from "@/components/ui/input";
 
 export default function PrintSettings() {
   const { user } = useContext(AuthContext);
@@ -13,7 +14,9 @@ export default function PrintSettings() {
 
   const [localSettings, setLocalSettings] = useState({
     printShowHeader: settings.printShowHeader,
-    printShowFooter: settings.printShowFooter
+    printShowFooter: settings.printShowFooter,
+    headerTopMargin: settings.headerTopMargin || 0,
+    tableWidthMode: settings.tableWidthMode || 'smart'
   });
   const [saving, setSaving] = useState(false);
 
@@ -21,7 +24,9 @@ export default function PrintSettings() {
   React.useEffect(() => {
     setLocalSettings({
       printShowHeader: settings.printShowHeader,
-      printShowFooter: settings.printShowFooter
+      printShowFooter: settings.printShowFooter,
+      headerTopMargin: settings.headerTopMargin || 0,
+      tableWidthMode: settings.tableWidthMode || 'smart'
     });
   }, [settings]);
 
@@ -32,9 +37,22 @@ export default function PrintSettings() {
     }));
   };
 
+  // ✅ NEW: Handle margin change
+  const handleMarginChange = (value) => {
+    const numValue = parseInt(value) || 0;
+    if (numValue >= 0 && numValue <= 100) {
+      setLocalSettings(prev => ({
+        ...prev,
+        headerTopMargin: numValue
+      }));
+    }
+  };
+
   const hasChanges = () => {
     return localSettings.printShowHeader !== settings.printShowHeader ||
-           localSettings.printShowFooter !== settings.printShowFooter;
+      localSettings.printShowFooter !== settings.printShowFooter ||
+      localSettings.headerTopMargin !== settings.headerTopMargin ||
+      localSettings.tableWidthMode !== settings.tableWidthMode;
   };
 
   const handleSave = async () => {
@@ -57,9 +75,9 @@ export default function PrintSettings() {
       borderRadius: '16px',
       border: 'none',
       marginLeft: '10px',
-        marginRight: '10px',
-        marginTop: '10px',
-        marginBottom: '10px'
+      marginRight: '10px',
+      marginTop: '10px',
+      marginBottom: '10px'
     }}>
       <CardHeader style={{
         background: 'linear-gradient(to right, #8B5CF6, #7C3AED)',
@@ -125,14 +143,12 @@ export default function PrintSettings() {
               <button
                 type="button"
                 onClick={() => handleToggle('printShowHeader')}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  localSettings.printShowHeader ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${localSettings.printShowHeader ? 'bg-blue-600' : 'bg-gray-300'
+                  }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    localSettings.printShowHeader ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${localSettings.printShowHeader ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                 />
               </button>
             </div>
@@ -164,16 +180,227 @@ export default function PrintSettings() {
               <button
                 type="button"
                 onClick={() => handleToggle('printShowFooter')}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  localSettings.printShowFooter ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${localSettings.printShowFooter ? 'bg-blue-600' : 'bg-gray-300'
+                  }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    localSettings.printShowFooter ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${localSettings.printShowFooter ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                 />
               </button>
+            </div>
+
+            {/* ✅ NEW: Header Top Margin */}
+            <div style={{
+              padding: '16px',
+              borderRadius: '12px',
+              border: '2px solid #E5E7EB',
+              backgroundColor: '#FFFFFF'
+            }}>
+              <Label style={{
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                color: '#374151',
+                display: 'block',
+                marginBottom: '8px'
+              }}>
+                Header Top Margin (mm)
+              </Label>
+              <p style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '12px' }}>
+                Adjust the top page margin for reports (0-100mm). Use this when hiding header but need spacing.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {/* Value Display */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <span style={{
+                    fontSize: '1.25rem',
+                    fontWeight: '700',
+                    color: '#8B5CF6'
+                  }}>
+                    {localSettings.headerTopMargin} mm
+                  </span>
+                  <span style={{ fontSize: '0.75rem', color: '#6B7280' }}>
+                    {localSettings.headerTopMargin === 0 ? 'No margin' : `${localSettings.headerTopMargin}% of max`}
+                  </span>
+                </div>
+
+                {/* Slider */}
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={localSettings.headerTopMargin}
+                  onChange={(e) => handleMarginChange(e.target.value)}
+                  style={{
+                    width: '100%',
+                    height: '8px',
+                    borderRadius: '4px',
+                    outline: 'none',
+                    background: `linear-gradient(to right, #8B5CF6 0%, #8B5CF6 ${localSettings.headerTopMargin}%, #E5E7EB ${localSettings.headerTopMargin}%, #E5E7EB 100%)`,
+                    WebkitAppearance: 'none',
+                    cursor: 'pointer'
+                  }}
+                  className="custom-slider"
+                />
+
+                {/* Tick marks */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '0.625rem',
+                  color: '#9CA3AF',
+                  marginTop: '-4px'
+                }}>
+                  <span>0</span>
+                  <span>25</span>
+                  <span>50</span>
+                  <span>75</span>
+                  <span>100</span>
+                </div>
+              </div>
+
+              <style>{`
+  .custom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #8B5CF6;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.2s;
+  }
+
+  .custom-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(139, 92, 246, 0.4);
+  }
+
+  .custom-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #8B5CF6;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.2s;
+  }
+
+  .custom-slider::-moz-range-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(139, 92, 246, 0.4);
+  }
+`}</style>
+            </div>
+
+            {/* ✅ NEW: Table Width Mode */}
+            <div style={{
+              padding: '16px',
+              borderRadius: '12px',
+              border: '2px solid #E5E7EB',
+              backgroundColor: '#FFFFFF'
+            }}>
+              <Label style={{
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                color: '#374151',
+                display: 'block',
+                marginBottom: '8px'
+              }}>
+                Table Width Mode
+              </Label>
+              <p style={{ fontSize: '0.75rem', color: '#6B7280', marginBottom: '12px' }}>
+                Choose how test result tables are displayed on reports
+              </p>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                {/* Smart Mode Button */}
+                <button
+                  type="button"
+                  onClick={() => setLocalSettings(prev => ({ ...prev, tableWidthMode: 'smart' }))}
+                  style={{
+                    flex: 1,
+                    padding: '16px',
+                    borderRadius: '12px',
+                    border: localSettings.tableWidthMode === 'smart' ? '2px solid #8B5CF6' : '2px solid #E5E7EB',
+                    backgroundColor: localSettings.tableWidthMode === 'smart' ? '#F3E8FF' : '#FFFFFF',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    textAlign: 'left'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      border: localSettings.tableWidthMode === 'smart' ? '6px solid #8B5CF6' : '2px solid #D1D5DB',
+                      transition: 'all 0.2s'
+                    }} />
+                    <span style={{
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      color: localSettings.tableWidthMode === 'smart' ? '#7C3AED' : '#374151'
+                    }}>
+                      Smart Width (83%)
+                    </span>
+                  </div>
+                  <p style={{
+                    fontSize: '0.75rem',
+                    color: '#6B7280',
+                    marginLeft: '28px'
+                  }}>
+                    Optimized spacing for single results
+                  </p>
+                </button>
+
+                {/* Full Mode Button */}
+                <button
+                  type="button"
+                  onClick={() => setLocalSettings(prev => ({ ...prev, tableWidthMode: 'full' }))}
+                  style={{
+                    flex: 1,
+                    padding: '16px',
+                    borderRadius: '12px',
+                    border: localSettings.tableWidthMode === 'full' ? '2px solid #8B5CF6' : '2px solid #E5E7EB',
+                    backgroundColor: localSettings.tableWidthMode === 'full' ? '#F3E8FF' : '#FFFFFF',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    textAlign: 'left'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      border: localSettings.tableWidthMode === 'full' ? '6px solid #8B5CF6' : '2px solid #D1D5DB',
+                      transition: 'all 0.2s'
+                    }} />
+                    <span style={{
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      color: localSettings.tableWidthMode === 'full' ? '#7C3AED' : '#374151'
+                    }}>
+                      Full Width (100%)
+                    </span>
+                  </div>
+                  <p style={{
+                    fontSize: '0.75rem',
+                    color: '#6B7280',
+                    marginLeft: '28px'
+                  }}>
+                    Maximum width, matches history mode
+                  </p>
+                </button>
+              </div>
             </div>
 
             {/* Save Button */}

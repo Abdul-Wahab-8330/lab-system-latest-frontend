@@ -1324,7 +1324,10 @@ Click the link above to view and download your complete test results anytime.
 @media print {
   @page {
     size: A4 portrait;
-    margin: 0mm 0mm;
+   margin-top: ${generalSettings.headerTopMargin || 0}mm;
+    margin-bottom: 0mm;
+    margin-left: 0mm;
+    margin-right: 0mm;
   }
 
   html, body {
@@ -1426,7 +1429,7 @@ Click the link above to view and download your complete test results anytime.
                                                 <>
                                                     {/* Full width header image */}
                                                     <div style={{
-                                                        visibility: generalSettings.printShowHeader ? 'visible' : 'hidden'
+                                                        display: generalSettings.printShowHeader ? 'block' : 'none'
                                                     }}>
                                                         {labInfo?.headerUrl && (
                                                             <img
@@ -1438,12 +1441,40 @@ Click the link above to view and download your complete test results anytime.
                                                         )}
                                                     </div>
                                                     {/* Patient No and Case No with Barcodes */}
-                                                    <div className="flex justify-between items-center border-b-1 border-gray-800 mx-[24px] pt-11 pb-0.5 mb-0.5">
-
+                                                    <div className="flex justify-between items-center  mx-[24px] pt-1">
+                                                        {/* QR  */}
+                                                        {generalSettings?.printShowHeader ? (
+                                                            // VERSION 1: Header VISIBLE - Compact QR only
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="text-xs font-semibold">Track Online:</div>
+                                                                <div className="text-center">
+                                                                    <QRCodeSVG
+                                                                        value={`${window.location.origin}/public-report`}
+                                                                        size={45}
+                                                                        level="M"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            // VERSION 2: Header HIDDEN - Full QR with text & link
+                                                            <div className="flex flex-col items-center gap-1 pb-1">
+                                                                <div className="text-sm font-semibold">Track Online:</div>
+                                                                <div className="text-center">
+                                                                    <QRCodeSVG
+                                                                        value={`${window.location.origin}/public-report`}
+                                                                        size={59}
+                                                                        level="M"
+                                                                    />
+                                                                </div>
+                                                                <a href={`${window.location.origin}/public-report`} className="text-[7px] italic text-gray-700 font-semibold">
+                                                                    {`${window.location.origin}/public-report`}
+                                                                </a>
+                                                            </div>
+                                                        )}
                                                         {/* Patient No */}
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-xs font-bold">Patient #:</span>
-                                                            <div className="text-center flex gap-1 items-center">
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <span className="text-xs font-semibold">Patient #:</span>
+                                                            <div className="text-center ">
                                                                 <svg
                                                                     ref={(el) => {
                                                                         if (el && printPatient?.refNo) {
@@ -1462,9 +1493,9 @@ Click the link above to view and download your complete test results anytime.
                                                         </div>
 
                                                         {/* Case No */}
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-xs font-bold">Case #:</span>
-                                                            <div className="text-center flex gap-1 items-center">
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <span className="text-xs font-semibold">Case #:</span>
+                                                            <div className="text-center ">
                                                                 <svg
                                                                     ref={(el) => {
                                                                         if (el && printPatient?.caseNo) {
@@ -1481,18 +1512,7 @@ Click the link above to view and download your complete test results anytime.
                                                                 <p className="text-xs mt-0.5">{printPatient?.caseNo}</p>
                                                             </div>
                                                         </div>
-                                                        {/* QR  */}
-                                                        {/* <div className="flex items-center gap-2 pb-1 ">
-                                                            <span className="text-xs font-bold">View Online:</span>
-                                                            <div className="text-center">
-                                                                <QRCodeSVG
-                                                                    value={`${window.location.origin}/public-report`}
-                                                                    size={40}
-                                                                    level="M"
-                                                                />
-                                                            </div>
 
-                                                        </div> */}
 
 
                                                     </div>
@@ -1591,7 +1611,7 @@ Click the link above to view and download your complete test results anytime.
 
 
                                             {/* Patient Info Box */}
-                                            <div className="border-b border-gray-800 pb-1 mx-[22px] bg-white">
+                                            <div className="border-b border-gray-800 pb-2 pt-1 mx-[22px] bg-white">
                                                 <table className="w-full text-xs">
                                                     <tbody>
                                                         <tr>
@@ -1900,7 +1920,7 @@ Click the link above to view and download your complete test results anytime.
                                                                                 <table
                                                                                     className="text-xs border-collapse mb-2"
                                                                                     style={{
-                                                                                        width: allHistoryColumns.length > 0 ? "100%" : "83%"
+                                                                                        width: allHistoryColumns.length > 0 ? "100%" : generalSettings.tableWidthMode === 'full' ? "100%" : "83%"
                                                                                     }}
                                                                                 >
                                                                                     <thead>

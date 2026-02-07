@@ -7,7 +7,8 @@
     "frontend": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tree": "npx tree-node-cli -I 'node_modules'"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -32,6 +33,7 @@
     "jsbarcode": "^3.12.1",
     "lucide-react": "^0.536.0",
     "qrcode.react": "^4.2.0",
+    "radix-ui": "^1.4.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hot-toast": "^2.5.2",

@@ -42,6 +42,7 @@ import HistoryResultsSettings from "./components/HistoryResultsSettings";
 import AdminReviewManagement from "./components/AdminReviewManagement";
 import DoctorShare from "./components/DoctorShare";
 import GeneralSettings from "./components/GeneralSettings";
+import PermissionsManagement from "./components/PermissionsManagement";
 
 
 
@@ -94,6 +95,9 @@ function App() {
           <Route path="patient-analytics" element={<PatientCharts />} />
           <Route path="reviews" element={<AdminReviewManagement />} />
           <Route path="doctor-share" element={<DoctorShare />} />
+
+
+          <Route path="manage-permissions/:userId" element={<PermissionsManagement />} />
 
           {/* General Settings */}
           <Route path="general-settings" element={<GeneralSettings />} />

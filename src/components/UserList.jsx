@@ -12,6 +12,8 @@ import { SUPER_ADMIN_USERNAME } from '@/config/constants';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+import { useNavigate } from 'react-router-dom';
+
 import axios from '../api/axiosInstance';
 
 import { getPasswordStrength } from '@/utils/passwordStrength';
@@ -34,6 +36,8 @@ const UserList = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [passwordCopied, setPasswordCopied] = useState(false);
+
+  const navigate = useNavigate();
 
   // Filter out super admin for non-super admin users
   const filteredUsers = user?.userName === SUPER_ADMIN_USERNAME
@@ -317,6 +321,30 @@ const UserList = () => {
                               </div>
                             ) : (
                               <div className="flex items-center justify-end gap-2">
+                                {/* ✅ NEW: Manage Permissions Button - Only for Admin role */}
+                                {user?.role === 'admin' && (
+                                  <Button
+                                    style={{
+                                      backgroundColor: '#ffffff',
+                                      color: '#10b981',
+                                      border: '1px solid #10b981',
+                                      borderRadius: '0.75rem',
+                                      fontSize: '0.875rem',
+                                      fontWeight: 500,
+                                      padding: '0.25rem 0.5rem',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center'
+                                    }}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-green-600 hover:bg-green-50 hover:text-green-700 rounded-xl transition-all duration-200 border border-transparent hover:border-green-200"
+                                    onClick={() => navigate(`/admin/manage-permissions/${u._id}`)}
+                                  >
+                                    <Shield className="h-4 w-4 mr-2" />
+                                    Permissions
+                                  </Button>
+                                )}
                                 {/* ✅ Reset Password Button - Only for Admin role */}
                                 {user?.role === 'admin' && (
                                   <Button style={{ backgroundColor: '#ffffff', color: '#4f46e5', border: '1px solid blue', borderRadius: '0.75rem', fontSize: '0.875rem', fontWeight: 500, padding: '0.25rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}

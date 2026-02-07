@@ -9,7 +9,8 @@ export function GeneralSettingsProvider({ children }) {
     printShowHeader: true,
     printShowFooter: true,
     headerTopMargin: 0,
-    tableWidthMode: 'smart'
+    tableWidthMode: 'smart',
+    enableGroupedMenu: false  // ← ADD THIS
   });
   const [loading, setLoading] = useState(false);
   const { isAuthenticated } = useContext(AuthContext);

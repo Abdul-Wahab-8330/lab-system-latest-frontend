@@ -60,6 +60,9 @@ import { AuthContext } from '@/context/AuthProvider';
 import { LabInfoContext } from '@/context/LabnfoContext';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { Separator } from './ui/separator';
+import { GeneralSettingsContext } from '@/context/GeneralSettingsContext';
+import { getUserPermissions, ALL_PERMISSIONS, CATEGORIES } from '@/utils/permissions';
+import axiosInstance from '@/api/axiosInstance';
 
 const UserDashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
@@ -70,20 +73,97 @@ const UserDashboardLayout = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation(); // Get current route
   const navigate = useNavigate();
+  const { settings } = useContext(GeneralSettingsContext);
+  const [userPermissions, setUserPermissions] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
 
   const getActiveTabFromRoute = (pathname) => {
-    const allMenuItems = getMenuForRole(user?.role);
-    const currentItem = allMenuItems.find(item => item.link === pathname);
+    const currentItem = menuItems.find(item => {
+      if (item.type === 'header') return false;
+      // Match exact path or check if current path starts with the menu item link
+      return item.link === pathname || pathname.startsWith(item.link);
+    });
     return currentItem ? currentItem.id : 'dashboard';
   };
+
   const labID = info?.labID;
+
+
+  // ============================================
+  // Build Grouped Menu (Most Used + Categories)
+  // ============================================
+  const buildGroupedMenu = (permissions) => {
+    const mostUsed = permissions.filter(p => p.mostUsed);
+    const others = permissions.filter(p => !p.mostUsed);
+
+    // Group others by category
+    const grouped = others.reduce((acc, perm) => {
+      if (!acc[perm.category]) acc[perm.category] = [];
+      acc[perm.category].push(perm);
+      return acc;
+    }, {});
+
+    const result = [];
+
+    // Add Most Used section
+    if (mostUsed.length > 0) {
+      result.push({ type: 'header', label: '⇒ Most Used' });
+      result.push(...mostUsed);
+    }
+
+    // Add category sections
+    Object.entries(grouped).forEach(([category, items]) => {
+      if (items.length > 0) {
+        result.push({ type: 'header', label: CATEGORIES[category] || category });
+        result.push(...items);
+      }
+    });
+
+    return result;
+  };
 
 
   // Update active tab when route changes (including on refresh)
   useEffect(() => {
-    const currentActiveTab = getActiveTabFromRoute(location.pathname);
-    setActiveTab(currentActiveTab);
-  }, [location.pathname, user?.role]);
+    if (menuItems.length > 0) {
+      const currentActiveTab = getActiveTabFromRoute(location.pathname);
+      setActiveTab(currentActiveTab);
+    }
+  }, [location.pathname, menuItems]);
+
+  // ============================================
+  // Fetch User's Permissions from Database
+  // ============================================
+  useEffect(() => {
+    const fetchUserPermissions = async () => {
+      try {
+        console.log('🔧 Settings object:', settings);
+        console.log('📂 enableGroupedMenu value:', settings?.enableGroupedMenu);
+        const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/api/users/all`);
+        const currentUser = response.data.users.find(u => u._id === user.id);
+
+        if (currentUser && currentUser.permissions) {
+          const userPerms = getUserPermissions(currentUser.permissions);
+          setUserPermissions(userPerms);
+
+          // Build menu based on toggle
+          if (settings?.enableGroupedMenu) {
+            setMenuItems(buildGroupedMenu(userPerms));
+          } else {
+            setMenuItems(userPerms);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user permissions:', error);
+        // Fallback to role-based menu
+        setMenuItems(getMenuForRole(user?.role));
+      }
+    };
+
+    if (user?.id) {
+      fetchUserPermissions();
+    }
+  }, [user?.id, settings?.enableGroupedMenu, location.pathname]);
 
   // Handle screen resize
   useEffect(() => {
@@ -97,10 +177,12 @@ const UserDashboardLayout = () => {
 
     // Add event listener
     window.addEventListener('resize', handleResize);
-
     // Cleanup
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+
+
 
   const getInitials = (fullName) => {
     const parts = fullName.trim().split(" ");
@@ -109,8 +191,7 @@ const UserDashboardLayout = () => {
   };
 
   const getPageTitle = () => {
-    const allMenuItems = getMenuForRole(user?.role);
-    const currentItem = allMenuItems.find(item => item.id === activeTab);
+    const currentItem = menuItems.find(item => item.type !== 'header' && item.id === activeTab);
     return currentItem ? currentItem.label : 'Dashboard';
   };
 
@@ -197,7 +278,19 @@ const UserDashboardLayout = () => {
         {/* Navigation */}
         <nav className="flex-1 p-4 mb-1">
           <ul className="space-y-2">
-            {getMenuForRole(user?.role).map((item) => {
+            {menuItems.map((item, index) => {
+              // Render section header
+              if (item.type === 'header') {
+                return (
+                  <li key={`header-${index}`} className="pt-3 pb-2">
+                    <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider  ">
+                      {item.label}
+                    </h3>
+                  </li>
+                );
+              }
+
+              // Render menu item
               const IconComponent = item.icon;
               const isActive = activeTab === item.id;
               return (

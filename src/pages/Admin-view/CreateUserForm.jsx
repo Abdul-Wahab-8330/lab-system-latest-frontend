@@ -1,5 +1,8 @@
 import { useContext, useState, useEffect } from "react";
 import { ROLES, getRoleDisplayName } from '@/utils/permissions';
+import { getDefaultPermissionsForRole } from '@/utils/permissions';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Info } from 'lucide-react';
 import axios from "../../api/axiosInstance";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -182,65 +185,94 @@ function CreateUserForm() {
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="role" className="text-sm font-semibold text-gray-700">
-                    Role
-                  </Label>
-                  <Select value={role} onValueChange={(value) => setRole(value)}>
-                    <SelectTrigger id="role" className="h-12 w-full border-2 border-gray-200 focus:border-purple-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent className='bg-white border-0 shadow-xl rounded-xl'>
-                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.ADMIN}>
-                        <div className="flex items-center">
-                          <Shield className="h-4 w-4 mr-2 text-purple-500" />
-                          {getRoleDisplayName(ROLES.ADMIN)}
-                        </div>
-                      </SelectItem>
-                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.SENIOR_RECEPTIONIST}>
-                        <div className="flex items-center">
-                          <User className="h-4 w-4 mr-2 text-blue-500" />
-                          {getRoleDisplayName(ROLES.SENIOR_RECEPTIONIST)}
-                        </div>
-                      </SelectItem>
-                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.JUNIOR_RECEPTIONIST}>
-                        <div className="flex items-center">
-                          <User className="h-4 w-4 mr-2 text-cyan-500" />
-                          {getRoleDisplayName(ROLES.JUNIOR_RECEPTIONIST)}
-                        </div>
-                      </SelectItem>
-                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.SENIOR_LAB_TECH}>
-                        <div className="flex items-center">
-                          <User className="h-4 w-4 mr-2 text-green-500" />
-                          {getRoleDisplayName(ROLES.SENIOR_LAB_TECH)}
-                        </div>
-                      </SelectItem>
-                      <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.JUNIOR_LAB_TECH}>
-                        <div className="flex items-center">
-                          <User className="h-4 w-4 mr-2 text-indigo-500" />
-                          {getRoleDisplayName(ROLES.JUNIOR_LAB_TECH)}
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <div className=" items-center justify-between">
+                    <Label htmlFor="role" className="text-sm font-semibold text-gray-700 mb-2 ">
+                      Role
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-2xl transition-colors border border-purple-200"
+                          >
+                            <Info className="h-3.5 w-3.5" />
+                            View Permissions
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 p-4 bg-white border-2 border-purple-200 shadow-xl rounded-xl">
+                          <div className="space-y-3">
+                            <h4 className="font-semibold text-gray-900 text-sm">
+                              {getRoleDisplayName(role)} Permissions
+                            </h4>
+                            <div className="max-h-60 overflow-y-auto">
+                              {getDefaultPermissionsForRole(role).map(perm => (
+                                <div key={perm.id} className="flex items-center gap-2 text-xs text-gray-600 py-1">
+                                  <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                                  {perm.label}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </Label>
 
-                <Button style={{width:'100%',height:'3rem',backgroundColor:'#7c3aed',color:'#ffffff',borderRadius:'0.75rem',fontWeight:600,fontSize:'0.875rem',padding:'0 0.5rem',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 10px 15px rgba(0,0,0,0.1)'}}
-                  type="submit"
-                  disabled={loading}
-                  className="w-full h-12 bg-indigo-600 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="h-5 w-5 mr-2" />
-                      Create User
-                    </>
-                  )}
-                </Button>
+                    <Select value={role} onValueChange={(value) => setRole(value)}>
+                      <SelectTrigger id="role" className="h-12 w-full border-2 border-gray-200 focus:border-purple-500 rounded-xl shadow-sm transition-all duration-200 bg-white/70">
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                      <SelectContent className='bg-white border-0 shadow-xl rounded-xl'>
+                        <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.ADMIN}>
+                          <div className="flex items-center">
+                            <Shield className="h-4 w-4 mr-2 text-purple-500" />
+                            {getRoleDisplayName(ROLES.ADMIN)}
+                          </div>
+                        </SelectItem>
+                        <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.SENIOR_RECEPTIONIST}>
+                          <div className="flex items-center">
+                            <User className="h-4 w-4 mr-2 text-blue-500" />
+                            {getRoleDisplayName(ROLES.SENIOR_RECEPTIONIST)}
+                          </div>
+                        </SelectItem>
+                        <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.JUNIOR_RECEPTIONIST}>
+                          <div className="flex items-center">
+                            <User className="h-4 w-4 mr-2 text-cyan-500" />
+                            {getRoleDisplayName(ROLES.JUNIOR_RECEPTIONIST)}
+                          </div>
+                        </SelectItem>
+                        <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.SENIOR_LAB_TECH}>
+                          <div className="flex items-center">
+                            <User className="h-4 w-4 mr-2 text-green-500" />
+                            {getRoleDisplayName(ROLES.SENIOR_LAB_TECH)}
+                          </div>
+                        </SelectItem>
+                        <SelectItem className='hover:bg-purple-50 rounded-lg m-1' value={ROLES.JUNIOR_LAB_TECH}>
+                          <div className="flex items-center">
+                            <User className="h-4 w-4 mr-2 text-indigo-500" />
+                            {getRoleDisplayName(ROLES.JUNIOR_LAB_TECH)}
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button style={{ width: '100%', height: '3rem', backgroundColor: '#7c3aed', color: '#ffffff', borderRadius: '0.75rem', fontWeight: 600, fontSize: '0.875rem', padding: '0 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 15px rgba(0,0,0,0.1)' }}
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 bg-indigo-600 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="h-5 w-5 mr-2" />
+                        Create User
+                      </>
+                    )}
+                  </Button>
+                </div>
               </form>
             </CardContent>
           </Card>

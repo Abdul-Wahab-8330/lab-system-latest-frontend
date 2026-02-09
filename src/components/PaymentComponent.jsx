@@ -1,6 +1,7 @@
 
 import { useState, useMemo, useContext, useEffect } from "react";
 import { PatientsContext } from "@/context/PatientsContext";
+import PaymentMethodDialog from './PaymentMethodDialog';
 import { AuthContext } from "@/context/AuthProvider";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,7 +30,8 @@ import {
     Clock,
     FileText,
     Phone,
-    Percent
+    Percent,
+    Banknote
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -49,6 +51,11 @@ export default function PaymentComponent() {
     const [testSearch, setTestSearch] = useState("");
     const [dateSearch, setDateSearch] = useState("");
     const [paymentFilter, setPaymentFilter] = useState("All");
+
+    // ========== PAYMENT METHOD DIALOG STATE ==========
+    const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+    const [selectedPatient, setSelectedPatient] = useState(null);
+    // =================================================
 
 
     useEffect(() => {
@@ -106,6 +113,66 @@ export default function PaymentComponent() {
             toast.error("Error updating payment status");
         }
     };
+
+
+    // ========== MARK REMAINING AS CASH (Quick Action) ==========
+    const handleMarkRemainingAsCash = async (patient) => {
+        try {
+            const remainingDue = patient.dueAmount;
+
+            // Calculate new totals
+            const newPaidAmount = patient.paidAmount + remainingDue;
+            const newCashAmount = patient.cashAmount + remainingDue; // ADD to existing cash
+            const newBankAmount = patient.bankAmount; // Keep bank amount same
+
+            const res = await axios.patch(
+                `${import.meta.env.VITE_API_URL}/api/patients/${patient._id}/payment`,
+                {
+                    paymentStatus: "Paid",
+                    paymentStatusUpdatedBy: user.name,
+                    paidAmount: newPaidAmount,
+                    dueAmount: 0,
+                    cashAmount: newCashAmount,
+                    bankAmount: newBankAmount
+                }
+            );
+
+            if (res.status === 200) {
+                toast.success(`Rs.${remainingDue} marked as cash payment`);
+                fetchPatients();
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Error updating payment");
+        }
+    };
+
+    // ========== ADD PAYMENT (Detailed with Cash/Bank/Split) ==========
+    const handleAddPayment = async (patient, paymentData) => {
+        try {
+            const res = await axios.patch(
+                `${import.meta.env.VITE_API_URL}/api/patients/${patient._id}/payment`,
+                {
+                    paymentStatus: paymentData.paymentStatus,
+                    paymentStatusUpdatedBy: user.name,
+                    paidAmount: paymentData.paidAmount,
+                    dueAmount: paymentData.dueAmount,
+                    cashAmount: paymentData.cashAmount,
+                    bankAmount: paymentData.bankAmount
+                }
+            );
+
+            if (res.status === 200) {
+                toast.success('Payment recorded successfully!');
+                fetchPatients();
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Error recording payment");
+        }
+    };
+    // ============================================================
+
 
     // Calculate payment statistics
     const paymentStats = useMemo(() => {
@@ -346,6 +413,7 @@ export default function PaymentComponent() {
                                                         </TableCell>
 
                                                         {/* Payment Status Column */}
+                                                        {/* Payment Status Column */}
                                                         <TableCell>
                                                             <Badge
                                                                 className={`${patient?.paymentStatus?.toLowerCase() === "not paid"
@@ -366,6 +434,17 @@ export default function PaymentComponent() {
                                                                 <DollarSign className="h-3 w-3 mr-1" />
                                                                 {patient.paymentStatus}
                                                             </Badge>
+
+                                                            {/* Minimal Cash/Bank Display - Only if payment exists */}
+                                                            {patient?.paidAmount > 0 && (
+                                                                <div className="text-xs text-green-600 mt-1">
+                                                                    Cash: {patient?.cashAmount ? patient.cashAmount : patient.paidAmount}
+                                                                    {patient?.bankAmount !== undefined && patient.bankAmount > 0 && (
+                                                                        <> | Bank: {patient.bankAmount}</>
+                                                                    )}
+                                                                </div>
+                                                            )}
+
                                                             {patient.dueAmount > 0 && patient?.paymentStatus?.toLowerCase() !== "paid" && (
                                                                 <div className="text-xs text-red-600 mt-1">Due: Rs.{patient.dueAmount}</div>
                                                             )}
@@ -387,7 +466,7 @@ export default function PaymentComponent() {
                                                                 {patient.resultStatus}
                                                             </Badge>
                                                         </TableCell>
-                                                        <TableCell>
+                                                        {/* <TableCell>
                                                             {patient?.paymentStatus.toLowerCase() !== "paid" ? (
                                                                 <Dialog>
                                                                     <DialogTrigger asChild>
@@ -463,6 +542,97 @@ export default function PaymentComponent() {
                                                                     Payment Done
                                                                 </div>
                                                             )}
+                                                        </TableCell> */}
+                                                        <TableCell>
+                                                            {/* ========== NEW: TWO-BUTTON APPROACH FOR UNPAID/PARTIAL ========== */}
+                                                            {patient?.paymentStatus.toLowerCase() !== "paid" ? (
+                                                                <div className="flex gap-2">
+                                                                    {/* Button 1: Quick Cash Payment (Most Common) */}
+                                                                    <Dialog>
+                                                                        <DialogTrigger asChild>
+                                                                            <Button
+                                                                                size="sm"
+                                                                                style={{ backgroundColor: "#10B981", borderColor: "#10B981", color: "#ffffff" }}
+                                                                                className=" hover:scale-105 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                                                                                title="Mark remaining amount as cash payment (Quick action)"
+                                                                            >
+                                                                                <Banknote className="h-4 w-4 mr-1" />
+                                                                                Cash
+                                                                            </Button>
+                                                                        </DialogTrigger>
+                                                                        <DialogContent className="bg-white rounded-2xl border border-gray-700 shadow-2xl max-w-md">
+                                                                            <DialogHeader className="pb-4">
+                                                                                <DialogTitle className="text-xl font-bold text-gray-900 flex items-center">
+                                                                                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                                                                        <Banknote className="h-4 w-4 text-green-600" />
+                                                                                    </div>
+                                                                                    Mark as Paid (Cash)
+                                                                                </DialogTitle>
+                                                                            </DialogHeader>
+                                                                            <Separator className="bg-gray-200" />
+                                                                            <div className="py-4">
+                                                                                <p className="text-gray-600 mb-4">
+                                                                                    Mark the remaining amount as <strong className="text-green-600">cash payment</strong> for
+                                                                                    <span className="font-semibold text-gray-900"> {patient.name}</span>?
+                                                                                </p>
+                                                                                <div className="bg-gray-50 p-4 rounded-xl mb-4 space-y-2">
+                                                                                    <div className="flex justify-between items-center">
+                                                                                        <span className="text-sm font-medium text-gray-700">Net Total:</span>
+                                                                                        <span className="text-base font-semibold text-gray-900">Rs.{patient?.netTotal || 0}</span>
+                                                                                    </div>
+                                                                                    <div className="flex justify-between items-center">
+                                                                                        <span className="text-sm font-medium text-gray-700">Already Paid:</span>
+                                                                                        <span className="text-base font-semibold text-green-600">Rs.{patient?.paidAmount || 0}</span>
+                                                                                    </div>
+                                                                                    <Separator className="bg-gray-300" />
+                                                                                    <div className="flex justify-between items-center">
+                                                                                        <span className="text-sm font-medium text-green-700">Amount to Pay (Cash):</span>
+                                                                                        <span className="text-xl font-bold text-green-600">Rs.{patient?.dueAmount || 0}</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div className="flex justify-end gap-3">
+                                                                                    <Button
+                                                                                        variant="outline"
+                                                                                        onClick={() => { }}
+                                                                                        className="border-gray-300 hover:bg-gray-50"
+                                                                                    >
+                                                                                        Cancel
+                                                                                    </Button>
+                                                                                    <Button
+                                                                                        className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-lg"
+                                                                                        onClick={() => handleMarkRemainingAsCash(patient)}
+                                                                                    >
+                                                                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                                                                        Yes, Mark as Cash
+                                                                                    </Button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </DialogContent>
+                                                                    </Dialog>
+
+                                                                    {/* Button 2: Detailed Payment (Bank/Split Options) */}
+                                                                    <Button
+                                                                        size="sm"
+                                                                        style={{ backgroundColor: "#3B82F6", borderColor: "#3B82F6", color: "#ffffff" }}
+                                                                        variant="outline"
+                                                                        className="border-2 border-blue-500 text-blue-700 hover:scale-105 rounded-lg font-semibold transition-all duration-200"
+                                                                        onClick={() => {
+                                                                            setSelectedPatient(patient);
+                                                                            setPaymentDialogOpen(true);
+                                                                        }}
+                                                                        title="Add payment with bank/split options (Detailed)"
+                                                                    >
+                                                                        <CreditCard className="h-4 w-4 mr-1" />
+                                                                        Bank/Split
+                                                                    </Button>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center text-green-600 text-sm font-semibold">
+                                                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                                                    Payment Done
+                                                                </div>
+                                                            )}
+                                                            {/* ================================================================= */}
                                                         </TableCell>
 
                                                         {/* Enhanced Details Dialog */}
@@ -551,12 +721,42 @@ export default function PaymentComponent() {
                                                                                     {(patient.paidAmount > 0 || patient.dueAmount > 0) && (
                                                                                         <>
                                                                                             <Separator className="bg-gray-300" />
-                                                                                            <div className="flex justify-between items-center">
-                                                                                                <span className="text-sm font-medium text-green-700">Paid Amount:</span>
-                                                                                                <span className="text-base font-semibold text-green-600">
-                                                                                                    Rs.{patient?.paidAmount || (patient?.paymentStatus === 'Paid' ? (patient?.netTotal || patient?.total) : 0)}
-                                                                                                </span>
+
+                                                                                            {/* ========== SHOW CASH/BANK BREAKDOWN ========== */}
+                                                                                            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                                                                                                <div className="flex justify-between items-center mb-2">
+                                                                                                    <span className="text-sm font-medium text-green-700">Paid Amount:</span>
+                                                                                                    <span className="text-base font-semibold text-green-600">
+                                                                                                        Rs.{patient?.paidAmount || 0}
+                                                                                                    </span>
+                                                                                                </div>
+
+                                                                                                {/* Cash/Bank Breakdown */}
+                                                                                                {patient?.paidAmount > 0 && (
+                                                                                                    <div className="grid grid-cols-2 gap-2 mt-2">
+                                                                                                        <div className="bg-white p-2 rounded-lg border border-green-200">
+                                                                                                            <div className="flex items-center gap-1 text-xs text-gray-600 mb-1">
+                                                                                                                <Banknote className="h-3 w-3" />
+                                                                                                                <span>Cash</span>
+                                                                                                            </div>
+                                                                                                            <div className="text-sm font-bold text-green-700">
+                                                                                                                Rs.{patient?.cashAmount ? patient.cashAmount : patient?.paidAmount || 0}
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                        <div className="bg-white p-2 rounded-lg border border-blue-200">
+                                                                                                            <div className="flex items-center gap-1 text-xs text-gray-600 mb-1">
+                                                                                                                <CreditCard className="h-3 w-3" />
+                                                                                                                <span>Bank</span>
+                                                                                                            </div>
+                                                                                                            <div className="text-sm font-bold text-blue-700">
+                                                                                                                Rs.{patient?.bankAmount !== undefined ? patient.bankAmount : 0}
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                )}
                                                                                             </div>
+                                                                                            {/* ============================================== */}
+
                                                                                             {patient?.paymentStatus !== 'Paid' && (patient.dueAmount > 0 || (patient?.paidAmount || 0) < (patient?.netTotal || patient?.total)) && (
                                                                                                 <div className="flex justify-between items-center">
                                                                                                     <span className="text-sm font-medium text-red-700">Due Amount:</span>
@@ -576,14 +776,14 @@ export default function PaymentComponent() {
                                                                             <h4 className="font-semibold text-gray-800 mb-3">Payment Information</h4>
                                                                             <div className="grid grid-cols-2 gap-4">
                                                                                 <div className="flex items-center">
-                                                                                    <strong className="text-gray-700 mr-2">Payment Status:</strong>
+                                                                                    <strong className="text-gray-700 text-sm mr-2">Payment Status:</strong>
                                                                                     <Badge className={`${patient?.paymentStatus?.toLowerCase() == 'not paid' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'} rounded-full px-3 py-1`}>
                                                                                         <DollarSign className="h-3 w-3 mr-1" />
                                                                                         {patient.paymentStatus}
                                                                                     </Badge>
                                                                                 </div>
                                                                                 <div className="flex items-center">
-                                                                                    <strong className="text-gray-700 mr-2">Result Status:</strong>
+                                                                                    <strong className="text-gray-700 text-sm mr-2">Result Status:</strong>
                                                                                     <Badge className={`${patient?.resultStatus?.toLowerCase() == 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'} rounded-full px-3 py-1`}>
                                                                                         <NotebookPenIcon className="h-3 w-3 mr-1" />
                                                                                         {patient.resultStatus}
@@ -646,6 +846,14 @@ export default function PaymentComponent() {
                     </CardContent>
                 </Card>
             </div>
+            {/* ========== PAYMENT METHOD DIALOG ========== */}
+            <PaymentMethodDialog
+                open={paymentDialogOpen}
+                onOpenChange={setPaymentDialogOpen}
+                patient={selectedPatient}
+                onConfirm={(paymentData) => handleAddPayment(selectedPatient, paymentData)}
+            />
+            {/* =========================================== */}
         </div>
     );
 }

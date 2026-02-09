@@ -12,7 +12,9 @@ import {
   Printer,
   CalendarCheck,
   Users,
-  TestTube
+  TestTube,
+  Banknote,
+  CreditCard
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { LabInfoContext } from '@/context/LabnfoContext';
@@ -168,42 +170,71 @@ export default function RevenueSummary() {
               </div>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-5 border-2 border-blue-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">Total Revenue</p>
-                    <p className="text-2xl font-bold text-blue-600">Rs. {grandTotal.toLocaleString()}</p>
+            {/* Stats Cards - Two Row Layout */}
+            <div className="space-y-4 mb-8">
+              {/* First Row - Main Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-600 mb-2">Total Revenue</p>
+                      <p className="text-2xl font-bold text-blue-600">Rs. {grandTotal.toLocaleString()}</p>
+                    </div>
+                    <DollarSign className="h-10 w-10 text-blue-600" />
                   </div>
-                  <DollarSign className="h-10 w-10 text-blue-600" />
+                </div>
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-600 mb-2">Paid Amount</p>
+                      <p className="text-2xl font-bold text-green-600">Rs. {totalPaid.toLocaleString()}</p>
+                    </div>
+                    <DollarSign className="h-10 w-10 text-green-600" />
+                  </div>
+                </div>
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-600 mb-2">Total Tests</p>
+                      <p className="text-2xl font-bold text-purple-600">{grandTotalTests}</p>
+                    </div>
+                    <TestTube className="h-10 w-10 text-purple-600" />
+                  </div>
+                </div>
+                <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border-2 border-orange-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-600 mb-2">Total Patients</p>
+                      <p className="text-2xl font-bold text-orange-600">{filteredPatients.length}</p>
+                    </div>
+                    <Users className="h-10 w-10 text-orange-600" />
+                  </div>
                 </div>
               </div>
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-5 border-2 border-green-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">Paid Amount</p>
-                    <p className="text-2xl font-bold text-green-600">Rs. {totalPaid.toLocaleString()}</p>
+
+              {/* Second Row - Payment Breakdown */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-300">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-600 mb-2">Cash Collected</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        Rs. {filteredPatients.reduce((sum, p) => sum + (p.cashAmount ? p.cashAmount : (p.paidAmount || 0)), 0).toLocaleString()}
+                      </p>
+                    </div>
+                    <Banknote className="h-10 w-10 text-green-600" />
                   </div>
-                  <DollarSign className="h-10 w-10 text-green-600" />
                 </div>
-              </div>
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-5 border-2 border-purple-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">Total Tests</p>
-                    <p className="text-2xl font-bold text-purple-600">{grandTotalTests}</p>
+                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-6 border-2 border-blue-300">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-600 mb-2">Bank/Online</p>
+                      <p className="text-2xl font-bold text-blue-600">
+                        Rs. {filteredPatients.reduce((sum, p) => sum + (p.bankAmount || 0), 0).toLocaleString()}
+                      </p>
+                    </div>
+                    <CreditCard className="h-10 w-10 text-blue-600" />
                   </div>
-                  <TestTube className="h-10 w-10 text-purple-600" />
-                </div>
-              </div>
-              <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-5 border-2 border-orange-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">Total Patients</p>
-                    <p className="text-2xl font-bold text-orange-600">{filteredPatients.length}</p>
-                  </div>
-                  <Users className="h-10 w-10 text-orange-600" />
                 </div>
               </div>
             </div>
@@ -356,7 +387,7 @@ export default function RevenueSummary() {
 
                     {/* Date Summary Stats */}
                     <div className="border-b border-gray-800 bg-gray-50">
-                      <div className="grid grid-cols-4 divide-x divide-gray-800">
+                      <div className="grid grid-cols-6 divide-x divide-gray-800">
                         <div className="px-2 py-1.5 text-center">
                           <span className="text-xs font-semibold text-gray-600 block">Patients</span>
                           <span className="text-sm font-bold text-gray-900">{datePatients.length}</span>
@@ -370,8 +401,16 @@ export default function RevenueSummary() {
                           <span className="text-sm font-bold text-gray-900">Rs. {totalPaid.toLocaleString()}</span>
                         </div>
                         <div className="px-2 py-1.5 text-center">
+                          <span className="text-xs font-semibold text-gray-600 block">Cash</span>
+                          <span className="text-sm font-bold text-green-700">Rs. {datePatients.reduce((sum, p) => sum + (p.cashAmount ? p.cashAmount : (p.paidAmount || 0)), 0).toLocaleString()}</span>
+                        </div>
+                        <div className="px-2 py-1.5 text-center">
+                          <span className="text-xs font-semibold text-gray-600 block">Bank</span>
+                          <span className="text-sm font-bold text-blue-700">Rs. {datePatients.reduce((sum, p) => sum + (p.bankAmount || 0), 0).toLocaleString()}</span>
+                        </div>
+                        <div className="px-2 py-1.5 text-center">
                           <span className="text-xs font-semibold text-gray-600 block">Due</span>
-                          <span className="text-sm font-bold text-gray-900">Rs. {totalDue?.toLocaleString()}</span>
+                          <span className="text-sm font-bold text-red-700">Rs. {totalDue?.toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -589,6 +628,8 @@ export default function RevenueSummary() {
                           <th className="px-2 py-1.5 text-right font-bold border-r border-gray-400">Discount</th>
                           <th className="px-2 py-1.5 text-right font-bold border-r border-gray-400">Net Total</th>
                           <th className="px-2 py-1.5 text-right font-bold border-r border-gray-400">Paid</th>
+                          <th className="px-2 py-1.5 text-right font-bold border-r border-gray-400">Cash</th>
+                          <th className="px-2 py-1.5 text-right font-bold border-r border-gray-400">Bank</th>
                           <th className="px-2 py-1.5 text-right font-bold border-r border-gray-400">Due</th>
                           <th className="px-2 py-1.5 text-center font-bold">Status</th>
                         </tr>
@@ -632,6 +673,12 @@ export default function RevenueSummary() {
                               <td className="px-2 py-1 text-right font-bold text-green-700 border-r border-gray-300">
                                 {patient.paidAmount > 0 ? `Rs. ${patient.paidAmount.toLocaleString()}` : 'Rs. 0'}
                               </td>
+                              <td className="px-2 py-1 text-right font-bold text-green-600 border-r border-gray-300">
+                                Rs. {(patient.cashAmount ? patient.cashAmount : (patient.paidAmount || 0)).toLocaleString()}
+                              </td>
+                              <td className="px-2 py-1 text-right font-bold text-blue-600 border-r border-gray-300">
+                                Rs. {(patient.bankAmount || 0).toLocaleString()}
+                              </td>
                               <td className="px-2 py-1 text-right font-bold text-red-700 border-r border-gray-300">
                                 {patient.dueAmount > 0 ? `Rs. ${patient.dueAmount.toLocaleString()}` : 'Rs. 0'}
                               </td>
@@ -660,6 +707,12 @@ export default function RevenueSummary() {
                           </td>
                           <td className="px-2 py-1.5 text-right font-bold border-l border-gray-500">
                             Rs. {dateTotals.totalPaid.toLocaleString()}
+                          </td>
+                          <td className="px-2 py-1.5 text-right font-bold border-l border-gray-500">
+                            Rs. {datePatients.reduce((sum, p) => sum + (p.cashAmount ? p.cashAmount : (p.paidAmount || 0)), 0).toLocaleString()}
+                          </td>
+                          <td className="px-2 py-1.5 text-right font-bold border-l border-gray-500">
+                            Rs. {datePatients.reduce((sum, p) => sum + (p.bankAmount || 0), 0).toLocaleString()}
                           </td>
                           <td className="px-2 py-1.5 text-right font-bold border-l border-gray-500">
                             Rs. {dateTotals.totalDue.toLocaleString()}
@@ -699,7 +752,7 @@ export default function RevenueSummary() {
               </div> */}
 
               {/* Summary Stats - keep same */}
-              <div className="mt-4 grid grid-cols-5 gap-3 text-center">
+              <div className="mt-4 grid grid-cols-7 gap-3 text-center">
                 <div className="border border-gray-800 bg-gray-50 p-2">
                   <p className="text-xs font-semibold text-gray-600">Total Patients</p>
                   <p className="text-lg font-bold text-gray-900">{filteredPatients.length}</p>
@@ -717,6 +770,18 @@ export default function RevenueSummary() {
                 <div className="border border-gray-800 bg-green-50 p-2">
                   <p className="text-xs font-semibold text-gray-600">Total Paid</p>
                   <p className="text-lg font-bold text-green-900">Rs. {totalPaid.toLocaleString()}</p>
+                </div>
+                <div className="border border-gray-800 bg-green-50 p-2">
+                  <p className="text-xs font-semibold text-gray-600">Total Cash</p>
+                  <p className="text-lg font-bold text-green-900">
+                    Rs. {filteredPatients.reduce((sum, p) => sum + (p.cashAmount ? p.cashAmount : (p.paidAmount || 0)), 0).toLocaleString()}
+                  </p>
+                </div>
+                <div className="border border-gray-800 bg-blue-50 p-2">
+                  <p className="text-xs font-semibold text-gray-600">Total Bank</p>
+                  <p className="text-lg font-bold text-blue-900">
+                    Rs. {filteredPatients.reduce((sum, p) => sum + (p.bankAmount || 0), 0).toLocaleString()}
+                  </p>
                 </div>
                 <div className="border border-gray-800 bg-red-50 p-2">
                   <p className="text-xs font-semibold text-gray-600">Total Due</p>

@@ -1607,7 +1607,98 @@ Click the link above to view and download your complete test results anytime.
                                                         </div>
                                                     </div>
                                                 </div>
-                                            ) : null}
+                                            ) :
+                                                (
+                                                    <>
+                                                        <div style={{
+                                                            visibility: generalSettings.printShowHeader ? 'visible' : 'hidden'
+                                                        }} className="flex items-start justify-between border-b-2 border-gray-800 pb-2 mb-2 mt-3 mx-[22px]">
+                                                            <div className="flex items-start">
+                                                                {labInfo?.logoUrl && (
+                                                                    <img
+                                                                        src={labInfo.logoUrl}
+                                                                        alt="Lab Logo"
+                                                                        className="h-24 w-24 mr-4 object-contain"
+                                                                        onError={(e) => (e.target.style.display = "none")}
+                                                                    />
+                                                                )}
+                                                                <div className="text-left">
+                                                                    <h1 className="text-3xl font-bold mb-1">
+                                                                        <span style={{ letterSpacing: "0.3em" }}>DOCTOR</span>{" "}
+                                                                        <span style={{ letterSpacing: "0.25em" }}>LAB</span>
+                                                                    </h1>
+                                                                    <p className="text-md font-semibold mb-2">
+                                                                        <span style={{ letterSpacing: "0.02em" }}>&</span>{" "}
+                                                                        <span style={{ letterSpacing: "0.08em" }}>
+                                                                            Imaging Center Sahiwal
+                                                                        </span>
+                                                                    </p>
+                                                                    <p className="text-xs italic" style={{ letterSpacing: "0.03em" }}>
+                                                                        Better Diagnosis - Better Treatment
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Right: QR + Barcodes (unchanged) */}
+                                                            <div className="flex items-center justify-center">
+                                                                <div className="mr-6 pt-3">
+                                                                    <div className="flex flex-col items-center">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="text-xs font-bold">Patient #:</span>
+                                                                            <div className="text-center">
+                                                                                <svg
+                                                                                    ref={(el) => {
+                                                                                        if (el && printPatient?.refNo) {
+                                                                                            JsBarcode(el, printPatient.refNo, {
+                                                                                                format: "CODE128",
+                                                                                                width: 1,
+                                                                                                height: 20,
+                                                                                                displayValue: false,
+                                                                                                margin: 0,
+                                                                                            });
+                                                                                        }
+                                                                                    }}
+                                                                                ></svg>
+                                                                                <p className="text-xs mt-0.5">{printPatient?.refNo}</p>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="text-xs font-bold">Case #:</span>
+                                                                            <div className="text-center">
+                                                                                <svg
+                                                                                    ref={(el) => {
+                                                                                        if (el && printPatient?.caseNo) {
+                                                                                            JsBarcode(el, printPatient.caseNo, {
+                                                                                                format: "CODE128",
+                                                                                                width: 1,
+                                                                                                height: 20,
+                                                                                                displayValue: false,
+                                                                                                margin: 0,
+                                                                                            });
+                                                                                        }
+                                                                                    }}
+                                                                                ></svg>
+                                                                                <p className="text-xs mt-0.5">{printPatient?.caseNo}</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="flex flex-col">
+                                                                    <div className="text-[11px]">Scan to View</div>
+                                                                    <QRCodeSVG
+                                                                        value={`${window.location.origin}/public-report`}
+                                                                        size={70}
+                                                                        level="M"
+                                                                    />
+                                                                    <div className="text-[11px]">Online Report</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                )
+                                            }
 
 
                                             {/* Patient Info Box */}
